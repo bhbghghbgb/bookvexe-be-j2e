@@ -1,0 +1,50 @@
+{
+  "realm" : "smb-j2e",
+  "users" : [ {
+    "id" : "8ecbb885-886f-417c-95d3-6734a5807340",
+    "username" : "admin",
+    "firstName" : "Admin",
+    "lastName" : "Nimda",
+    "email" : "admin@test.com",
+    "emailVerified" : false,
+    "enabled" : true,
+    "createdTimestamp" : 1758872086801,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "790da736-ed37-4ce5-9c29-47a2c9c272c6",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1758872094502,
+      "secretData" : "{\"value\":\"lObmlHKxlUGp1gaL3BJLzTXmL1Vob70lk9KdP2E8o94=\",\"salt\":\"4GFqEm7vZ0e8ZXq8+Wcvzg==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-smb-j2e", "admin" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "599b8302-cad4-44e8-806a-33431cd717ae",
+    "username" : "user",
+    "firstName" : "User",
+    "lastName" : "Resu",
+    "email" : "user@test.com",
+    "emailVerified" : false,
+    "enabled" : true,
+    "createdTimestamp" : 1758872109506,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "fdeb7727-10ff-43b1-8555-3aeadf391705",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1758872118215,
+      "secretData" : "{\"value\":\"V7ShIoOtTBL7Y0WymOQQc20s2vIDVJ6FuZBDoiljR4w=\",\"salt\":\"A87HtuyYSYs8puTwpj0/tw==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-smb-j2e", "user" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  } ]
+}
