@@ -1,4 +1,4 @@
-package org.example.bookvexebej2e.controller;
+package org.example.bookvexebej2e.controllers;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;

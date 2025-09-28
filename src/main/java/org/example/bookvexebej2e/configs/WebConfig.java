@@ -1,4 +1,4 @@
-package org.example.bookvexebej2e.config;
+package org.example.bookvexebej2e.configs;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;

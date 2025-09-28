@@ -1,4 +1,4 @@
-package org.example.bookvexebej2e.config;
+package org.example.bookvexebej2e.configs;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.GrantedAuthority;

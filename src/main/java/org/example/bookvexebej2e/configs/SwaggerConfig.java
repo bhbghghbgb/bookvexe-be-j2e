@@ -1,4 +1,4 @@
-package org.example.bookvexebej2e.config;
+package org.example.bookvexebej2e.configs;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;

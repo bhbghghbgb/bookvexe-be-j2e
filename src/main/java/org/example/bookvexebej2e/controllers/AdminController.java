@@ -1,4 +1,4 @@
-package org.example.bookvexebej2e.controller;
+package org.example.bookvexebej2e.controllers;
 
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
