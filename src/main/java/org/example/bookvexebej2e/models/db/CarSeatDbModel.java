@@ -1,14 +1,14 @@
 package org.example.bookvexebej2e.models.db;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.example.bookvexebej2e.models.db.embeds.SoftDeleteField;
 
 @Entity
 @Table(name = "car_seats")
-@Data
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class CarSeatDbModel {

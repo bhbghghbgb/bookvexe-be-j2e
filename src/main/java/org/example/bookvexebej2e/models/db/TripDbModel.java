@@ -1,9 +1,7 @@
 package org.example.bookvexebej2e.models.db;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.example.bookvexebej2e.models.db.embeds.CreateAudit;
 import org.example.bookvexebej2e.models.db.embeds.UpdateAudit;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -13,7 +11,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "trips")
-@Data
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)

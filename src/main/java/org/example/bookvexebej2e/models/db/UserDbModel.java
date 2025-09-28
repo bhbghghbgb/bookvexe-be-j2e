@@ -1,9 +1,7 @@
 package org.example.bookvexebej2e.models.db;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.example.bookvexebej2e.models.db.embeds.CreateAudit;
 import org.example.bookvexebej2e.models.db.embeds.SoftDeleteField;
 import org.example.bookvexebej2e.models.db.embeds.UpdateAudit;
@@ -14,7 +12,9 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)

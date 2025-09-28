@@ -19,4 +19,4 @@ echo Starting MySQL Server...
 bin\mysqld.exe --console --datadir="%ABS_DATADIR%" --port=3306 --user=root
 
 REM Run commands to create DB and user
-REM "external-tools\mysql\mysql-9.4.0-winx64\bin\mysql.exe" -u root --execute="CREATE DATABASE IF NOT EXISTS bookVeXeDb_J2e;"
+REM "external-tools\mysql\mysql-9.4.0-winx64\bin\mysql.exe" -u root --execute="CREATE DATABASE bookVeXeDb_J2e CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
