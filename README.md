@@ -47,3 +47,51 @@ parent.
 To prevent this, the project POM contains empty overrides for these elements.
 If you manually switch to a different parent and actually want the inheritance, you need to remove those overrides.
 
+# On-Demand Keycloak and MySQL Setup (No Docker, No Service)
+
+This guide explains how to download, configure, and run Keycloak and MySQL on-demand without using Docker or running them as system services. Both applications will store data locally in their respective folders and can be started/stopped from the command line.
+
+## Downloading Tools
+
+### Keycloak
+
+1. Visit the official Keycloak download page: https://www.keycloak.org/downloads
+2. Download the ZIP version suitable for your OS.
+3. Extract the ZIP archive to a folder of your choice (e.g., `C:\keycloak`).
+
+### MySQL
+
+1. Download the MySQL Community Server from https://dev.mysql.com/downloads/mysql/
+2. Choose the ZIP Archive version (not the installer).
+3. Extract it to a folder of your choice (e.g., `C:\mysql`).
+
+## Running Keycloak
+
+- Modify `start-keycloak.bat` to set the correct path for `KEYCLOAK_HOME` where Keycloak was extracted.
+- On the first start, the script will attempt to restore export data from the `export` folder inside `KEYCLOAK_HOME`.
+- Run `start-keycloak.bat` from the command line to start Keycloak. The console will remain open showing logs.
+- Stop Keycloak by closing the command prompt window.
+
+## Running MySQL
+
+- Modify `start-mysql.bat` to set the correct path for `MYSQL_HOME` where MySQL was extracted.
+- The batch file initializes the data directory on the first run.
+- The MySQL server starts on-demand from the command line and stays in the prompt window.
+- The script will run a migration SQL script on startup to prepare the database schema.
+- To stop MySQL, close the command prompt window running `mysqld`.
+
+## Connecting Spring Boot
+
+- Configure your Spring Boot application's database connection properties to point to:
+    - Host: `localhost`
+    - User: `root` (or as configured)
+    - Password: as set in `start-mysql.bat`
+    - Port: 3306 (default MySQL port)
+
+Spring Boot's migration (e.g., Flyway or Liquibase) will run as usual when the app starts.
+
+## Notes
+
+- Both Keycloak and MySQL run as foreground processes. To stop them, simply close their command prompt windows.
+- Ensure your export data for Keycloak is placed in the `export` folder inside the Keycloak directory before the first run.
+- Customize and secure MySQL credentials appropriately for your environment.
