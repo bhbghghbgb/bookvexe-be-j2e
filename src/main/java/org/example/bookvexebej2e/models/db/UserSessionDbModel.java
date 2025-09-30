@@ -2,7 +2,7 @@ package org.example.bookvexebej2e.models.db;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.bookvexebej2e.models.db.embeds.CreateAudit;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
@@ -34,10 +34,7 @@ public class UserSessionDbModel {
     @Column(name = "revoked")
     private Boolean revoked = false;
 
-    @Embedded
-    private CreateAudit createAudit = new CreateAudit();
-
-    public LocalDateTime getCreatedAt() {
-        return createAudit != null ? createAudit.getCreatedAt() : null;
-    }
+    @CreatedDate
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 }

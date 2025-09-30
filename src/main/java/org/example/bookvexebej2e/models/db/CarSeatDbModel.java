@@ -2,7 +2,6 @@ package org.example.bookvexebej2e.models.db;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.bookvexebej2e.models.db.embeds.SoftDeleteField;
 
 @Entity
 @Table(name = "car_seats")
@@ -27,16 +26,6 @@ public class CarSeatDbModel {
     @Column(name = "seat_position", length = 50)
     private String seatPosition;
 
-    @Embedded
-    private SoftDeleteField softDelete = new SoftDeleteField();
-
-    public Boolean getIsActive() {
-        return softDelete != null ? softDelete.getIsActive() : null;
-    }
-
-    public void setIsActive(Boolean isActive) {
-        if (softDelete == null)
-            softDelete = new SoftDeleteField();
-        softDelete.setIsActive(isActive);
-    }
+    @Column(name = "is_active")
+    private Boolean isActive = true;
 }

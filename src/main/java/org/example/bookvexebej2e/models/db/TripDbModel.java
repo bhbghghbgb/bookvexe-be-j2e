@@ -2,8 +2,8 @@ package org.example.bookvexebej2e.models.db;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.bookvexebej2e.models.db.embeds.CreateAudit;
-import org.example.bookvexebej2e.models.db.embeds.UpdateAudit;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
@@ -40,17 +40,11 @@ public class TripDbModel {
     @Column(name = "available_seats", nullable = false)
     private Integer availableSeats;
 
-    @Embedded
-    private CreateAudit createAudit = new CreateAudit();
+    @CreatedDate
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
-    @Embedded
-    private UpdateAudit updateAudit = new UpdateAudit();
-
-    public LocalDateTime getCreatedAt() {
-        return createAudit != null ? createAudit.getCreatedAt() : null;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updateAudit != null ? updateAudit.getUpdatedAt() : null;
-    }
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }

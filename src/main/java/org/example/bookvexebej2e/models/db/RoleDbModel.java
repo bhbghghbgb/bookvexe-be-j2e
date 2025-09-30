@@ -2,7 +2,7 @@ package org.example.bookvexebej2e.models.db;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.bookvexebej2e.models.db.embeds.CreateAudit;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
@@ -27,11 +27,7 @@ public class RoleDbModel {
     @Column(name = "name", length = 100)
     private String name;
 
-    @Embedded
-    private CreateAudit createAudit = new CreateAudit();
-
-    // Convenience getters
-    public LocalDateTime getCreatedAt() {
-        return createAudit != null ? createAudit.getCreatedAt() : null;
-    }
+    @CreatedDate
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 }

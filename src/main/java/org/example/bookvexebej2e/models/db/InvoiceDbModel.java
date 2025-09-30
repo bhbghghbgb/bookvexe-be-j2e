@@ -2,8 +2,7 @@ package org.example.bookvexebej2e.models.db;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.bookvexebej2e.models.db.embeds.CreateAudit;
-import org.example.bookvexebej2e.models.db.embeds.IssueAudit;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
@@ -32,23 +31,11 @@ public class InvoiceDbModel {
     @Column(name = "file_url", length = 255)
     private String fileUrl;
 
-    @Embedded
-    private IssueAudit issueAudit = new IssueAudit();
+    @CreatedDate
+    @Column(name = "issued_at")
+    private LocalDateTime issuedAt;
 
-    @Embedded
-    private CreateAudit createAudit = new CreateAudit();
-
-    public LocalDateTime getIssuedAt() {
-        return issueAudit != null ? issueAudit.getIssuedAt() : null;
-    }
-
-    public void setIssuedAt(LocalDateTime issuedAt) {
-        if (issueAudit == null)
-            issueAudit = new IssueAudit();
-        issueAudit.setIssuedAt(issuedAt);
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createAudit != null ? createAudit.getCreatedAt() : null;
-    }
+    @CreatedDate
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 }

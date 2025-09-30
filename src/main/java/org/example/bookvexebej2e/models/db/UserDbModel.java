@@ -2,9 +2,8 @@ package org.example.bookvexebej2e.models.db;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.bookvexebej2e.models.db.embeds.CreateAudit;
-import org.example.bookvexebej2e.models.db.embeds.SoftDeleteField;
-import org.example.bookvexebej2e.models.db.embeds.UpdateAudit;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
@@ -26,7 +25,7 @@ public class UserDbModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private Integer id;
+    private Integer userId;
 
     @Column(name = "user_uuid", unique = true, columnDefinition = "BINARY(16)")
     private UUID userUuid;
@@ -46,42 +45,22 @@ public class UserDbModel {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<RoleUserDbModel> roles = new ArrayList<>();
 
-    @Embedded
-    private SoftDeleteField softDelete = new SoftDeleteField();
+    @Column(name = "is_active")
+    private Boolean isActive = true;
 
-    @Embedded
-    private CreateAudit createAudit = new CreateAudit();
+    @CreatedDate
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
-    @Embedded
-    private UpdateAudit updateAudit = new UpdateAudit();
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @PrePersist
     protected void prePersist() {
         if (userUuid == null) {
             userUuid = UUID.randomUUID();
         }
-        if (softDelete == null || softDelete.getIsActive() == null) {
-            softDelete = new SoftDeleteField();
-        }
-    }
-
-    // Convenience getters
-    public LocalDateTime getCreatedAt() {
-        return createAudit != null ? createAudit.getCreatedAt() : null;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updateAudit != null ? updateAudit.getUpdatedAt() : null;
-    }
-
-    public Boolean getIsActive() {
-        return softDelete != null ? softDelete.getIsActive() : null;
-    }
-
-    public void setIsActive(Boolean isActive) {
-        if (softDelete == null)
-            softDelete = new SoftDeleteField();
-        softDelete.setIsActive(isActive);
     }
 
     private Stream<RoleUserDbModel> getActiveRoleUsers() {
