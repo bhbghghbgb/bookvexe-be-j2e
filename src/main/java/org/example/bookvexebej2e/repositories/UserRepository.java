@@ -28,7 +28,4 @@ public interface UserRepository extends SoftDeleteRepository<UserDbModel, Intege
 
     // Status-based queries
     Page<UserDbModel> findByIsActive(Boolean isActive, Pageable pageable);
-
-    // Complex search using QueryDSL (will be implemented in custom impl)
-    Page<UserDbModel> findUsersByCriteria(String name, String email, Boolean active, Pageable pageable);
 }
