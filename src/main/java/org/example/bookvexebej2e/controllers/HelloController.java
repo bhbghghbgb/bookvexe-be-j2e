@@ -24,7 +24,8 @@ public class HelloController {
 
     @GetMapping("/roles")
     public List<String> roles(Authentication auth) {
-        return auth.getAuthorities().stream()
+        return auth.getAuthorities()
+            .stream()
             .map(GrantedAuthority::getAuthority)
             .toList();
     }
