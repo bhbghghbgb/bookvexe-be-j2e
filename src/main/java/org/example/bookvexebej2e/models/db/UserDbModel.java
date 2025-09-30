@@ -8,7 +8,11 @@ import org.example.bookvexebej2e.models.db.embeds.UpdateAudit;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Entity
 @Table(name = "users")
@@ -39,9 +43,8 @@ public class UserDbModel {
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
 
-    @ManyToOne
-    @JoinColumn(name = "role_id")
-    private RoleDbModel role;
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<RoleUserDbModel> roles = new ArrayList<>();
 
     @Embedded
     private SoftDeleteField softDelete = new SoftDeleteField();
@@ -79,5 +82,21 @@ public class UserDbModel {
         if (softDelete == null)
             softDelete = new SoftDeleteField();
         softDelete.setIsActive(isActive);
+    }
+
+    private Stream<RoleUserDbModel> getActiveRoleUsers() {
+        return roles.stream()
+            .filter(roleUser -> roleUser.getIsActive() != null && roleUser.getIsActive());
+    }
+
+    public List<String> getRoleCodes() {
+        return getActiveRoleUsers().map(roleUser -> roleUser.getRole()
+                .getCode())
+            .collect(Collectors.toList());
+    }
+
+    public boolean hasRole(String roleCode) {
+        return getActiveRoleUsers().anyMatch(roleUser -> roleCode.equals(roleUser.getRole()
+            .getCode()));
     }
 }
