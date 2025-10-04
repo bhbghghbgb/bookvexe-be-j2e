@@ -3,30 +3,23 @@ package org.example.bookvexebej2e.services.admin;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.models.db.BookingDbModel;
 import org.example.bookvexebej2e.models.db.BookingSeatDbModel;
-import org.example.bookvexebej2e.models.db.TripDbModel;
-import org.example.bookvexebej2e.models.db.UserDbModel;
 import org.example.bookvexebej2e.models.requests.BookingQueryRequest;
 import org.example.bookvexebej2e.repositories.BookingRepository;
 import org.example.bookvexebej2e.repositories.BookingSeatRepository;
-import org.example.bookvexebej2e.repositories.TripRepository;
-import org.example.bookvexebej2e.repositories.UserRepository;
 import org.example.bookvexebej2e.services.admin.base.BaseAdminService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class BookingAdminService extends BaseAdminService<BookingDbModel, Integer> {
+public class BookingAdminService extends BaseAdminService<BookingDbModel, Integer, BookingQueryRequest> {
 
     private final BookingRepository bookingRepository;
-    private final UserRepository userRepository;
-    private final TripRepository tripRepository;
     private final BookingSeatRepository bookingSeatRepository;
 
     @Override
@@ -34,47 +27,56 @@ public class BookingAdminService extends BaseAdminService<BookingDbModel, Intege
         return bookingRepository;
     }
 
-    public Page<BookingDbModel> findBookingsByCriteria(BookingQueryRequest queryRequest) {
-        Pageable pageable = queryRequest.toPageable();
+    @Override
+    protected Specification<BookingDbModel> buildSpecification(BookingQueryRequest request) {
+        return (root, query, cb) -> {
+            var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
 
-        if (queryRequest.getUserId() != null && queryRequest.getTripId() != null) {
-            Optional<UserDbModel> user = userRepository.findById(queryRequest.getUserId());
-            Optional<TripDbModel> trip = tripRepository.findById(queryRequest.getTripId());
-            if (user.isPresent() && trip.isPresent()) {
-                return bookingRepository.findByUserAndBookingStatus(user.get(), queryRequest.getStatus(), pageable);
+            // Filter by user ID
+            if (request.getUserId() != null) {
+                predicates.add(cb.equal(root.get("user").get("userId"), request.getUserId()));
             }
-        }
 
-        if (queryRequest.getUserId() != null) {
-            return bookingRepository.findByUserUserId(queryRequest.getUserId(), pageable);
-        }
+            // Filter by trip ID
+            if (request.getTripId() != null) {
+                predicates.add(cb.equal(root.get("trip").get("tripId"), request.getTripId()));
+            }
 
-        if (queryRequest.getTripId() != null) {
-            return bookingRepository.findByTripTripId(queryRequest.getTripId(), pageable);
-        }
+            // Filter by single status
+            if (request.getStatus() != null) {
+                predicates.add(cb.equal(root.get("bookingStatus"), request.getStatus()));
+            }
 
-        if (queryRequest.getStatus() != null) {
-            return bookingRepository.findByBookingStatus(queryRequest.getStatus(), pageable);
-        }
+            // Filter by multiple statuses
+            if (!CollectionUtils.isEmpty(request.getStatuses())) {
+                predicates.add(root.get("bookingStatus").in(request.getStatuses()));
+            }
 
-        if (queryRequest.getStatuses() != null && !queryRequest.getStatuses()
-            .isEmpty()) {
-            return bookingRepository.findByBookingStatusIn(queryRequest.getStatuses(), pageable);
-        }
+            // Filter by created date range
+            if (request.getCreatedAfter() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), request.getCreatedAfter()));
+            }
 
-        if (queryRequest.getCreatedAfter() != null && queryRequest.getCreatedBefore() != null) {
-            return bookingRepository.findByCreatedAtBetween(queryRequest.getCreatedAfter(),
-                queryRequest.getCreatedBefore(), pageable);
-        }
+            if (request.getCreatedBefore() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("createdAt"), request.getCreatedBefore()));
+            }
 
-        if (queryRequest.getMinPrice() != null && queryRequest.getMaxPrice() != null) {
-            return bookingRepository.findByTotalPriceBetween(queryRequest.getMinPrice(), queryRequest.getMaxPrice(),
-                pageable);
-        }
+            // Filter by price range
+            if (request.getMinPrice() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("totalPrice"), request.getMinPrice()));
+            }
 
-        return bookingRepository.findAll(pageable);
+            if (request.getMaxPrice() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("totalPrice"), request.getMaxPrice()));
+            }
+
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
     }
 
+    /**
+     * Lấy danh sách ghế của booking
+     */
     public List<BookingSeatDbModel> getBookingSeats(Integer bookingId) {
         return bookingRepository.findById(bookingId)
             .map(bookingSeatRepository::findByBooking)

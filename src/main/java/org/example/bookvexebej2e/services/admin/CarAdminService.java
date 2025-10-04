@@ -6,10 +6,8 @@ import org.example.bookvexebej2e.models.db.CarSeatDbModel;
 import org.example.bookvexebej2e.models.requests.CarQueryRequest;
 import org.example.bookvexebej2e.repositories.CarRepository;
 import org.example.bookvexebej2e.repositories.CarSeatRepository;
-import org.example.bookvexebej2e.repositories.UserRepository;
 import org.example.bookvexebej2e.services.admin.base.BaseAdminService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -18,53 +16,61 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class CarAdminService extends BaseAdminService<CarDbModel, Integer> {
+public class CarAdminService extends BaseAdminService<CarDbModel, Integer, CarQueryRequest> {
 
     private final CarRepository carRepository;
     private final CarSeatRepository carSeatRepository;
-    private final UserRepository userRepository;
 
     @Override
     protected JpaRepository<CarDbModel, Integer> getRepository() {
         return carRepository;
     }
 
-    public Page<CarDbModel> findCarsByCriteria(CarQueryRequest queryRequest) {
-        Pageable pageable = queryRequest.toPageable();
+    @Override
+    protected Specification<CarDbModel> buildSpecification(CarQueryRequest request) {
+        return (root, query, cb) -> {
+            var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
 
-        if (queryRequest.getOwnerId() != null) {
-            if (Boolean.TRUE.equals(queryRequest.getActive())) {
-                return userRepository.findById(queryRequest.getOwnerId())
-                    .map(owner -> carRepository.findByOwnerAndIsActiveTrue(owner, pageable))
-                    .orElse(Page.empty(pageable));
+            // Filter by license plate (partial match, case insensitive)
+            if (StringUtils.hasText(request.getLicensePlate())) {
+                predicates.add(cb.like(
+                    cb.lower(root.get("licensePlate")),
+                    "%" + request.getLicensePlate().toLowerCase() + "%"
+                ));
             }
-            return carRepository.findByOwnerUserId(queryRequest.getOwnerId(), pageable);
-        }
 
-        if (queryRequest.getCarTypeId() != null) {
-            return carRepository.findByCarTypeCarTypeId(queryRequest.getCarTypeId(), pageable);
-        }
+            // Filter by owner ID
+            if (request.getOwnerId() != null) {
+                predicates.add(cb.equal(root.get("owner").get("userId"), request.getOwnerId()));
+            }
 
-        if (StringUtils.hasText(queryRequest.getLicensePlate())) {
-            return carRepository.findByLicensePlateContainingIgnoreCase(queryRequest.getLicensePlate(), pageable);
-        }
+            // Filter by car type ID
+            if (request.getCarTypeId() != null) {
+                predicates.add(cb.equal(root.get("carType").get("carTypeId"), request.getCarTypeId()));
+            }
 
-        if (queryRequest.getMinSeats() != null && queryRequest.getMaxSeats() != null) {
-            return carRepository.findBySeatCountBetween(queryRequest.getMinSeats(), queryRequest.getMaxSeats(),
-                pageable);
-        }
+            // Filter by minimum seat count
+            if (request.getMinSeatCount() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("seatCount"), request.getMinSeatCount()));
+            }
 
-        if (queryRequest.getMinSeats() != null) {
-            return carRepository.findBySeatCountGreaterThanEqual(queryRequest.getMinSeats(), pageable);
-        }
+            // Filter by maximum seat count
+            if (request.getMaxSeatCount() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("seatCount"), request.getMaxSeatCount()));
+            }
 
-        if (Boolean.TRUE.equals(queryRequest.getActive())) {
-            return carRepository.findAllByIsActiveTrue(pageable);
-        }
+            // Filter by active status
+            if (request.getActive() != null) {
+                predicates.add(cb.equal(root.get("isActive"), request.getActive()));
+            }
 
-        return carRepository.findAll(pageable);
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
     }
 
+    /**
+     * Lấy danh sách ghế theo ID xe
+     */
     public List<CarSeatDbModel> getCarSeats(Integer carId) {
         return carSeatRepository.findByCarCarId(carId);
     }

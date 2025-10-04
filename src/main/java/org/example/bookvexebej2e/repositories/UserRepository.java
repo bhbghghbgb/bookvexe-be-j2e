@@ -4,13 +4,14 @@ import org.example.bookvexebej2e.models.db.UserDbModel;
 import org.example.bookvexebej2e.repositories.base.SoftDeleteRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface UserRepository extends SoftDeleteRepository<UserDbModel, Integer> {
+public interface UserRepository extends SoftDeleteRepository<UserDbModel, Integer>, JpaSpecificationExecutor<UserDbModel> {
 
     // Basic unique field queries
     Optional<UserDbModel> findByEmail(String email);

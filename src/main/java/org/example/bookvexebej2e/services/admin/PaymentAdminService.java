@@ -5,14 +5,14 @@ import org.example.bookvexebej2e.models.db.PaymentDbModel;
 import org.example.bookvexebej2e.models.requests.PaymentQueryRequest;
 import org.example.bookvexebej2e.repositories.PaymentRepository;
 import org.example.bookvexebej2e.services.admin.base.BaseAdminService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 @Service
 @RequiredArgsConstructor
-public class PaymentAdminService extends BaseAdminService<PaymentDbModel, Integer> {
+public class PaymentAdminService extends BaseAdminService<PaymentDbModel, Integer, PaymentQueryRequest> {
 
     private final PaymentRepository paymentRepository;
 
@@ -21,46 +21,59 @@ public class PaymentAdminService extends BaseAdminService<PaymentDbModel, Intege
         return paymentRepository;
     }
 
-    public Page<PaymentDbModel> findPaymentsByCriteria(PaymentQueryRequest queryRequest) {
-        Pageable pageable = queryRequest.toPageable();
+    @Override
+    protected Specification<PaymentDbModel> buildSpecification(PaymentQueryRequest request) {
+        return (root, query, cb) -> {
+            var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
 
-        if (queryRequest.getBookingId() != null) {
-            return paymentRepository.findByBookingBookingId(queryRequest.getBookingId(), pageable);
-        }
+            // Filter by booking ID
+            if (request.getBookingId() != null) {
+                predicates.add(cb.equal(root.get("booking").get("bookingId"), request.getBookingId()));
+            }
 
-        if (queryRequest.getMethodId() != null) {
-            return paymentRepository.findByMethodMethodId(queryRequest.getMethodId(), pageable);
-        }
+            // Filter by payment method ID
+            if (request.getMethodId() != null) {
+                predicates.add(cb.equal(root.get("method").get("methodId"), request.getMethodId()));
+            }
 
-        if (queryRequest.getStatus() != null) {
-            return paymentRepository.findByStatus(queryRequest.getStatus(), pageable);
-        }
+            // Filter by single status
+            if (request.getStatus() != null) {
+                predicates.add(cb.equal(root.get("status"), request.getStatus()));
+            }
 
-        if (queryRequest.getStatuses() != null && !queryRequest.getStatuses()
-            .isEmpty()) {
-            return paymentRepository.findByStatusIn(queryRequest.getStatuses(), pageable);
-        }
+            // Filter by multiple statuses
+            if (!CollectionUtils.isEmpty(request.getStatuses())) {
+                predicates.add(root.get("status").in(request.getStatuses()));
+            }
 
-        if (queryRequest.getMinAmount() != null && queryRequest.getMaxAmount() != null) {
-            return paymentRepository.findByAmountBetween(queryRequest.getMinAmount(), queryRequest.getMaxAmount(),
-                pageable);
-        }
+            // Filter by amount range
+            if (request.getMinAmount() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("amount"), request.getMinAmount()));
+            }
 
-        if (queryRequest.getCreatedAfter() != null && queryRequest.getCreatedBefore() != null) {
-            return paymentRepository.findByCreatedAtBetween(queryRequest.getCreatedAfter(),
-                queryRequest.getCreatedBefore(), pageable);
-        }
+            if (request.getMaxAmount() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("amount"), request.getMaxAmount()));
+            }
 
-        if (queryRequest.getPaidAfter() != null && queryRequest.getPaidBefore() != null) {
-            return paymentRepository.findByPaidAtBetween(queryRequest.getPaidAfter(), queryRequest.getPaidBefore(),
-                pageable);
-        }
+            // Filter by created date range
+            if (request.getCreatedAfter() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), request.getCreatedAfter()));
+            }
 
-        if (queryRequest.getStatus() != null && queryRequest.getCreatedAfter() != null && queryRequest.getCreatedBefore() != null) {
-            return paymentRepository.findByStatusAndCreatedAtBetween(queryRequest.getStatus(),
-                queryRequest.getCreatedAfter(), queryRequest.getCreatedBefore(), pageable);
-        }
+            if (request.getCreatedBefore() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("createdAt"), request.getCreatedBefore()));
+            }
 
-        return paymentRepository.findAll(pageable);
+            // Filter by paid date range
+            if (request.getPaidAfter() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("paidAt"), request.getPaidAfter()));
+            }
+
+            if (request.getPaidBefore() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("paidAt"), request.getPaidBefore()));
+            }
+
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
     }
 }

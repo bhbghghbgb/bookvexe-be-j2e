@@ -7,7 +7,6 @@ import org.example.bookvexebej2e.models.db.BookingSeatDbModel;
 import org.example.bookvexebej2e.models.requests.BookingQueryRequest;
 import org.example.bookvexebej2e.services.admin.BookingAdminService;
 import org.example.bookvexebej2e.services.admin.base.BaseAdminService;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin/bookings")
 @Tag(name = "Booking Admin", description = "Booking management APIs for administrators")
-public class BookingAdminController extends BaseAdminController<BookingDbModel, Integer> {
+public class BookingAdminController extends BaseAdminController<BookingDbModel, Integer, BookingQueryRequest> {
 
     private final BookingAdminService bookingService;
 
@@ -25,16 +24,13 @@ public class BookingAdminController extends BaseAdminController<BookingDbModel, 
     }
 
     @Override
-    protected BaseAdminService<BookingDbModel, Integer> getService() {
+    protected BaseAdminService<BookingDbModel, Integer, BookingQueryRequest> getService() {
         return bookingService;
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<Page<BookingDbModel>> searchBookings(@ModelAttribute BookingQueryRequest queryRequest) {
-        Page<BookingDbModel> bookings = bookingService.findBookingsByCriteria(queryRequest);
-        return ResponseEntity.ok(bookings);
-    }
-
+    /**
+     * Lấy danh sách ghế của booking
+     */
     @GetMapping("/{bookingId}/seats")
     public ResponseEntity<List<BookingSeatDbModel>> getBookingSeats(@PathVariable Integer bookingId) {
         List<BookingSeatDbModel> seats = bookingService.getBookingSeats(bookingId);

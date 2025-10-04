@@ -6,12 +6,13 @@ import org.example.bookvexebej2e.models.db.UserDbModel;
 import org.example.bookvexebej2e.repositories.base.SoftDeleteRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface CarRepository extends SoftDeleteRepository<CarDbModel, Integer> {
+public interface CarRepository extends SoftDeleteRepository<CarDbModel, Integer>, JpaSpecificationExecutor<CarDbModel> {
 
     // Owner-based queries
     Page<CarDbModel> findByOwner(UserDbModel owner, Pageable pageable);

@@ -4,12 +4,13 @@ import org.example.bookvexebej2e.models.db.RouteDbModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 
 @Repository
-public interface RouteRepository extends JpaRepository<RouteDbModel, Integer> {
+public interface RouteRepository extends JpaRepository<RouteDbModel, Integer>, JpaSpecificationExecutor<RouteDbModel> {
 
     // Location-based queries
     Page<RouteDbModel> findByStartLocationContainingIgnoreCase(String startLocation, Pageable pageable);

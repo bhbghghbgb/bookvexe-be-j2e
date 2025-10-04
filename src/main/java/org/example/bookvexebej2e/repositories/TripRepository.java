@@ -6,6 +6,7 @@ import org.example.bookvexebej2e.models.db.TripDbModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.stereotype.Repository;
 
@@ -13,7 +14,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Repository
-public interface TripRepository extends JpaRepository<TripDbModel, Integer>, QuerydslPredicateExecutor<TripDbModel> {
+public interface TripRepository extends JpaRepository<TripDbModel, Integer>,
+    JpaSpecificationExecutor<TripDbModel>,
+    QuerydslPredicateExecutor<TripDbModel> {
 
     // Route-based queries
     Page<TripDbModel> findByRoute(RouteDbModel route, Pageable pageable);

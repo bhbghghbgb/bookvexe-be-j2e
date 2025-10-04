@@ -6,6 +6,7 @@ import org.example.bookvexebej2e.models.db.PaymentMethodDbModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface PaymentRepository extends JpaRepository<PaymentDbModel, Integer> {
+public interface PaymentRepository extends JpaRepository<PaymentDbModel, Integer>, JpaSpecificationExecutor<PaymentDbModel> {
 
     // Booking-based queries
     Page<PaymentDbModel> findByBooking(BookingDbModel booking, Pageable pageable);

@@ -6,22 +6,20 @@ import org.example.bookvexebej2e.models.db.UserDbModel;
 import org.example.bookvexebej2e.models.requests.UserQueryRequest;
 import org.example.bookvexebej2e.repositories.RoleUserRepository;
 import org.example.bookvexebej2e.repositories.UserRepository;
-import org.example.bookvexebej2e.repositories.UserRepositoryCustom;
 import org.example.bookvexebej2e.services.admin.base.BaseAdminService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.Collections;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class UserAdminService extends BaseAdminService<UserDbModel, Integer> {
+public class UserAdminService extends BaseAdminService<UserDbModel, Integer, UserQueryRequest> {
 
     private final UserRepository userRepository;
-    private final UserRepositoryCustom userRepositoryCustom;
     private final RoleUserRepository roleUserRepository;
 
     @Override
@@ -29,19 +27,39 @@ public class UserAdminService extends BaseAdminService<UserDbModel, Integer> {
         return userRepository;
     }
 
-    public Page<UserDbModel> findUsersByCriteria(UserQueryRequest queryRequest) {
-        return userRepositoryCustom.findUsersByCriteria(queryRequest.getName(), queryRequest.getEmail(),
-            queryRequest.getActive(), queryRequest.toPageable());
+    @Override
+    protected Specification<UserDbModel> buildSpecification(UserQueryRequest request) {
+        return (root, query, cb) -> {
+            var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
+
+            // Filter by name (partial match, case insensitive)
+            if (StringUtils.hasText(request.getName())) {
+                predicates.add(cb.like(
+                    cb.lower(root.get("fullName")),
+                    "%" + request.getName().toLowerCase() + "%"
+                ));
+            }
+
+            // Filter by email (partial match, case insensitive)
+            if (StringUtils.hasText(request.getEmail())) {
+                predicates.add(cb.like(
+                    cb.lower(root.get("email")),
+                    "%" + request.getEmail().toLowerCase() + "%"
+                ));
+            }
+
+            // Filter by active status
+            if (request.getActive() != null) {
+                predicates.add(cb.equal(root.get("isActive"), request.getActive()));
+            }
+
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
     }
 
-    public List<UserDbModel> findUsersWithActiveRoles() {
-        return userRepositoryCustom.findUsersWithActiveRoles();
-    }
-
-    public Page<UserDbModel> findActiveUsersByName(String name, Pageable pageable) {
-        return userRepository.findByFullNameContainingIgnoreCaseAndIsActiveTrue(name, pageable);
-    }
-
+    /**
+     * Lấy danh sách roles của user
+     */
     public List<RoleUserDbModel> getUserRoles(Integer userId) {
         return userRepository.findById(userId)
             .map(roleUserRepository::findByUser)

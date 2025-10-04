@@ -5,8 +5,7 @@ import org.example.bookvexebej2e.models.db.TripDbModel;
 import org.example.bookvexebej2e.models.requests.TripQueryRequest;
 import org.example.bookvexebej2e.repositories.TripRepository;
 import org.example.bookvexebej2e.services.admin.base.BaseAdminService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +14,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class TripAdminService extends BaseAdminService<TripDbModel, Integer> {
+public class TripAdminService extends BaseAdminService<TripDbModel, Integer, TripQueryRequest> {
 
     private final TripRepository tripRepository;
 
@@ -24,39 +23,57 @@ public class TripAdminService extends BaseAdminService<TripDbModel, Integer> {
         return tripRepository;
     }
 
-    public Page<TripDbModel> findTripsByCriteria(TripQueryRequest queryRequest) {
-        Pageable pageable = queryRequest.toPageable();
+    @Override
+    protected Specification<TripDbModel> buildSpecification(TripQueryRequest request) {
+        return (root, query, cb) -> {
+            var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
 
-        if (queryRequest.getRouteId() != null) {
-            return tripRepository.findByRouteRouteId(queryRequest.getRouteId(), pageable);
-        }
+            // Filter by route ID
+            if (request.getRouteId() != null) {
+                predicates.add(cb.equal(root.get("route").get("routeId"), request.getRouteId()));
+            }
 
-        if (queryRequest.getBusId() != null) {
-            return tripRepository.findByBusCarId(queryRequest.getBusId(), pageable);
-        }
+            // Filter by bus/car ID
+            if (request.getBusId() != null) {
+                predicates.add(cb.equal(root.get("bus").get("carId"), request.getBusId()));
+            }
 
-        if (queryRequest.getDepartureAfter() != null && queryRequest.getDepartureBefore() != null) {
-            return tripRepository.findByDepartureTimeBetween(queryRequest.getDepartureAfter(), queryRequest.getDepartureBefore(), pageable);
-        }
+            // Filter by departure time range
+            if (request.getDepartureAfter() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("departureTime"), request.getDepartureAfter()));
+            }
 
-        if (queryRequest.getMinPrice() != null && queryRequest.getMaxPrice() != null) {
-            return tripRepository.findByPriceBetween(queryRequest.getMinPrice(), queryRequest.getMaxPrice(), pageable);
-        }
+            if (request.getDepartureBefore() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("departureTime"), request.getDepartureBefore()));
+            }
 
-        if (queryRequest.getMinSeats() != null) {
-            return tripRepository.findByAvailableSeatsGreaterThanEqual(queryRequest.getMinSeats(), pageable);
-        }
+            // Filter by price range
+            if (request.getMinPrice() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("price"), request.getMinPrice()));
+            }
 
-        if (queryRequest.getDepartureAfter() != null && queryRequest.getMinSeats() != null) {
-            return tripRepository.findByDepartureTimeAfterAndAvailableSeatsGreaterThanEqual(
-                queryRequest.getDepartureAfter(), queryRequest.getMinSeats(), pageable);
-        }
+            if (request.getMaxPrice() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("price"), request.getMaxPrice()));
+            }
 
-        return tripRepository.findAll(pageable);
+            // Filter by minimum available seats
+            if (request.getMinSeats() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("availableSeats"), request.getMinSeats()));
+            }
+
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
     }
 
+    /**
+     * Tìm các chuyến đi trong tương lai có ghế trống
+     */
     public List<TripDbModel> findFutureTripsWithAvailableSeats(Integer minSeats) {
-        return tripRepository.findByDepartureTimeAfterAndAvailableSeatsGreaterThanEqual(
-            LocalDateTime.now(), minSeats, Pageable.unpaged()).getContent();
+        Specification<TripDbModel> spec = (root, query, cb) -> cb.and(
+            cb.greaterThan(root.get("departureTime"), LocalDateTime.now()),
+            cb.greaterThanOrEqualTo(root.get("availableSeats"), minSeats)
+        );
+
+        return tripRepository.findAll(spec);
     }
 }

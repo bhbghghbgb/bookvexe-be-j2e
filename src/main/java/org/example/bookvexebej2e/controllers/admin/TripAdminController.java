@@ -6,7 +6,6 @@ import org.example.bookvexebej2e.models.db.TripDbModel;
 import org.example.bookvexebej2e.models.requests.TripQueryRequest;
 import org.example.bookvexebej2e.services.admin.TripAdminService;
 import org.example.bookvexebej2e.services.admin.base.BaseAdminService;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin/trips")
 @Tag(name = "Trip Admin", description = "Trip management APIs for administrators")
-public class TripAdminController extends BaseAdminController<TripDbModel, Integer> {
+public class TripAdminController extends BaseAdminController<TripDbModel, Integer, TripQueryRequest> {
 
     private final TripAdminService tripService;
 
@@ -24,18 +23,16 @@ public class TripAdminController extends BaseAdminController<TripDbModel, Intege
     }
 
     @Override
-    protected BaseAdminService<TripDbModel, Integer> getService() {
+    protected BaseAdminService<TripDbModel, Integer, TripQueryRequest> getService() {
         return tripService;
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<Page<TripDbModel>> searchTrips(@ModelAttribute TripQueryRequest queryRequest) {
-        Page<TripDbModel> trips = tripService.findTripsByCriteria(queryRequest);
-        return ResponseEntity.ok(trips);
-    }
-
+    /**
+     * Lấy các chuyến đi trong tương lai có ghế trống
+     */
     @GetMapping("/future/available")
-    public ResponseEntity<List<TripDbModel>> getFutureTripsWithAvailableSeats(@RequestParam(defaultValue = "1") Integer minSeats) {
+    public ResponseEntity<List<TripDbModel>> getFutureTripsWithAvailableSeats(
+        @RequestParam(defaultValue = "1") Integer minSeats) {
         List<TripDbModel> trips = tripService.findFutureTripsWithAvailableSeats(minSeats);
         return ResponseEntity.ok(trips);
     }
