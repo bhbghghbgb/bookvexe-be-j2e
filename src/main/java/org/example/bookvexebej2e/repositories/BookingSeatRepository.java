@@ -1,12 +1,12 @@
 package org.example.bookvexebej2e.repositories;
 
+import java.util.List;
+
 import org.example.bookvexebej2e.models.db.BookingDbModel;
 import org.example.bookvexebej2e.models.db.BookingSeatDbModel;
 import org.example.bookvexebej2e.models.db.CarSeatDbModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 public interface BookingSeatRepository extends JpaRepository<BookingSeatDbModel, Integer> {
