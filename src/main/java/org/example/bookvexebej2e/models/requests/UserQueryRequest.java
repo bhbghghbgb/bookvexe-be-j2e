@@ -13,6 +13,9 @@ import org.example.bookvexebej2e.models.requests.base.BasePageableQueryRequest;
 public class UserQueryRequest extends BasePageableQueryRequest {
     private String name;
     private String email;
+    private String phoneNumber;
+    private String[] includeRoles;
+    private String[] excludeRoles;
     private Boolean active;
 }
 

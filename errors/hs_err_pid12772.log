@@ -1,0 +1,41 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  Internal Error (jvmciRuntime.cpp:1007), pid=12772, tid=11444
+#  fatal error: Fatal error in JVMCI shared library JavaVM[1] owned by JVMCI runtime 0
+#
+# JRE version: Java(TM) SE Runtime Environment Oracle GraalVM 24.0.2+11.1 (24.0.2+11) (build 24.0.2+11-jvmci-b01)
+# Java VM: Java HotSpot(TM) 64-Bit Server VM Oracle GraalVM 24.0.2+11.1 (24.0.2+11-jvmci-b01, mixed mode, sharing, tiered, jvmci, jvmci compiler, compressed oops, compressed class ptrs, g1 gc, windows-amd64)
+# Problematic frame:
+# V  [jvm.dll+0x57727d]
+#
+# No core dump will be written. Minidumps are not enabled by default on client versions of Windows
+#
+# If you would like to submit a bug report, please visit:
+#   https://bugreport.java.com/bugreport/crash.jsp
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: -XX:ThreadPriorityPolicy=1 -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCIProduct -XX:-UnlockExperimentalVMOptions -javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2025.2.1\lib\idea_rt.jar=56454 -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 org.example.bookvexebej2e.BookvexeBeJ2eApplication
+
+Host: Intel(R) Pentium(R) Silver N6000 @ 1.10GHz, 4 cores, 11G,  Windows 10 , 64 bit Build 19041 (10.0.19041.5915)
+Time: Thu Oct 16 18:58:14 2025 China Standard Time elapsed time: 0.355765 seconds (0d 0h 0m 0s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x00000208a0dc86d0):  JavaThread "JVMCI-native CompilerThread0" daemon [_thread_in_native, id=11444, stack(0x000000f427b00000,0x000000f427c00000) (1024K)]
+
+
+Current CompileTask:
+JVMCI-native:355  316       4       jdk.internal.util.ArraysSupport::hashCodeOfUnsigned (55 bytes)
+
+Stack: [0x000000f427b00000,0x000000f427c00000],  sp=0x000000f427bfdf20,  free space=1015k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [jvm.dll+0x57727d]  (no source info available)
+C  [jvmcicompiler.dll+0x11fa8b1]  (no source info available)
+C  [jvmcicompiler.dll+0x1252b0b]  (no source info available)
+C  [jvmcicompiler.dll+0x95e3f0]  (no source info available)
+C  [jvmcicompiler.dll+0x95cae6]  (no source info available)
+C  [KERNEL32.DLL+0x95c386]  (no source info available)
+C

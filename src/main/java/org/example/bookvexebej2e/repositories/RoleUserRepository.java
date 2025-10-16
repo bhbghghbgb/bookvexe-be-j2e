@@ -16,4 +16,8 @@ public interface RoleUserRepository extends SoftDeleteRepository<RoleUserDbModel
     List<RoleUserDbModel> findByRole(RoleDbModel role);
 
     Optional<RoleUserDbModel> findByUserAndRole(UserDbModel user, RoleDbModel role);
+
+    boolean existsByRoleId(Integer roleId);
+
+    void deleteByUser(UserDbModel user);
 }
