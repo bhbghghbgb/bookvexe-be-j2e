@@ -4,17 +4,21 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.mappers.UserMapper;
 import org.example.bookvexebej2e.models.db.RoleDbModel;
 import org.example.bookvexebej2e.models.db.RoleUserDbModel;
 import org.example.bookvexebej2e.models.db.UserDbModel;
 import org.example.bookvexebej2e.models.requests.UserQueryRequest;
 import org.example.bookvexebej2e.models.responses.UserCreateUpdateDto;
+import org.example.bookvexebej2e.models.responses.UserDto;
 import org.example.bookvexebej2e.repositories.RoleRepository;
 import org.example.bookvexebej2e.repositories.RoleUserRepository;
 import org.example.bookvexebej2e.repositories.UserRepository;
-import org.example.bookvexebej2e.services.admin.base.BaseAdminService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -22,22 +26,23 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class UserAdminService extends BaseAdminService<UserDbModel, Integer, UserQueryRequest> {
+public class UserAdminService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final RoleUserRepository roleUserRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
-    @Override
     protected JpaRepository<UserDbModel, Integer> getRepository() {
         return userRepository;
     }
 
-    @Override
     protected Specification<UserDbModel> buildSpecification(UserQueryRequest request) {
         return (root, query, cb) -> {
             var predicates = new ArrayList<Predicate>();
@@ -79,7 +84,37 @@ public class UserAdminService extends BaseAdminService<UserDbModel, Integer, Use
         };
     }
 
-    public UserDbModel create(UserCreateUpdateDto createDto) {
+    public List<UserDto> findAll() {
+        List<UserDbModel> dbModels = getRepository().findAll();
+        // Map the DbModels to Dtos
+        return dbModels.stream() // <-- Use .stream()
+            .map(userMapper::toDtoWithRoles)
+            .collect(Collectors.toList());
+    }
+
+    public Page<UserDto> findAll(UserQueryRequest queryRequest) {
+        Pageable pageable = queryRequest.toPageable();
+        Specification<UserDbModel> spec = buildSpecification(queryRequest);
+
+        Page<UserDbModel> dbModels;
+        if (getRepository() instanceof JpaSpecificationExecutor) {
+            @SuppressWarnings("unchecked")
+            JpaSpecificationExecutor<UserDbModel> specExecutor = (JpaSpecificationExecutor<UserDbModel>) getRepository();
+            dbModels = specExecutor.findAll(spec, pageable);
+        } else {
+            dbModels = getRepository().findAll(pageable);
+        }
+
+        // Map the Page of DbModels to a Page of Dtos
+        return dbModels.map(userMapper::toDtoWithRoles);
+    }
+
+    public Optional<UserDto> findById(Integer id) {
+        return userRepository.findById(id)
+            .map(userMapper::toDtoWithRoles); // Map to DTO before returning
+    }
+
+    public UserDto create(UserCreateUpdateDto createDto) {
         // Validate unique constraints
         if (userRepository.findByEmail(createDto.getEmail())
             .isPresent()) {
@@ -105,10 +140,10 @@ public class UserAdminService extends BaseAdminService<UserDbModel, Integer, Use
             assignRolesToUser(savedUser, createDto.getRoleIds());
         }
 
-        return savedUser;
+        return userMapper.toDtoWithRoles(savedUser);
     }
 
-    public UserDbModel update(Integer id, UserCreateUpdateDto updateDto) {
+    public UserDto update(Integer id, UserCreateUpdateDto updateDto) {
         UserDbModel user = userRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -146,7 +181,7 @@ public class UserAdminService extends BaseAdminService<UserDbModel, Integer, Use
             assignRolesToUser(user, updateDto.getRoleIds());
         }
 
-        return userRepository.save(user);
+        return userMapper.toDtoWithRoles(userRepository.save(user));
     }
 
     private void assignRolesToUser(UserDbModel user, List<Integer> roleIds) {
