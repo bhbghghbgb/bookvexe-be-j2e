@@ -6,10 +6,7 @@ import org.example.bookvexebej2e.models.requests.base.BasePageableQueryRequest;
 import org.example.bookvexebej2e.services.admin.base.BaseAdminService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -53,7 +50,7 @@ public abstract class BaseAdminController<T, ID, Q extends BasePageableQueryRequ
      * ... other filters specific to entity
      * }
      */
-    @GetMapping("/pagination")
+    @PostMapping("/pagination")
     @Operation(summary = "Search with pagination and filters")
     public ResponseEntity<Page<T>> pagination(@ModelAttribute Q queryRequest) {
         Page<T> result = getService().findAll(queryRequest);
