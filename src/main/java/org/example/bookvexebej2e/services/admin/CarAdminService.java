@@ -59,17 +59,12 @@ public class CarAdminService extends BaseAdminService<CarDbModel, Integer, CarQu
                 predicates.add(cb.lessThanOrEqualTo(root.get("seatCount"), request.getMaxSeatCount()));
             }
 
-            // Filter by active status
-            if (request.getActive() != null) {
-                predicates.add(cb.equal(root.get("isActive"), request.getActive()));
-            }
-
             return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
         };
     }
 
     /**
-     * Lấy danh sách ghế theo ID xe
+     * Get car seats by car ID
      */
     public List<CarSeatDbModel> getCarSeats(Integer carId) {
         return carSeatRepository.findByCarCarId(carId);

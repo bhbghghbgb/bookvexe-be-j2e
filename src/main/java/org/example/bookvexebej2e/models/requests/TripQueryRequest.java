@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
 public class TripQueryRequest extends BasePageableQueryRequest {
     private Integer routeId;
     private Integer busId;
+    private String startLocation;
+    private String endLocation;
     private LocalDateTime departureAfter;
     private LocalDateTime departureBefore;
     private BigDecimal minPrice;
