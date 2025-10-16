@@ -1,14 +1,15 @@
 package org.example.bookvexebej2e.controllers.admin.base;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
+
 import org.example.bookvexebej2e.models.requests.base.BasePageableQueryRequest;
 import org.example.bookvexebej2e.services.admin.base.BaseAdminService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * Base Admin Controller với generic pagination support
@@ -32,9 +33,9 @@ public abstract class BaseAdminController<T, ID, Q extends BasePageableQueryRequ
     @Operation(summary = "Get entity by ID")
     public ResponseEntity<T> findById(@PathVariable ID id) {
         return getService().findById(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound()
-                .build());
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound()
+                        .build());
     }
 
     /**
@@ -66,29 +67,29 @@ public abstract class BaseAdminController<T, ID, Q extends BasePageableQueryRequ
 
     // CO DTO RIENG CHO CREATE/UPDATE, KHONG GENERALIZE HET DUOC !!!
     //
-    //    /**
-    //     * Tạo mới entity
-    //     */
-    //    @PostMapping
-    //    @Operation(summary = "Create new entity")
-    //    public ResponseEntity<T> create(@RequestBody T entity) {
-    //        T saved = getService().save(entity);
-    //        return ResponseEntity.ok(saved);
-    //    }
+    // /**
+    // * Tạo mới entity
+    // */
+    // @PostMapping
+    // @Operation(summary = "Create new entity")
+    // public ResponseEntity<T> create(@RequestBody T entity) {
+    // T saved = getService().save(entity);
+    // return ResponseEntity.ok(saved);
+    // }
     //
-    //    /**
-    //     * Cập nhật entity
-    //     */
-    //    @PutMapping("/{id}")
-    //    @Operation(summary = "Update entity")
-    //    public ResponseEntity<T> update(@PathVariable ID id, @RequestBody T entity) {
-    //        if (!getService().existsById(id)) {
-    //            return ResponseEntity.notFound()
-    //                .build();
-    //        }
-    //        T updated = getService().save(entity);
-    //        return ResponseEntity.ok(updated);
-    //    }
+    // /**
+    // * Cập nhật entity
+    // */
+    // @PutMapping("/{id}")
+    // @Operation(summary = "Update entity")
+    // public ResponseEntity<T> update(@PathVariable ID id, @RequestBody T entity) {
+    // if (!getService().existsById(id)) {
+    // return ResponseEntity.notFound()
+    // .build();
+    // }
+    // T updated = getService().save(entity);
+    // return ResponseEntity.ok(updated);
+    // }
 
     /**
      * Xóa entity
@@ -98,10 +99,10 @@ public abstract class BaseAdminController<T, ID, Q extends BasePageableQueryRequ
     public ResponseEntity<Void> delete(@PathVariable ID id) {
         if (!getService().existsById(id)) {
             return ResponseEntity.notFound()
-                .build();
+                    .build();
         }
         getService().deleteById(id);
         return ResponseEntity.noContent()
-            .build();
+                .build();
     }
 }
