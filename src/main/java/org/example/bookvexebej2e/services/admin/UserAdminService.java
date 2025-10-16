@@ -3,6 +3,7 @@ package org.example.bookvexebej2e.services.admin;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.mappers.UserMapper;
 import org.example.bookvexebej2e.models.db.RoleDbModel;
@@ -87,7 +88,7 @@ public class UserAdminService {
     public List<UserDto> findAll() {
         List<UserDbModel> dbModels = getRepository().findAll();
         // Map the DbModels to Dtos
-        return dbModels.stream() // <-- Use .stream()
+        return dbModels.stream()
             .map(userMapper::toDtoWithRoles)
             .collect(Collectors.toList());
     }
@@ -98,8 +99,8 @@ public class UserAdminService {
 
         Page<UserDbModel> dbModels;
         if (getRepository() instanceof JpaSpecificationExecutor) {
-            @SuppressWarnings("unchecked")
-            JpaSpecificationExecutor<UserDbModel> specExecutor = (JpaSpecificationExecutor<UserDbModel>) getRepository();
+            @SuppressWarnings("unchecked") JpaSpecificationExecutor<UserDbModel> specExecutor =
+                (JpaSpecificationExecutor<UserDbModel>) getRepository();
             dbModels = specExecutor.findAll(spec, pageable);
         } else {
             dbModels = getRepository().findAll(pageable);
@@ -143,6 +144,7 @@ public class UserAdminService {
         return userMapper.toDtoWithRoles(savedUser);
     }
 
+    @Transactional
     public UserDto update(Integer id, UserCreateUpdateDto updateDto) {
         UserDbModel user = userRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("User not found"));

@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.example.bookvexebej2e.models.requests.UserQueryRequest;
+import org.example.bookvexebej2e.models.responses.RoleUserDto;
 import org.example.bookvexebej2e.models.responses.UserCreateUpdateDto;
 import org.example.bookvexebej2e.models.responses.UserDto;
 import org.example.bookvexebej2e.services.admin.UserAdminService;
@@ -62,10 +63,10 @@ public class UserAdminController {
         return ResponseEntity.ok(updatedUser);
     }
 
-//    @GetMapping("/{id}/roles")
-//    public ResponseEntity<List<RoleUserDto>> getUserRoles(@PathVariable Integer id) {
-//        UserDto user = userService.findById(id)
-//            .orElseThrow(() -> new RuntimeException("User not found"));
-//        return ResponseEntity.ok(user.getRoles());
-//    }
+    @GetMapping("/{id}/roles")
+    public ResponseEntity<List<RoleUserDto>> getUserRoles(@PathVariable Integer id) {
+        UserDto user = userService.findById(id)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(user.getRoles());
+    }
 }
