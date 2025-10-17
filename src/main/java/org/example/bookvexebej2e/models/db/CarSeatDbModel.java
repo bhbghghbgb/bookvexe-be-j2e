@@ -27,10 +27,10 @@ public class CarSeatDbModel extends BaseModel {
     @JoinColumn(name = "carId")
     private CarDbModel car;
 
-    @Column(length = 10)
+    @Column(length = 10, name = "Số ghế")
     private String seatNumber;
 
-    @Column(length = 50)
+    @Column(length = 50, name = "Vị trí ghế")
     private String seatPosition;
 
     @OneToMany(mappedBy = "seat")

@@ -26,11 +26,12 @@ public class InvoiceDbModel extends BaseModel {
     @JoinColumn(name = "paymentId")
     private PaymentDbModel payment;
 
-    @Column(length = 50, unique = true)
+    @Column(length = 50, unique = true, name = "Số hóa đơn")
     private String invoiceNumber;
 
-    @Column(length = 255)
+    @Column(length = 255, name = "File URL")
     private String fileUrl;
 
+    @Column(name = "Ngày phát hành")
     private LocalDateTime issuedAt;
 }

@@ -21,16 +21,14 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class PaymentMethodDbModel extends BaseModel {
-    @Column(length = 255, unique = true)
+    @Column(length = 255, unique = true, name = "Mã phương thức thanh toán")
     private String code;
 
-    @Column(length = 50, unique = true)
+    @Column(length = 50, unique = true, name = "Tên phương thức thanh toán")
     private String name;
 
-    @Column(length = 255)
+    @Column(length = 255, name = "Mô tả")
     private String description;
-
-    private Boolean isActive;
 
     @OneToMany(mappedBy = "method")
     private List<PaymentDbModel> payments;

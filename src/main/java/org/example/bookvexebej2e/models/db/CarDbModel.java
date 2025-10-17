@@ -27,7 +27,7 @@ public class CarDbModel extends BaseModel {
     @JoinColumn(name = "carTypeId")
     private CarTypeDbModel carType;
 
-    @Column(length = 20, unique = true)
+    @Column(length = 20, unique = true, name = "Biển số xe")
     private String licensePlate;
 
     @OneToMany(mappedBy = "car")

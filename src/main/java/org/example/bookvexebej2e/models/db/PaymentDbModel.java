@@ -32,15 +32,16 @@ public class PaymentDbModel extends BaseModel {
     @JoinColumn(name = "methodId")
     private PaymentMethodDbModel method;
 
-    @Column(precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2, name = "Số tiền")
     private BigDecimal amount;
 
-    @Column(length = 20)
+    @Column(length = 20, name = "Trạng thái")
     private String status;
 
-    @Column(length = 100)
+    @Column(length = 100, name = "Mã giao dịch")
     private String transactionCode;
 
+    @Column(name = "Ngày thanh toán")
     private LocalDateTime paidAt;
 
     @OneToOne(mappedBy = "payment")

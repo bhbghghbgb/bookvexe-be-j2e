@@ -27,12 +27,13 @@ public class TripStopDbModel extends BaseModel {
     @JoinColumn(name = "tripId")
     private TripDbModel trip;
 
-    @Column(length = 10)
+    @Column(length = 10, name = "Loại điểm dừng")
     private String stopType;
 
-    @Column(length = 255)
+    @Column(length = 255, name = "Địa điểm")
     private String location;
 
+    @Column(name = "Chỉ số thứ tự")
     private Integer orderIndex;
 
     @OneToMany(mappedBy = "pickupStop")

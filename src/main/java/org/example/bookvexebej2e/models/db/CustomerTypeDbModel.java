@@ -21,13 +21,13 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class CustomerTypeDbModel extends BaseModel {
-    @Column(length = 255)
+    @Column(length = 255, name = "Mã loại khách hàng")
     private String code;
 
-    @Column(length = 255)
+    @Column(length = 255, name = "Tên loại khách hàng")
     private String name;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", name = "Mô tả")
     private String description;
 
     @OneToMany(mappedBy = "customerType")

@@ -30,8 +30,9 @@ public class TripCarDbModel extends BaseModel {
     @JoinColumn(name = "carId")
     private CarDbModel car;
 
-    @Column(precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2, name = "Giá")
     private BigDecimal price;
 
+    @Column(name = "Ghế còn trống")
     private Integer availableSeats;
 }
