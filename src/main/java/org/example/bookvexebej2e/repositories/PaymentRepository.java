@@ -14,7 +14,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface PaymentRepository extends JpaRepository<PaymentDbModel, Integer>, JpaSpecificationExecutor<PaymentDbModel> {
+public interface PaymentRepository extends JpaRepository<PaymentDbModel, Integer>,
+    JpaSpecificationExecutor<PaymentDbModel> {
 
     // Booking-based queries
     Page<PaymentDbModel> findByBooking(BookingDbModel booking, Pageable pageable);

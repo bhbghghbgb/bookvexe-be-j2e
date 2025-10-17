@@ -33,20 +33,20 @@ public class CarAdminService extends BaseAdminService<CarDbModel, Integer, CarQu
 
             // Filter by license plate (partial match, case insensitive)
             if (StringUtils.hasText(request.getLicensePlate())) {
-                predicates.add(cb.like(
-                    cb.lower(root.get("licensePlate")),
-                    "%" + request.getLicensePlate().toLowerCase() + "%"
-                ));
+                predicates.add(cb.like(cb.lower(root.get("licensePlate")), "%" + request.getLicensePlate()
+                    .toLowerCase() + "%"));
             }
 
             // Filter by owner ID
             if (request.getOwnerId() != null) {
-                predicates.add(cb.equal(root.get("owner").get("userId"), request.getOwnerId()));
+                predicates.add(cb.equal(root.get("owner")
+                    .get("userId"), request.getOwnerId()));
             }
 
             // Filter by car type ID
             if (request.getCarTypeId() != null) {
-                predicates.add(cb.equal(root.get("carType").get("carTypeId"), request.getCarTypeId()));
+                predicates.add(cb.equal(root.get("carType")
+                    .get("carTypeId"), request.getCarTypeId()));
             }
 
             // Filter by minimum seat count

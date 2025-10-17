@@ -11,7 +11,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface UserRepository extends SoftDeleteRepository<UserDbModel, Integer>, JpaSpecificationExecutor<UserDbModel> {
+public interface UserRepository extends SoftDeleteRepository<UserDbModel, Integer>,
+    JpaSpecificationExecutor<UserDbModel> {
 
     // Basic unique field queries
     Optional<UserDbModel> findByEmail(String email);

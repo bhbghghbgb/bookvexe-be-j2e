@@ -8,12 +8,20 @@ import java.util.UUID;
 
 public interface TripService {
     List<TripResponse> findAll();
+
     Page<TripResponse> findAll(TripQuery query);
+
     TripResponse findById(UUID id);
+
     TripResponse create(TripCreate createDto);
+
     TripResponse update(UUID id, TripUpdate updateDto);
+
     void delete(UUID id);
+
     void activate(UUID id);
+
     void deactivate(UUID id);
+
     List<TripSelectResponse> findAllForSelect();
 }

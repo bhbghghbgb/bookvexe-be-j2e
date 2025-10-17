@@ -1,15 +1,14 @@
 package org.example.bookvexebej2e.controllers.admin.base;
 
-import java.util.List;
-
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.example.bookvexebej2e.models.requests.base.BasePageableQueryRequest;
 import org.example.bookvexebej2e.services.admin.base.BaseAdminService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 
 /**
  * Base Admin Controller với generic pagination support
@@ -33,9 +32,9 @@ public abstract class BaseAdminController<T, ID, Q extends BasePageableQueryRequ
     @Operation(summary = "Get entity by ID")
     public ResponseEntity<T> findById(@PathVariable ID id) {
         return getService().findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound()
-                        .build());
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound()
+                .build());
     }
 
     /**
@@ -99,10 +98,10 @@ public abstract class BaseAdminController<T, ID, Q extends BasePageableQueryRequ
     public ResponseEntity<Void> delete(@PathVariable ID id) {
         if (!getService().existsById(id)) {
             return ResponseEntity.notFound()
-                    .build();
+                .build();
         }
         getService().deleteById(id);
         return ResponseEntity.noContent()
-                .build();
+            .build();
     }
 }

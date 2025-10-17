@@ -28,15 +28,13 @@ public class CarSeatAdminService extends BaseAdminService<CarSeatDbModel, Intege
 
             // Filter by car ID
             if (request.getCarId() != null) {
-                predicates.add(cb.equal(root.get("car").get("carId"), request.getCarId()));
+                predicates.add(cb.equal(root.get("car")
+                    .get("carId"), request.getCarId()));
             }
 
             // Filter by seat number (partial match)
             if (StringUtils.hasText(request.getSeatNumber())) {
-                predicates.add(cb.like(
-                    root.get("seatNumber"),
-                    "%" + request.getSeatNumber() + "%"
-                ));
+                predicates.add(cb.like(root.get("seatNumber"), "%" + request.getSeatNumber() + "%"));
             }
 
             // Filter by active status

@@ -49,7 +49,9 @@ If you manually switch to a different parent and actually want the inheritance, 
 
 # On-Demand Keycloak and MySQL Setup (No Docker, No Service)
 
-This guide explains how to download, configure, and run Keycloak and MySQL on-demand without using Docker or running them as system services. Both applications will store data locally in their respective folders and can be started/stopped from the command line.
+This guide explains how to download, configure, and run Keycloak and MySQL on-demand without using Docker or running
+them as system services. Both applications will store data locally in their respective folders and can be
+started/stopped from the command line.
 
 ## Downloading Tools
 
@@ -93,5 +95,6 @@ Spring Boot's migration (e.g., Flyway or Liquibase) will run as usual when the a
 ## Notes
 
 - Both Keycloak and MySQL run as foreground processes. To stop them, simply close their command prompt windows.
-- Ensure your export data for Keycloak is placed in the `export` folder inside the Keycloak directory before the first run.
+- Ensure your export data for Keycloak is placed in the `export` folder inside the Keycloak directory before the first
+  run.
 - Customize and secure MySQL credentials appropriately for your environment.

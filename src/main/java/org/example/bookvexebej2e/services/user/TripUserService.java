@@ -27,22 +27,22 @@ public class TripUserService {
             var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
 
             if (request.getRouteId() != null) {
-                predicates.add(cb.equal(root.get("route").get("routeId"), request.getRouteId()));
+                predicates.add(cb.equal(root.get("route")
+                    .get("routeId"), request.getRouteId()));
             }
             if (request.getBusId() != null) {
-                predicates.add(cb.equal(root.get("bus").get("carId"), request.getBusId()));
+                predicates.add(cb.equal(root.get("bus")
+                    .get("carId"), request.getBusId()));
             }
             if (StringUtils.hasText(request.getStartLocation())) {
-                predicates.add(cb.like(
-                    cb.lower(root.get("route").get("startLocation")),
-                    "%" + request.getStartLocation().toLowerCase() + "%"
-                ));
+                predicates.add(cb.like(cb.lower(root.get("route")
+                    .get("startLocation")), "%" + request.getStartLocation()
+                    .toLowerCase() + "%"));
             }
             if (StringUtils.hasText(request.getEndLocation())) {
-                predicates.add(cb.like(
-                    cb.lower(root.get("route").get("endLocation")),
-                    "%" + request.getEndLocation().toLowerCase() + "%"
-                ));
+                predicates.add(cb.like(cb.lower(root.get("route")
+                    .get("endLocation")), "%" + request.getEndLocation()
+                    .toLowerCase() + "%"));
             }
             if (request.getDepartureAfter() != null) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("departureTime"), request.getDepartureAfter()));

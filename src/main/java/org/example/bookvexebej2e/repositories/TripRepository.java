@@ -14,8 +14,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Repository
-public interface TripRepository extends JpaRepository<TripDbModel, Integer>,
-    JpaSpecificationExecutor<TripDbModel>,
+public interface TripRepository extends JpaRepository<TripDbModel, Integer>, JpaSpecificationExecutor<TripDbModel>,
     QuerydslPredicateExecutor<TripDbModel> {
 
     // Route-based queries

@@ -46,7 +46,8 @@ public class UserAdminController {
     public ResponseEntity<UserDto> findById(@PathVariable Integer id) {
         return userService.findById(id)
             .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .orElse(ResponseEntity.notFound()
+                .build());
     }
 
     @PostMapping
@@ -57,8 +58,7 @@ public class UserAdminController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDto> update(@PathVariable Integer id,
-        @Valid @RequestBody UserCreateUpdateDto updateDto) {
+    public ResponseEntity<UserDto> update(@PathVariable Integer id, @Valid @RequestBody UserCreateUpdateDto updateDto) {
         UserDto updatedUser = userService.update(id, updateDto);
         return ResponseEntity.ok(updatedUser);
     }

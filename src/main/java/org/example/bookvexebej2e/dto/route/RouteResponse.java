@@ -1,6 +1,7 @@
 package org.example.bookvexebej2e.dto.route;
 
 import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;

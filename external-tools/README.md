@@ -1,10 +1,14 @@
 # On-Demand Keycloak and MySQL Setup (No Docker, No Service)
 
-This guide explains how to download, configure, and run Keycloak and MySQL on-demand without using Docker or running them as system services. Both applications will store data locally in their respective folders under the project folder and can be started/stopped from the command line.
+This guide explains how to download, configure, and run Keycloak and MySQL on-demand without using Docker or running
+them as system services. Both applications will store data locally in their respective folders under the project folder
+and can be started/stopped from the command line.
 
 ## Folder for External Tools
 
-All third-party tools like Keycloak and MySQL should be located inside the `external-tools` folder at the root of your project. This folder is kept in Git with a README file but the actual binaries are **not committed** and must be downloaded manually.
+All third-party tools like Keycloak and MySQL should be located inside the `external-tools` folder at the root of your
+project. This folder is kept in Git with a README file but the actual binaries are **not committed** and must be
+downloaded manually.
 
 ## Downloading Tools
 
@@ -41,4 +45,5 @@ Use connection parameters:
 
 ---
 
-Place your `start-keycloak.bat` and `start-mysql.bat` scripts in your project root alongside the `external-tools` folder for relative path convenience.
+Place your `start-keycloak.bat` and `start-mysql.bat` scripts in your project root alongside the `external-tools` folder
+for relative path convenience.

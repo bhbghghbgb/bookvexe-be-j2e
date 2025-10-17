@@ -1,25 +1,14 @@
 package org.example.bookvexebej2e.services.admin;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.example.bookvexebej2e.models.db.BookingDbModel;
-import org.example.bookvexebej2e.models.db.BookingSeatDbModel;
-import org.example.bookvexebej2e.models.db.CarSeatDbModel;
-import org.example.bookvexebej2e.models.db.TripDbModel;
-import org.example.bookvexebej2e.models.db.UserDbModel;
+import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.models.db.*;
 import org.example.bookvexebej2e.models.requests.BookingCreateRequest;
 import org.example.bookvexebej2e.models.requests.BookingQueryRequest;
 import org.example.bookvexebej2e.models.requests.BookingSeatCreateRequest;
 import org.example.bookvexebej2e.models.requests.BookingUpdateRequest;
 import org.example.bookvexebej2e.models.responses.BookingResponse;
 import org.example.bookvexebej2e.models.responses.BookingSeatResponse;
-import org.example.bookvexebej2e.repositories.BookingRepository;
-import org.example.bookvexebej2e.repositories.BookingSeatRepository;
-import org.example.bookvexebej2e.repositories.CarSeatRepository;
-import org.example.bookvexebej2e.repositories.TripRepository;
-import org.example.bookvexebej2e.repositories.UserRepository;
+import org.example.bookvexebej2e.repositories.*;
 import org.example.bookvexebej2e.services.admin.base.BaseAdminService;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -27,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import lombok.RequiredArgsConstructor;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -51,12 +42,14 @@ public class BookingAdminService extends BaseAdminService<BookingDbModel, Intege
 
             // Filter by user ID
             if (request.getUserId() != null) {
-                predicates.add(cb.equal(root.get("user").get("userId"), request.getUserId()));
+                predicates.add(cb.equal(root.get("user")
+                    .get("userId"), request.getUserId()));
             }
 
             // Filter by trip ID
             if (request.getTripId() != null) {
-                predicates.add(cb.equal(root.get("trip").get("tripId"), request.getTripId()));
+                predicates.add(cb.equal(root.get("trip")
+                    .get("tripId"), request.getTripId()));
             }
 
             // Filter by single status
@@ -66,7 +59,8 @@ public class BookingAdminService extends BaseAdminService<BookingDbModel, Intege
 
             // Filter by multiple statuses
             if (!CollectionUtils.isEmpty(request.getStatuses())) {
-                predicates.add(root.get("bookingStatus").in(request.getStatuses()));
+                predicates.add(root.get("bookingStatus")
+                    .in(request.getStatuses()));
             }
 
             // Filter by created date range
@@ -96,8 +90,8 @@ public class BookingAdminService extends BaseAdminService<BookingDbModel, Intege
      */
     public List<BookingSeatDbModel> getBookingSeats(Integer bookingId) {
         return bookingRepository.findById(bookingId)
-                .map(bookingSeatRepository::findByBooking)
-                .orElse(Collections.emptyList());
+            .map(bookingSeatRepository::findByBooking)
+            .orElse(Collections.emptyList());
     }
 
     /**
@@ -107,11 +101,11 @@ public class BookingAdminService extends BaseAdminService<BookingDbModel, Intege
     public BookingResponse createBooking(BookingCreateRequest request) {
         // Validate user exists
         UserDbModel user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + request.getUserId()));
+            .orElseThrow(() -> new RuntimeException("User not found with id: " + request.getUserId()));
 
         // Validate trip exists
         TripDbModel trip = tripRepository.findById(request.getTripId())
-                .orElseThrow(() -> new RuntimeException("Trip not found with id: " + request.getTripId()));
+            .orElseThrow(() -> new RuntimeException("Trip not found with id: " + request.getTripId()));
 
         // Create booking entity
         BookingDbModel booking = new BookingDbModel();
@@ -127,7 +121,7 @@ public class BookingAdminService extends BaseAdminService<BookingDbModel, Intege
         if (!CollectionUtils.isEmpty(request.getBookingSeats())) {
             for (var seatRequest : request.getBookingSeats()) {
                 CarSeatDbModel seat = carSeatRepository.findById(seatRequest.getSeatId())
-                        .orElseThrow(() -> new RuntimeException("Seat not found with id: " + seatRequest.getSeatId()));
+                    .orElseThrow(() -> new RuntimeException("Seat not found with id: " + seatRequest.getSeatId()));
 
                 BookingSeatDbModel bookingSeat = new BookingSeatDbModel();
                 bookingSeat.setBooking(booking);
@@ -148,18 +142,18 @@ public class BookingAdminService extends BaseAdminService<BookingDbModel, Intege
     @Transactional
     public BookingResponse updateBooking(Integer bookingId, BookingUpdateRequest request) {
         BookingDbModel booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
+            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
 
         // Update fields if provided
         if (request.getUserId() != null) {
             UserDbModel user = userRepository.findById(request.getUserId())
-                    .orElseThrow(() -> new RuntimeException("User not found with id: " + request.getUserId()));
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + request.getUserId()));
             booking.setUser(user);
         }
 
         if (request.getTripId() != null) {
             TripDbModel trip = tripRepository.findById(request.getTripId())
-                    .orElseThrow(() -> new RuntimeException("Trip not found with id: " + request.getTripId()));
+                .orElseThrow(() -> new RuntimeException("Trip not found with id: " + request.getTripId()));
             booking.setTrip(trip);
         }
 
@@ -181,7 +175,7 @@ public class BookingAdminService extends BaseAdminService<BookingDbModel, Intege
     @Transactional
     public BookingResponse updateBookingStatus(Integer bookingId, String status) {
         BookingDbModel booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
+            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
 
         booking.setBookingStatus(status);
         booking = bookingRepository.save(booking);
@@ -194,17 +188,27 @@ public class BookingAdminService extends BaseAdminService<BookingDbModel, Intege
     private BookingResponse convertToBookingResponse(BookingDbModel booking) {
         BookingResponse response = new BookingResponse();
         response.setBookingId(booking.getBookingId());
-        response.setUserId(booking.getUser().getUserId());
-        response.setUserFullName(booking.getUser().getFullName());
-        response.setUserEmail(booking.getUser().getEmail());
-        response.setTripId(booking.getTrip().getTripId());
+        response.setUserId(booking.getUser()
+            .getUserId());
+        response.setUserFullName(booking.getUser()
+            .getFullName());
+        response.setUserEmail(booking.getUser()
+            .getEmail());
+        response.setTripId(booking.getTrip()
+            .getTripId());
 
-        if (booking.getTrip().getRoute() != null) {
-            response.setRouteStartLocation(booking.getTrip().getRoute().getStartLocation());
-            response.setRouteEndLocation(booking.getTrip().getRoute().getEndLocation());
+        if (booking.getTrip()
+            .getRoute() != null) {
+            response.setRouteStartLocation(booking.getTrip()
+                .getRoute()
+                .getStartLocation());
+            response.setRouteEndLocation(booking.getTrip()
+                .getRoute()
+                .getEndLocation());
         }
 
-        response.setDepartureTime(booking.getTrip().getDepartureTime());
+        response.setDepartureTime(booking.getTrip()
+            .getDepartureTime());
         response.setBookingStatus(booking.getBookingStatus());
         response.setTotalPrice(booking.getTotalPrice());
         response.setCreatedAt(booking.getCreatedAt());
@@ -213,8 +217,8 @@ public class BookingAdminService extends BaseAdminService<BookingDbModel, Intege
         // Get booking seats
         List<BookingSeatDbModel> bookingSeats = bookingSeatRepository.findByBooking(booking);
         List<BookingSeatResponse> seatResponses = bookingSeats.stream()
-                .map(this::convertToBookingSeatResponse)
-                .collect(Collectors.toList());
+            .map(this::convertToBookingSeatResponse)
+            .collect(Collectors.toList());
         response.setBookingSeats(seatResponses);
 
         return response;
@@ -226,10 +230,14 @@ public class BookingAdminService extends BaseAdminService<BookingDbModel, Intege
     private BookingSeatResponse convertToBookingSeatResponse(BookingSeatDbModel bookingSeat) {
         BookingSeatResponse response = new BookingSeatResponse();
         response.setBookingSeatId(bookingSeat.getBookingSeatId());
-        response.setBookingId(bookingSeat.getBooking().getBookingId());
-        response.setSeatId(bookingSeat.getSeat().getSeatId());
-        response.setSeatNumber(bookingSeat.getSeat().getSeatNumber());
-        response.setSeatPosition(bookingSeat.getSeat().getSeatPosition());
+        response.setBookingId(bookingSeat.getBooking()
+            .getBookingId());
+        response.setSeatId(bookingSeat.getSeat()
+            .getSeatId());
+        response.setSeatNumber(bookingSeat.getSeat()
+            .getSeatNumber());
+        response.setSeatPosition(bookingSeat.getSeat()
+            .getSeatPosition());
         response.setIsReserved(bookingSeat.getIsReserved());
         response.setPrice(bookingSeat.getPrice());
         return response;
@@ -241,17 +249,22 @@ public class BookingAdminService extends BaseAdminService<BookingDbModel, Intege
     @Transactional
     public BookingSeatResponse addSeatToBooking(Integer bookingId, BookingSeatCreateRequest request) {
         BookingDbModel booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
+            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
 
         CarSeatDbModel seat = carSeatRepository.findById(request.getSeatId())
-                .orElseThrow(() -> new RuntimeException("Seat not found with id: " + request.getSeatId()));
+            .orElseThrow(() -> new RuntimeException("Seat not found with id: " + request.getSeatId()));
 
         // Check if seat is already booked for this trip
-        boolean seatAlreadyBooked = bookingSeatRepository.findBySeat(seat).stream()
-                .anyMatch(bs -> bs.getBooking().getTrip().getTripId().equals(booking.getTrip().getTripId())
-                        && bs.getIsReserved()
-                        && !"cancelled".equals(bs.getBooking().getBookingStatus())
-                        && !bs.getBooking().getBookingId().equals(bookingId));
+        boolean seatAlreadyBooked = bookingSeatRepository.findBySeat(seat)
+            .stream()
+            .anyMatch(bs -> bs.getBooking()
+                .getTrip()
+                .getTripId()
+                .equals(booking.getTrip()
+                    .getTripId()) && bs.getIsReserved() && !"cancelled".equals(bs.getBooking()
+                .getBookingStatus()) && !bs.getBooking()
+                .getBookingId()
+                .equals(bookingId));
 
         if (seatAlreadyBooked) {
             throw new RuntimeException("Seat " + seat.getSeatNumber() + " is already booked for this trip");
@@ -272,7 +285,8 @@ public class BookingAdminService extends BaseAdminService<BookingDbModel, Intege
             tripRepository.save(trip);
 
             // Update booking total price
-            booking.setTotalPrice(booking.getTotalPrice().add(request.getPrice()));
+            booking.setTotalPrice(booking.getTotalPrice()
+                .add(request.getPrice()));
             bookingRepository.save(booking);
         }
 
@@ -285,12 +299,15 @@ public class BookingAdminService extends BaseAdminService<BookingDbModel, Intege
     @Transactional
     public void removeSeatFromBooking(Integer bookingId, Integer seatId) {
         BookingDbModel booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
+            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
 
-        BookingSeatDbModel bookingSeat = bookingSeatRepository.findByBooking(booking).stream()
-                .filter(bs -> bs.getSeat().getSeatId().equals(seatId))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Seat not found in this booking"));
+        BookingSeatDbModel bookingSeat = bookingSeatRepository.findByBooking(booking)
+            .stream()
+            .filter(bs -> bs.getSeat()
+                .getSeatId()
+                .equals(seatId))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Seat not found in this booking"));
 
         // Update trip available seats if seat was reserved
         if (bookingSeat.getIsReserved()) {
@@ -299,7 +316,8 @@ public class BookingAdminService extends BaseAdminService<BookingDbModel, Intege
             tripRepository.save(trip);
 
             // Update booking total price
-            booking.setTotalPrice(booking.getTotalPrice().subtract(bookingSeat.getPrice()));
+            booking.setTotalPrice(booking.getTotalPrice()
+                .subtract(bookingSeat.getPrice()));
             bookingRepository.save(booking);
         }
 
@@ -311,15 +329,17 @@ public class BookingAdminService extends BaseAdminService<BookingDbModel, Intege
      */
     @Transactional
     public BookingSeatResponse updateBookingSeat(Integer bookingId, Integer bookingSeatId,
-            BookingSeatCreateRequest request) {
+        BookingSeatCreateRequest request) {
         BookingDbModel booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
+            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
 
         BookingSeatDbModel bookingSeat = bookingSeatRepository.findById(bookingSeatId)
-                .orElseThrow(() -> new RuntimeException("Booking seat not found with id: " + bookingSeatId));
+            .orElseThrow(() -> new RuntimeException("Booking seat not found with id: " + bookingSeatId));
 
         // Verify booking seat belongs to the booking
-        if (!bookingSeat.getBooking().getBookingId().equals(bookingId)) {
+        if (!bookingSeat.getBooking()
+            .getBookingId()
+            .equals(bookingId)) {
             throw new RuntimeException("Booking seat does not belong to this booking");
         }
 
@@ -327,16 +347,22 @@ public class BookingAdminService extends BaseAdminService<BookingDbModel, Intege
         java.math.BigDecimal oldPrice = bookingSeat.getPrice();
 
         // Update seat if provided
-        if (request.getSeatId() != null && !request.getSeatId().equals(bookingSeat.getSeat().getSeatId())) {
+        if (request.getSeatId() != null && !request.getSeatId()
+            .equals(bookingSeat.getSeat()
+                .getSeatId())) {
             CarSeatDbModel newSeat = carSeatRepository.findById(request.getSeatId())
-                    .orElseThrow(() -> new RuntimeException("Seat not found with id: " + request.getSeatId()));
+                .orElseThrow(() -> new RuntimeException("Seat not found with id: " + request.getSeatId()));
 
             // Check if new seat is already booked for this trip
-            boolean seatAlreadyBooked = bookingSeatRepository.findBySeat(newSeat).stream()
-                    .anyMatch(bs -> bs.getBooking().getTrip().getTripId().equals(booking.getTrip().getTripId())
-                            && bs.getIsReserved()
-                            && !"cancelled".equals(bs.getBooking().getBookingStatus())
-                            && !bs.getBookingSeatId().equals(bookingSeatId));
+            boolean seatAlreadyBooked = bookingSeatRepository.findBySeat(newSeat)
+                .stream()
+                .anyMatch(bs -> bs.getBooking()
+                    .getTrip()
+                    .getTripId()
+                    .equals(booking.getTrip()
+                        .getTripId()) && bs.getIsReserved() && !"cancelled".equals(bs.getBooking()
+                    .getBookingStatus()) && !bs.getBookingSeatId()
+                    .equals(bookingSeatId));
 
             if (seatAlreadyBooked) {
                 throw new RuntimeException("Seat " + newSeat.getSeatNumber() + " is already booked for this trip");
@@ -359,19 +385,23 @@ public class BookingAdminService extends BaseAdminService<BookingDbModel, Intege
 
         // Update trip available seats and booking total price
         TripDbModel trip = booking.getTrip();
-        java.math.BigDecimal priceDifference = bookingSeat.getPrice().subtract(oldPrice);
+        java.math.BigDecimal priceDifference = bookingSeat.getPrice()
+            .subtract(oldPrice);
 
         if (wasReserved && !bookingSeat.getIsReserved()) {
             // Seat was unreserved
             trip.setAvailableSeats(trip.getAvailableSeats() + 1);
-            booking.setTotalPrice(booking.getTotalPrice().subtract(oldPrice));
+            booking.setTotalPrice(booking.getTotalPrice()
+                .subtract(oldPrice));
         } else if (!wasReserved && bookingSeat.getIsReserved()) {
             // Seat was reserved
             trip.setAvailableSeats(trip.getAvailableSeats() - 1);
-            booking.setTotalPrice(booking.getTotalPrice().add(bookingSeat.getPrice()));
+            booking.setTotalPrice(booking.getTotalPrice()
+                .add(bookingSeat.getPrice()));
         } else if (wasReserved && bookingSeat.getIsReserved()) {
             // Seat remained reserved, update price difference
-            booking.setTotalPrice(booking.getTotalPrice().add(priceDifference));
+            booking.setTotalPrice(booking.getTotalPrice()
+                .add(priceDifference));
         }
 
         tripRepository.save(trip);
