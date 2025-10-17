@@ -1,24 +1,35 @@
+
 package org.example.bookvexebej2e.models.db;
 
-import jakarta.persistence.*;
-import lombok.*;
+import java.util.List;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
-@Table(name = "notification_types")
+@Table(name = "notificationTypes")
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class NotificationTypeDbModel {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "type_id")
-    private Integer typeId;
+@ToString
+public class NotificationTypeDbModel extends BaseModel {
+    @Column(length = 255, unique = true)
+    private String code;
 
-    @Column(name = "type_name", unique = true, nullable = false, length = 50)
-    private String typeName;
+    @Column(length = 50, unique = true)
+    private String name;
 
-    @Column(name = "description", length = 255)
+    @Column(length = 255)
     private String description;
+
+    @OneToMany(mappedBy = "type")
+    private List<NotificationDbModel> notifications;
 }
