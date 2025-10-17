@@ -1,50 +1,50 @@
-package org.example.bookvexebej2e.models.db;
 
-import jakarta.persistence.*;
-import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+package org.example.bookvexebej2e.models.db;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "trips")
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
-public class TripDbModel {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "trip_id")
-    private Integer tripId;
-
+@ToString
+public class TripDbModel extends BaseModel {
     @ManyToOne
-    @JoinColumn(name = "route_id")
+    @JoinColumn(name = "routeId")
     private RouteDbModel route;
 
-    @ManyToOne
-    @JoinColumn(name = "bus_id")
-    private CarDbModel bus;
-
-    @Column(name = "departure_time", nullable = false)
     private LocalDateTime departureTime;
 
-    @Column(name = "price", nullable = false, precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2)
     private BigDecimal price;
 
-    @Column(name = "available_seats", nullable = false)
     private Integer availableSeats;
 
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    @OneToMany(mappedBy = "trip")
+    private List<TripStopDbModel> tripStops;
 
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @OneToMany(mappedBy = "trip")
+    private List<TripCarDbModel> tripCars;
+
+    @OneToMany(mappedBy = "trip")
+    private List<BookingDbModel> bookings;
+
+    @OneToMany(mappedBy = "trip")
+    private List<NotificationDbModel> notifications;
 }

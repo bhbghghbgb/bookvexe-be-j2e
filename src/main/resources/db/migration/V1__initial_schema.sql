@@ -1,301 +1,336 @@
-CREATE TABLE booking_seats
-(
-    booking_seat_id INT AUTO_INCREMENT NOT NULL,
-    booking_id      INT                NULL,
-    seat_id         INT                NULL,
-    is_reserved     BIT(1)             NULL,
-    price           DECIMAL(10, 2)     NOT NULL,
-    CONSTRAINT pk_booking_seats PRIMARY KEY (booking_seat_id)
+CREATE TABLE `role` (
+  `id` varchar(255) PRIMARY KEY,
+  `code` varchar(100) UNIQUE,
+  `name` varchar(100),
+  `description` text,
+  `isDeleted` bool,
+  `createdDate` datetime,
+  `createdBy` varchar(255),
+  `updatedDate` datetime,
+  `updatedBy` varchar(255)
 );
 
-CREATE TABLE bookings
-(
-    booking_id     INT AUTO_INCREMENT NOT NULL,
-    user_id        INT                NULL,
-    trip_id        INT                NULL,
-    booking_status VARCHAR(20)        NOT NULL,
-    total_price    DECIMAL(10, 2)     NOT NULL,
-    created_at     datetime           NULL,
-    updated_at     datetime           NULL,
-    CONSTRAINT pk_bookings PRIMARY KEY (booking_id)
+CREATE TABLE `rolePermission` (
+  `id` varchar(255) PRIMARY KEY,
+  `roleId` varchar(255),
+  `isCanRead` bool,
+  `isCanCreate` bool,
+  `isCanUpdate` bool,
+  `isCanDelete` bool,
+  `isCanActivate` bool,
+  `isCanDeactivate` bool,
+  `isCanImport` bool,
+  `isCanExport` bool,
+  `isDeleted` bool,
+  `createdDate` datetime,
+  `createdBy` varchar(255),
+  `updatedDate` datetime,
+  `updatedBy` varchar(255)
 );
 
-CREATE TABLE car_seats
-(
-    seat_id       INT AUTO_INCREMENT NOT NULL,
-    car_id        INT                NULL,
-    seat_number   VARCHAR(10)        NOT NULL,
-    seat_position VARCHAR(50)        NULL,
-    is_active     BIT(1)             NULL,
-    CONSTRAINT pk_car_seats PRIMARY KEY (seat_id)
+CREATE TABLE `users` (
+  `id` varchar(255) PRIMARY KEY,
+  `username` varchar(255),
+  `password` varchar(255),
+  `isGoogle` bool,
+  `googleAccount` varchar(255),
+  `roleId` varchar(255),
+  `employeeId` varchar(255),
+  `customerId` varchar(255),
+  `isDeleted` bool,
+  `createdDate` datetime,
+  `createdBy` varchar(255),
+  `updatedDate` datetime,
+  `updatedBy` varchar(255)
 );
 
-CREATE TABLE car_types
-(
-    car_type_id   INT AUTO_INCREMENT NOT NULL,
-    type_name     VARCHAR(50)        NOT NULL,
-    `description` VARCHAR(255)       NULL,
-    CONSTRAINT pk_car_types PRIMARY KEY (car_type_id)
+CREATE TABLE `employee` (
+  `id` varchar(255) PRIMARY KEY,
+  `code` varchar(255),
+  `name` varchar(255),
+  `email` varchar(100),
+  `phone` varchar(15),
+  `description` text,
+  `isDeleted` bool,
+  `createdDate` datetime,
+  `createdBy` varchar(255),
+  `updatedDate` datetime,
+  `updatedBy` varchar(255)
 );
 
-CREATE TABLE cars
-(
-    car_id        INT AUTO_INCREMENT NOT NULL,
-    owner_id      INT                NULL,
-    car_type_id   INT                NULL,
-    license_plate VARCHAR(20)        NOT NULL,
-    seat_count    INT                NOT NULL,
-    created_at    datetime           NULL,
-    updated_at    datetime           NULL,
-    CONSTRAINT pk_cars PRIMARY KEY (car_id)
+CREATE TABLE `customer` (
+  `id` varchar(255) PRIMARY KEY,
+  `code` varchar(255),
+  `name` varchar(255),
+  `email` varchar(100),
+  `phone` varchar(15),
+  `customerTypeId` varchar(255),
+  `description` text,
+  `isDeleted` bool,
+  `createdDate` datetime,
+  `createdBy` varchar(255),
+  `updatedDate` datetime,
+  `updatedBy` varchar(255)
 );
 
-CREATE TABLE invoices
-(
-    invoice_id     INT AUTO_INCREMENT NOT NULL,
-    payment_id     INT                NULL,
-    invoice_number VARCHAR(50)        NOT NULL,
-    file_url       VARCHAR(255)       NULL,
-    issued_at      datetime           NULL,
-    created_at     datetime           NULL,
-    CONSTRAINT pk_invoices PRIMARY KEY (invoice_id)
+CREATE TABLE `customerType` (
+  `id` varchar(255) PRIMARY KEY,
+  `code` varchar(255),
+  `name` varchar(255),
+  `description` text,
+  `isDeleted` bool,
+  `createdDate` datetime,
+  `createdBy` varchar(255),
+  `updatedDate` datetime,
+  `updatedBy` varchar(255)
 );
 
-CREATE TABLE notification_types
-(
-    type_id       INT AUTO_INCREMENT NOT NULL,
-    type_name     VARCHAR(50)        NOT NULL,
-    `description` VARCHAR(255)       NULL,
-    CONSTRAINT pk_notification_types PRIMARY KEY (type_id)
+CREATE TABLE `carTypes` (
+  `id` varchar(255) PRIMARY KEY,
+  `code` varchar(255),
+  `name` varchar(255),
+  `description` varchar(255),
+  `seatCount` int,
+  `isDeleted` bool,
+  `createdDate` datetime,
+  `createdBy` varchar(255),
+  `updatedDate` datetime,
+  `updatedBy` varchar(255)
 );
 
-CREATE TABLE notifications
-(
-    notification_id INT AUTO_INCREMENT NOT NULL,
-    user_id         INT                NULL,
-    booking_id      INT                NULL,
-    trip_id         INT                NULL,
-    type_id         INT                NULL,
-    channel         VARCHAR(20)        NOT NULL,
-    title           VARCHAR(100)       NOT NULL,
-    message         TEXT               NOT NULL,
-    is_sent         BIT(1)             NULL,
-    sent_at         datetime           NULL,
-    created_at      datetime           NULL,
-    CONSTRAINT pk_notifications PRIMARY KEY (notification_id)
+CREATE TABLE `cars` (
+  `id` varchar(255) PRIMARY KEY,
+  `carTypeId` varchar(255),
+  `licensePlate` varchar(20) UNIQUE,
+  `isDeleted` bool,
+  `createdDate` datetime,
+  `createdBy` varchar(255),
+  `updatedDate` datetime,
+  `updatedBy` varchar(255)
 );
 
-CREATE TABLE password_reset_tokens
-(
-    token_id   INT AUTO_INCREMENT NOT NULL,
-    user_id    INT                NULL,
-    token      VARCHAR(255)       NOT NULL,
-    expires_at datetime           NOT NULL,
-    created_at datetime           NULL,
-    CONSTRAINT pk_password_reset_tokens PRIMARY KEY (token_id)
+CREATE TABLE `carSeats` (
+  `id` varchar(255) PRIMARY KEY,
+  `carId` varchar(255),
+  `seatNumber` varchar(10),
+  `seatPosition` varchar(50),
+  `isDeleted` bool,
+  `createdDate` datetime,
+  `createdBy` varchar(255),
+  `updatedDate` datetime,
+  `updatedBy` varchar(255)
 );
 
-CREATE TABLE payment_methods
-(
-    method_id     INT AUTO_INCREMENT NOT NULL,
-    method_name   VARCHAR(50)        NOT NULL,
-    `description` VARCHAR(255)       NULL,
-    is_active     BIT(1)             NULL,
-    CONSTRAINT pk_payment_methods PRIMARY KEY (method_id)
+CREATE TABLE `carEmployees` (
+  `id` varchar(255) PRIMARY KEY,
+  `carId` varchar(255),
+  `employeeId` varchar(255),
+  `isDeleted` bool,
+  `createdDate` datetime,
+  `createdBy` varchar(255),
+  `updatedDate` datetime,
+  `updatedBy` varchar(255)
 );
 
-CREATE TABLE payments
-(
-    payment_id       INT AUTO_INCREMENT NOT NULL,
-    booking_id       INT                NULL,
-    method_id        INT                NULL,
-    amount           DECIMAL(10, 2)     NOT NULL,
-    status           VARCHAR(20)        NOT NULL,
-    transaction_code VARCHAR(100)       NULL,
-    paid_at          datetime           NULL,
-    created_at       datetime           NULL,
-    updated_at       datetime           NULL,
-    CONSTRAINT pk_payments PRIMARY KEY (payment_id)
+CREATE TABLE `routes` (
+  `id` varchar(255) PRIMARY KEY,
+  `startLocation` varchar(100),
+  `endLocation` varchar(100),
+  `distanceKm` decimal(6,2),
+  `estimatedDuration` int,
+  `isDeleted` bool,
+  `createdDate` datetime,
+  `createdBy` varchar(255),
+  `updatedDate` datetime,
+  `updatedBy` varchar(255)
 );
 
-CREATE TABLE `role`
-(
-    id         INT AUTO_INCREMENT NOT NULL,
-    code       VARCHAR(100)       NOT NULL,
-    name       VARCHAR(100)       NULL,
-    created_at datetime           NULL,
-    CONSTRAINT pk_role PRIMARY KEY (id)
+CREATE TABLE `trips` (
+  `id` varchar(255) PRIMARY KEY,
+  `routeId` varchar(255),
+  `departureTime` datetime,
+  `price` decimal(10,2),
+  `availableSeats` int,
+  `isDeleted` bool,
+  `createdDate` datetime,
+  `createdBy` varchar(255),
+  `updatedDate` datetime,
+  `updatedBy` varchar(255)
 );
 
-CREATE TABLE role_permission
-(
-    role_id        INT    NOT NULL,
-    can_read       BIT(1) NULL,
-    can_create     BIT(1) NULL,
-    can_update     BIT(1) NULL,
-    can_delete     BIT(1) NULL,
-    can_activate   BIT(1) NULL,
-    can_deactivate BIT(1) NULL,
-    can_import     BIT(1) NULL,
-    can_export     BIT(1) NULL,
-    CONSTRAINT pk_role_permission PRIMARY KEY (role_id)
+CREATE TABLE `tripStops` (
+  `id` varchar(255) PRIMARY KEY,
+  `tripId` varchar(255),
+  `stopType` varchar(10),
+  `location` varchar(255),
+  `orderIndex` int,
+  `isDeleted` bool,
+  `createdDate` datetime,
+  `createdBy` varchar(255),
+  `updatedDate` datetime,
+  `updatedBy` varchar(255)
 );
 
-CREATE TABLE role_user
-(
-    id        INT AUTO_INCREMENT NOT NULL,
-    user_id   INT                NULL,
-    role_id   INT                NULL,
-    is_active BIT(1)             NULL,
-    CONSTRAINT pk_role_user PRIMARY KEY (id)
+CREATE TABLE `tripCars` (
+  `id` varchar(255) PRIMARY KEY,
+  `tripId` varchar(255),
+  `carId` varchar(255),
+  `price` decimal(10,2),
+  `availableSeats` int,
+  `isDeleted` bool,
+  `createdDate` datetime,
+  `createdBy` varchar(255),
+  `updatedDate` datetime,
+  `updatedBy` varchar(255)
 );
 
-CREATE TABLE routes
-(
-    route_id           INT AUTO_INCREMENT NOT NULL,
-    start_location     VARCHAR(100)       NOT NULL,
-    end_location       VARCHAR(100)       NOT NULL,
-    distance_km        DECIMAL(6, 2)      NULL,
-    estimated_duration INT                NULL,
-    created_at         datetime           NULL,
-    updated_at         datetime           NULL,
-    CONSTRAINT pk_routes PRIMARY KEY (route_id)
+CREATE TABLE `bookings` (
+  `id` varchar(255) PRIMARY KEY,
+  `code` varchar(255),
+  `type` varchar(255),
+  `userId` varchar(255),
+  `tripId` varchar(255),
+  `pickupStopId` varchar(255),
+  `dropoffStopId` varchar(255),
+  `bookingStatus` varchar(20),
+  `totalPrice` decimal(10,2),
+  `isDeleted` bool,
+  `createdDate` datetime,
+  `createdBy` varchar(255),
+  `updatedDate` datetime,
+  `updatedBy` varchar(255)
 );
 
-CREATE TABLE trips
-(
-    trip_id         INT AUTO_INCREMENT NOT NULL,
-    route_id        INT                NULL,
-    bus_id          INT                NULL,
-    departure_time  datetime           NOT NULL,
-    price           DECIMAL(10, 2)     NOT NULL,
-    available_seats INT                NOT NULL,
-    created_at      datetime           NULL,
-    updated_at      datetime           NULL,
-    CONSTRAINT pk_trips PRIMARY KEY (trip_id)
+CREATE TABLE `bookingSeats` (
+  `id` varchar(255) PRIMARY KEY,
+  `bookingId` varchar(255),
+  `seatId` varchar(255),
+  `status` varchar(20),
+  `price` decimal(10,2),
+  `isDeleted` bool,
+  `createdDate` datetime,
+  `createdBy` varchar(255),
+  `updatedDate` datetime,
+  `updatedBy` varchar(255)
 );
 
-CREATE TABLE user_sessions
-(
-    session_id   INT AUTO_INCREMENT NOT NULL,
-    user_id      INT                NULL,
-    access_token VARCHAR(255)       NOT NULL,
-    expires_at   datetime           NOT NULL,
-    revoked      BIT(1)             NULL,
-    created_at   datetime           NULL,
-    CONSTRAINT pk_user_sessions PRIMARY KEY (session_id)
+CREATE TABLE `paymentMethods` (
+  `id` varchar(255) PRIMARY KEY,
+  `code` varchar(255) UNIQUE,
+  `name` varchar(50) UNIQUE,
+  `description` varchar(255),
+  `isActive` bool,
+  `isDeleted` bool,
+  `createdDate` datetime,
+  `createdBy` varchar(255),
+  `updatedDate` datetime,
+  `updatedBy` varchar(255)
 );
 
-CREATE TABLE users
-(
-    user_id       INT AUTO_INCREMENT NOT NULL,
-    user_uuid     BINARY(16)         NULL,
-    full_name     VARCHAR(100)       NOT NULL,
-    email         VARCHAR(100)       NOT NULL,
-    phone_number  VARCHAR(15)        NOT NULL,
-    password_hash VARCHAR(255)       NOT NULL,
-    role_id       INT                NULL,
-    is_active     BIT(1)             NULL,
-    created_at    datetime           NULL,
-    updated_at    datetime           NULL,
-    CONSTRAINT pk_users PRIMARY KEY (user_id)
+CREATE TABLE `payments` (
+  `id` varchar(255) PRIMARY KEY,
+  `bookingId` varchar(255),
+  `methodId` varchar(255),
+  `amount` decimal(10,2),
+  `status` varchar(20),
+  `transactionCode` varchar(100),
+  `paidAt` datetime,
+  `isDeleted` bool,
+  `createdDate` datetime,
+  `createdBy` varchar(255),
+  `updatedDate` datetime,
+  `updatedBy` varchar(255)
 );
 
-ALTER TABLE car_types
-    ADD CONSTRAINT uc_car_types_type_name UNIQUE (type_name);
+CREATE TABLE `invoices` (
+  `id` varchar(255) PRIMARY KEY,
+  `paymentId` varchar(255),
+  `invoiceNumber` varchar(50) UNIQUE,
+  `fileUrl` varchar(255),
+  `issuedAt` datetime,
+  `isDeleted` bool,
+  `createdDate` datetime,
+  `createdBy` varchar(255),
+  `updatedDate` datetime,
+  `updatedBy` varchar(255)
+);
 
-ALTER TABLE cars
-    ADD CONSTRAINT uc_cars_license_plate UNIQUE (license_plate);
+CREATE TABLE `notificationTypes` (
+  `id` varchar(255) PRIMARY KEY,
+  `code` varchar(255) UNIQUE,
+  `name` varchar(50) UNIQUE,
+  `description` varchar(255),
+  `isDeleted` bool,
+  `createdDate` datetime,
+  `createdBy` varchar(255),
+  `updatedDate` datetime,
+  `updatedBy` varchar(255)
+);
 
-ALTER TABLE invoices
-    ADD CONSTRAINT uc_invoices_invoice_number UNIQUE (invoice_number);
+CREATE TABLE `notifications` (
+  `id` varchar(255) PRIMARY KEY,
+  `userId` varchar(255),
+  `bookingId` varchar(255),
+  `tripId` varchar(255),
+  `typeId` varchar(255),
+  `channel` varchar(20),
+  `title` varchar(100),
+  `message` text,
+  `isSent` bool,
+  `sentAt` datetime,
+  `isDeleted` bool,
+  `createdDate` datetime,
+  `createdBy` varchar(255),
+  `updatedDate` datetime,
+  `updatedBy` varchar(255)
+);
 
-ALTER TABLE notification_types
-    ADD CONSTRAINT uc_notification_types_type_name UNIQUE (type_name);
+ALTER TABLE `users` ADD FOREIGN KEY (`roleId`) REFERENCES `role` (`id`);
 
-ALTER TABLE password_reset_tokens
-    ADD CONSTRAINT uc_password_reset_tokens_token UNIQUE (token);
+ALTER TABLE `users` ADD FOREIGN KEY (`employeeId`) REFERENCES `employee` (`id`);
 
-ALTER TABLE payment_methods
-    ADD CONSTRAINT uc_payment_methods_method_name UNIQUE (method_name);
+ALTER TABLE `users` ADD FOREIGN KEY (`customerId`) REFERENCES `customer` (`id`);
 
-ALTER TABLE `role`
-    ADD CONSTRAINT uc_role_code UNIQUE (code);
+ALTER TABLE `carEmployees` ADD FOREIGN KEY (`employeeId`) REFERENCES `employee` (`id`);
 
-ALTER TABLE user_sessions
-    ADD CONSTRAINT uc_user_sessions_access_token UNIQUE (access_token);
+ALTER TABLE `carEmployees` ADD FOREIGN KEY (`carId`) REFERENCES `cars` (`id`);
 
-ALTER TABLE users
-    ADD CONSTRAINT uc_users_email UNIQUE (email);
+ALTER TABLE `customer` ADD FOREIGN KEY (`customerTypeId`) REFERENCES `customerType` (`id`);
 
-ALTER TABLE users
-    ADD CONSTRAINT uc_users_phone_number UNIQUE (phone_number);
+ALTER TABLE `cars` ADD FOREIGN KEY (`carTypeId`) REFERENCES `carTypes` (`id`);
 
-ALTER TABLE users
-    ADD CONSTRAINT uc_users_user_uuid UNIQUE (user_uuid);
+ALTER TABLE `carSeats` ADD FOREIGN KEY (`carId`) REFERENCES `cars` (`id`);
 
-ALTER TABLE bookings
-    ADD CONSTRAINT FK_BOOKINGS_ON_TRIP FOREIGN KEY (trip_id) REFERENCES trips (trip_id);
+ALTER TABLE `trips` ADD FOREIGN KEY (`routeId`) REFERENCES `routes` (`id`);
 
-ALTER TABLE bookings
-    ADD CONSTRAINT FK_BOOKINGS_ON_USER FOREIGN KEY (user_id) REFERENCES users (user_id);
+ALTER TABLE `tripCars` ADD FOREIGN KEY (`tripId`) REFERENCES `trips` (`id`);
 
-ALTER TABLE booking_seats
-    ADD CONSTRAINT FK_BOOKING_SEATS_ON_BOOKING FOREIGN KEY (booking_id) REFERENCES bookings (booking_id);
+ALTER TABLE `tripCars` ADD FOREIGN KEY (`carId`) REFERENCES `cars` (`id`);
 
-ALTER TABLE booking_seats
-    ADD CONSTRAINT FK_BOOKING_SEATS_ON_SEAT FOREIGN KEY (seat_id) REFERENCES car_seats (seat_id);
+ALTER TABLE `tripStops` ADD FOREIGN KEY (`tripId`) REFERENCES `trips` (`id`);
 
-ALTER TABLE cars
-    ADD CONSTRAINT FK_CARS_ON_CAR_TYPE FOREIGN KEY (car_type_id) REFERENCES car_types (car_type_id);
+ALTER TABLE `bookings` ADD FOREIGN KEY (`userId`) REFERENCES `users` (`id`);
 
-ALTER TABLE cars
-    ADD CONSTRAINT FK_CARS_ON_OWNER FOREIGN KEY (owner_id) REFERENCES users (user_id);
+ALTER TABLE `bookings` ADD FOREIGN KEY (`tripId`) REFERENCES `trips` (`id`);
 
-ALTER TABLE car_seats
-    ADD CONSTRAINT FK_CAR_SEATS_ON_CAR FOREIGN KEY (car_id) REFERENCES cars (car_id);
+ALTER TABLE `bookings` ADD FOREIGN KEY (`pickupStopId`) REFERENCES `tripStops` (`id`);
 
-ALTER TABLE invoices
-    ADD CONSTRAINT FK_INVOICES_ON_PAYMENT FOREIGN KEY (payment_id) REFERENCES payments (payment_id);
+ALTER TABLE `bookings` ADD FOREIGN KEY (`dropoffStopId`) REFERENCES `tripStops` (`id`);
 
-ALTER TABLE notifications
-    ADD CONSTRAINT FK_NOTIFICATIONS_ON_BOOKING FOREIGN KEY (booking_id) REFERENCES bookings (booking_id);
+ALTER TABLE `bookingSeats` ADD FOREIGN KEY (`bookingId`) REFERENCES `bookings` (`id`);
 
-ALTER TABLE notifications
-    ADD CONSTRAINT FK_NOTIFICATIONS_ON_TRIP FOREIGN KEY (trip_id) REFERENCES trips (trip_id);
+ALTER TABLE `bookingSeats` ADD FOREIGN KEY (`seatId`) REFERENCES `carSeats` (`id`);
 
-ALTER TABLE notifications
-    ADD CONSTRAINT FK_NOTIFICATIONS_ON_TYPE FOREIGN KEY (type_id) REFERENCES notification_types (type_id);
+ALTER TABLE `payments` ADD FOREIGN KEY (`bookingId`) REFERENCES `bookings` (`id`);
 
-ALTER TABLE notifications
-    ADD CONSTRAINT FK_NOTIFICATIONS_ON_USER FOREIGN KEY (user_id) REFERENCES users (user_id);
+ALTER TABLE `payments` ADD FOREIGN KEY (`methodId`) REFERENCES `paymentMethods` (`id`);
 
-ALTER TABLE password_reset_tokens
-    ADD CONSTRAINT FK_PASSWORD_RESET_TOKENS_ON_USER FOREIGN KEY (user_id) REFERENCES users (user_id);
+ALTER TABLE `invoices` ADD FOREIGN KEY (`paymentId`) REFERENCES `payments` (`id`);
 
-ALTER TABLE payments
-    ADD CONSTRAINT FK_PAYMENTS_ON_BOOKING FOREIGN KEY (booking_id) REFERENCES bookings (booking_id);
+ALTER TABLE `notifications` ADD FOREIGN KEY (`userId`) REFERENCES `users` (`id`);
 
-ALTER TABLE payments
-    ADD CONSTRAINT FK_PAYMENTS_ON_METHOD FOREIGN KEY (method_id) REFERENCES payment_methods (method_id);
+ALTER TABLE `notifications` ADD FOREIGN KEY (`bookingId`) REFERENCES `bookings` (`id`);
 
-ALTER TABLE role_permission
-    ADD CONSTRAINT FK_ROLE_PERMISSION_ON_ROLE FOREIGN KEY (role_id) REFERENCES `role` (id);
+ALTER TABLE `notifications` ADD FOREIGN KEY (`tripId`) REFERENCES `trips` (`id`);
 
-ALTER TABLE role_user
-    ADD CONSTRAINT FK_ROLE_USER_ON_ROLE FOREIGN KEY (role_id) REFERENCES `role` (id);
-
-ALTER TABLE role_user
-    ADD CONSTRAINT FK_ROLE_USER_ON_USER FOREIGN KEY (user_id) REFERENCES users (user_id);
-
-ALTER TABLE trips
-    ADD CONSTRAINT FK_TRIPS_ON_BUS FOREIGN KEY (bus_id) REFERENCES cars (car_id);
-
-ALTER TABLE trips
-    ADD CONSTRAINT FK_TRIPS_ON_ROUTE FOREIGN KEY (route_id) REFERENCES routes (route_id);
-
-ALTER TABLE users
-    ADD CONSTRAINT FK_USERS_ON_ROLE FOREIGN KEY (role_id) REFERENCES `role` (id);
-
-ALTER TABLE user_sessions
-    ADD CONSTRAINT FK_USER_SESSIONS_ON_USER FOREIGN KEY (user_id) REFERENCES users (user_id);
+ALTER TABLE `notifications` ADD FOREIGN KEY (`typeId`) REFERENCES `notificationTypes` (`id`);

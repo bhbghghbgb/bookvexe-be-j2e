@@ -1,34 +1,38 @@
-package org.example.bookvexebej2e.models.db;
 
-import jakarta.persistence.*;
-import lombok.*;
+package org.example.bookvexebej2e.models.db;
 
 import java.math.BigDecimal;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
 @Entity
-@Table(name = "booking_seats")
+@Table(name = "bookingSeats")
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class BookingSeatDbModel {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "booking_seat_id")
-    private Integer bookingSeatId;
-
+@ToString
+public class BookingSeatDbModel extends BaseModel {
     @ManyToOne
-    @JoinColumn(name = "booking_id")
+    @JoinColumn(name = "bookingId")
     private BookingDbModel booking;
 
     @ManyToOne
-    @JoinColumn(name = "seat_id")
+    @JoinColumn(name = "seatId")
     private CarSeatDbModel seat;
 
-    @Column(name = "is_reserved")
-    private Boolean isReserved = true;
+    @Column(length = 20)
+    private String status;
 
-    @Column(name = "price", nullable = false, precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2)
     private BigDecimal price;
 }
