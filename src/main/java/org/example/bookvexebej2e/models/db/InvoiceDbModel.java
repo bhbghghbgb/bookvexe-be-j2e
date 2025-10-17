@@ -1,18 +1,9 @@
-
 package org.example.bookvexebej2e.models.db;
 
-import java.time.LocalDateTime;
+import jakarta.persistence.*;
+import lombok.*;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "invoices")
@@ -26,11 +17,12 @@ public class InvoiceDbModel extends BaseModel {
     @JoinColumn(name = "paymentId")
     private PaymentDbModel payment;
 
-    @Column(length = 50, unique = true)
+    @Column(length = 50, unique = true, name = "Số hóa đơn")
     private String invoiceNumber;
 
-    @Column(length = 255)
+    @Column(length = 255, name = "File URL")
     private String fileUrl;
 
+    @Column(name = "Ngày phát hành")
     private LocalDateTime issuedAt;
 }
