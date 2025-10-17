@@ -1,0 +1,343 @@
+// ==========================
+// Vai trò và quyền hạn
+// ==========================
+table role {
+  id varchar(255) [pk, note: 'Mã định danh duy nhất của vai trò']
+  code varchar(100) [unique, note: 'Mã ngắn gọn dùng trong code để xác định vai trò']
+  name varchar(100) [note: 'Tên hiển thị của vai trò (VD: Admin, Quản lý, Nhân viên, Khách hàng)']
+  description text [note: 'Mô tả chi tiết về chức năng và phạm vi quyền hạn của vai trò']
+  isDeleted bool [note: 'Cờ đánh dấu xóa mềm (true = đã xóa, false = đang hoạt động)']
+  createdDate datetime [note: 'Thời điểm tạo bản ghi vai trò']
+  createdBy varchar(255) [note: 'ID người dùng tạo bản ghi']
+  updatedDate datetime [note: 'Thời điểm cập nhật bản ghi lần cuối']
+  updatedBy varchar(255) [note: 'ID người dùng cập nhật bản ghi lần cuối']
+}
+
+table rolePermission {
+  id varchar(255) [pk, note: 'Mã định danh duy nhất của bản ghi phân quyền']
+  roleId varchar(255) [note: 'Liên kết với bảng role - vai trò được phân quyền']
+  isCanRead bool [note: 'Quyền xem/đọc dữ liệu']
+  isCanCreate bool [note: 'Quyền tạo mới bản ghi']
+  isCanUpdate bool [note: 'Quyền chỉnh sửa bản ghi hiện có']
+  isCanDelete bool [note: 'Quyền xóa bản ghi']
+  isCanActivate bool [note: 'Quyền kích hoạt tài khoản/chức năng']
+  isCanDeactivate bool [note: 'Quyền vô hiệu hóa tài khoản/chức năng']
+  isCanImport bool [note: 'Quyền nhập dữ liệu từ file (Excel, CSV...)']
+  isCanExport bool [note: 'Quyền xuất dữ liệu ra file (Excel, CSV, PDF...)']
+  isDeleted bool [note: 'Cờ đánh dấu xóa mềm']
+  createdDate datetime [note: 'Thời điểm tạo bản ghi phân quyền']
+  createdBy varchar(255) [note: 'ID người dùng tạo bản ghi']
+  updatedDate datetime [note: 'Thời điểm cập nhật bản ghi lần cuối']
+  updatedBy varchar(255) [note: 'ID người dùng cập nhật bản ghi lần cuối']
+}
+
+table users {
+  id varchar(255) [pk, note: 'Mã định danh duy nhất của người dùng']
+  username varchar(255) [note: 'Tên đăng nhập duy nhất trong hệ thống']
+  password varchar(255) [note: 'Mật khẩu đã được mã hóa (hash) bằng bcrypt hoặc argon2']
+  isGoogle bool [note: 'Đánh dấu có sử dụng đăng nhập bằng Google OAuth không']
+  googleAccount varchar [note: 'Email tài khoản Google được liên kết (nếu đăng nhập qua Google)']
+  roleId varchar(255) [note: 'Liên kết với bảng role - vai trò của người dùng']
+  employeeId varchar(255) [note: 'Liên kết với bảng employee - nếu người dùng là nhân viên']
+  customerId varchar(255) [note: 'Liên kết với bảng customer - nếu người dùng là khách hàng']
+  isDeleted bool [note: 'Cờ đánh dấu xóa mềm']
+  createdDate datetime [note: 'Thời điểm tạo tài khoản']
+  createdBy varchar(255) [note: 'ID người dùng tạo tài khoản này']
+  updatedDate datetime [note: 'Thời điểm cập nhật thông tin tài khoản lần cuối']
+  updatedBy varchar(255) [note: 'ID người dùng cập nhật tài khoản lần cuối']
+}
+
+// ==========================
+// Nhân viên và khách hàng
+// ==========================
+table employee {
+  id varchar(255) [pk, note: 'Mã định danh duy nhất của nhân viên']
+  code varchar(255) [note: 'Mã nhân viên để quản lý nội bộ (VD: NV001, EMP2024001)']
+  name varchar(255) [note: 'Họ và tên đầy đủ của nhân viên']
+  email varchar(100) [note: 'Địa chỉ email liên hệ của nhân viên']
+  phone varchar(15) [note: 'Số điện thoại liên hệ của nhân viên']
+  description text [note: 'Mô tả thêm về nhân viên (chức vụ, kinh nghiệm, ghi chú...)']
+  isDeleted bool [note: 'Cờ đánh dấu xóa mềm']
+  createdDate datetime [note: 'Thời điểm tạo hồ sơ nhân viên']
+  createdBy varchar(255) [note: 'ID người dùng tạo hồ sơ']
+  updatedDate datetime [note: 'Thời điểm cập nhật hồ sơ lần cuối']
+  updatedBy varchar(255) [note: 'ID người dùng cập nhật hồ sơ lần cuối']
+}
+
+table customer {
+  id varchar(255) [pk, note: 'Mã định danh duy nhất của khách hàng']
+  code varchar(255) [note: 'Mã khách hàng để quản lý (VD: KH001, CUST2024001)']
+  name varchar(255) [note: 'Họ và tên đầy đủ của khách hàng']
+  email varchar(100) [note: 'Địa chỉ email liên hệ của khách hàng']
+  phone varchar(15) [note: 'Số điện thoại liên hệ của khách hàng']
+  customerTypeId varchar(255) [note: 'Liên kết với bảng customerType - phân loại khách hàng']
+  description text [note: 'Ghi chú thêm về khách hàng (sở thích, yêu cầu đặc biệt...)']
+  isDeleted bool [note: 'Cờ đánh dấu xóa mềm']
+  createdDate datetime [note: 'Thời điểm tạo hồ sơ khách hàng']
+  createdBy varchar(255) [note: 'ID người dùng tạo hồ sơ']
+  updatedDate datetime [note: 'Thời điểm cập nhật hồ sơ lần cuối']
+  updatedBy varchar(255) [note: 'ID người dùng cập nhật hồ sơ lần cuối']
+}
+
+table customerType {
+  id varchar(255) [pk, note: 'Mã định danh duy nhất của loại khách hàng']
+  code varchar(255) [note: 'Mã loại khách hàng (VD: VIP, REGULAR, MEMBER)']
+  name varchar(255) [note: 'Tên loại khách hàng (VD: Khách VIP, Khách thường, Thành viên)']
+  description text [note: 'Mô tả đặc điểm và quyền lợi của loại khách hàng']
+  isDeleted bool [note: 'Cờ đánh dấu xóa mềm']
+  createdDate datetime [note: 'Thời điểm tạo loại khách hàng']
+  createdBy varchar(255) [note: 'ID người dùng tạo bản ghi']
+  updatedDate datetime [note: 'Thời điểm cập nhật bản ghi lần cuối']
+  updatedBy varchar(255) [note: 'ID người dùng cập nhật bản ghi lần cuối']
+}
+
+// ==========================
+// Xe, ghế, nhân viên xe
+// ==========================
+table carTypes {
+  id varchar(255) [pk, note: 'Mã định danh duy nhất của loại xe']
+  code varchar(255) [note: 'Mã loại xe (VD: 16S, 24S, 40S - số ghế)']
+  name varchar(255) [note: 'Tên loại xe (VD: Xe 16 chỗ, Xe giường nằm 40 chỗ)']
+  description varchar(255) [note: 'Mô tả đặc điểm loại xe (tiện nghi, cấu hình ghế...)']
+  seatCount int [note: 'Tổng số ghế trên loại xe này']
+  isDeleted bool [note: 'Cờ đánh dấu xóa mềm']
+  createdDate datetime [note: 'Thời điểm tạo loại xe']
+  createdBy varchar(255) [note: 'ID người dùng tạo bản ghi']
+  updatedDate datetime [note: 'Thời điểm cập nhật bản ghi lần cuối']
+  updatedBy varchar(255) [note: 'ID người dùng cập nhật bản ghi lần cuối']
+}
+
+table cars {
+  id varchar(255) [pk, note: 'Mã định danh duy nhất của xe']
+  carTypeId varchar(255) [note: 'Liên kết với bảng carTypes - loại xe']
+  licensePlate varchar(20) [unique, note: 'Biển số xe (duy nhất, VD: 51A-12345)']
+  isDeleted bool [note: 'Cờ đánh dấu xóa mềm']
+  createdDate datetime [note: 'Thời điểm thêm xe vào hệ thống']
+  createdBy varchar(255) [note: 'ID người dùng thêm xe']
+  updatedDate datetime [note: 'Thời điểm cập nhật thông tin xe lần cuối']
+  updatedBy varchar(255) [note: 'ID người dùng cập nhật thông tin xe lần cuối']
+}
+
+table carSeats {
+  id varchar(255) [pk, note: 'Mã định danh duy nhất của ghế']
+  carId varchar(255) [note: 'Liên kết với bảng cars - xe chứa ghế này']
+  seatNumber varchar(10) [note: 'Số hiệu ghế (VD: A1, B2, C3)']
+  seatPosition varchar(50) [note: 'Vị trí ghế trong xe (VD: Tầng 1 - Hàng A - Ghế 1, Cạnh cửa sổ)']
+  isDeleted bool [note: 'Cờ đánh dấu xóa mềm']
+  createdDate datetime [note: 'Thời điểm tạo thông tin ghế']
+  createdBy varchar(255) [note: 'ID người dùng tạo bản ghi']
+  updatedDate datetime [note: 'Thời điểm cập nhật thông tin ghế lần cuối']
+  updatedBy varchar(255) [note: 'ID người dùng cập nhật thông tin ghế lần cuối']
+}
+
+table carEmployees {
+  id varchar(255) [pk, note: 'Mã định danh duy nhất của liên kết xe-nhân viên']
+  carId varchar(255) [note: 'Liên kết với bảng cars - xe được phân công']
+  employeeId varchar(255) [note: 'Liên kết với bảng employee - nhân viên được phân công (tài xế, phụ xe)']
+  isDeleted bool [note: 'Cờ đánh dấu xóa mềm']
+  createdDate datetime [note: 'Thời điểm phân công nhân viên cho xe']
+  createdBy varchar(255) [note: 'ID người dùng tạo phân công']
+  updatedDate datetime [note: 'Thời điểm cập nhật phân công lần cuối']
+  updatedBy varchar(255) [note: 'ID người dùng cập nhật phân công lần cuối']
+}
+
+// ==========================
+// Tuyến đường, chuyến đi, điểm dừng, xe chuyến
+// ==========================
+table routes {
+  id varchar(255) [pk, note: 'Mã định danh duy nhất của tuyến đường']
+  startLocation varchar(100) [note: 'Địa điểm xuất phát (VD: Bến xe Miền Đông, TP.HCM)']
+  endLocation varchar(100) [note: 'Địa điểm đến (VD: Bến xe Đà Lạt, Lâm Đồng)']
+  distanceKm decimal(6,2) [note: 'Khoảng cách tuyến đường tính bằng km (VD: 308.50)']
+  estimatedDuration int [note: 'Thời gian di chuyển ước tính tính bằng phút (VD: 360 = 6 giờ)']
+  isDeleted bool [note: 'Cờ đánh dấu xóa mềm']
+  createdDate datetime [note: 'Thời điểm tạo tuyến đường']
+  createdBy varchar(255) [note: 'ID người dùng tạo tuyến']
+  updatedDate datetime [note: 'Thời điểm cập nhật thông tin tuyến lần cuối']
+  updatedBy varchar(255) [note: 'ID người dùng cập nhật thông tin tuyến lần cuối']
+}
+
+table trips {
+  id varchar(255) [pk, note: 'Mã định danh duy nhất của chuyến đi']
+  routeId varchar(255) [note: 'Liên kết với bảng routes - tuyến đường của chuyến']
+  departureTime datetime [note: 'Thời gian xuất phát dự kiến của chuyến (VD: 2024-12-25 08:00:00)']
+  price decimal(10,2) [note: 'Giá vé mặc định cho chuyến này (VD: 250000.00)']
+  availableSeats int [note: 'Tổng số ghế còn trống trên toàn bộ chuyến (tổng hợp từ tất cả xe)']
+  isDeleted bool [note: 'Cờ đánh dấu xóa mềm']
+  createdDate datetime [note: 'Thời điểm tạo chuyến đi']
+  createdBy varchar(255) [note: 'ID người dùng tạo chuyến']
+  updatedDate datetime [note: 'Thời điểm cập nhật thông tin chuyến lần cuối']
+  updatedBy varchar(255) [note: 'ID người dùng cập nhật thông tin chuyến lần cuối']
+}
+
+table tripStops {
+  id varchar(255) [pk, note: 'Mã định danh duy nhất của điểm dừng']
+  tripId varchar(255) [note: 'Liên kết với bảng trips - chuyến đi có điểm dừng này']
+  stopType varchar(10) [note: 'Loại điểm dừng: "pickup" (đón khách) hoặc "dropoff" (trả khách)']
+  location varchar(255) [note: 'Địa điểm điểm dừng cụ thể (VD: Bến xe An Sương, Ngã tư Bình Phước)']
+  orderIndex int [note: 'Thứ tự điểm dừng trong hành trình (1, 2, 3...)']
+  isDeleted bool [note: 'Cờ đánh dấu xóa mềm']
+  createdDate datetime [note: 'Thời điểm tạo điểm dừng']
+  createdBy varchar(255) [note: 'ID người dùng tạo điểm dừng']
+  updatedDate datetime [note: 'Thời điểm cập nhật điểm dừng lần cuối']
+  updatedBy varchar(255) [note: 'ID người dùng cập nhật điểm dừng lần cuối']
+}
+
+table tripCars {
+  id varchar(255) [pk, note: 'Mã định danh duy nhất của liên kết chuyến-xe']
+  tripId varchar(255) [note: 'Liên kết với bảng trips - chuyến đi được phân xe']
+  carId varchar(255) [note: 'Liên kết với bảng cars - xe được phân cho chuyến']
+  price decimal(10,2) [note: 'Giá vé cụ thể cho xe này trong chuyến (có thể khác giá mặc định)']
+  availableSeats int [note: 'Số ghế còn trống trên xe này trong chuyến']
+  isDeleted bool [note: 'Cờ đánh dấu xóa mềm']
+  createdDate datetime [note: 'Thời điểm phân xe cho chuyến']
+  createdBy varchar(255) [note: 'ID người dùng phân xe']
+  updatedDate datetime [note: 'Thời điểm cập nhật thông tin xe-chuyến lần cuối']
+  updatedBy varchar(255) [note: 'ID người dùng cập nhật thông tin xe-chuyến lần cuối']
+}
+
+// ==========================
+// Đặt vé và chi tiết ghế
+// ==========================
+table bookings {
+  id varchar(255) [pk, note: 'Mã định danh duy nhất của đơn đặt vé']
+  code varchar(255) [note: 'Mã đơn hàng hiển thị cho khách (VD: BK20241225001)']
+  type varchar(255) [note: 'Loại đặt vé: "online" (qua web/app) hoặc "offline" (tại quầy)']
+  userId varchar(255) [note: 'Liên kết với bảng users - người dùng đặt vé']
+  tripId varchar(255) [note: 'Liên kết với bảng trips - chuyến đi được đặt']
+  pickupStopId varchar(255) [note: 'Liên kết với bảng tripStops - điểm đón khách']
+  dropoffStopId varchar(255) [note: 'Liên kết với bảng tripStops - điểm trả khách']
+  bookingStatus varchar(20) [note: 'Trạng thái đơn: "pending" (chờ xác nhận), "confirmed" (đã xác nhận), "cancelled" (đã hủy)']
+  totalPrice decimal(10,2) [note: 'Tổng giá trị đơn hàng (tổng tiền tất cả ghế đã đặt)']
+  isDeleted bool [note: 'Cờ đánh dấu xóa mềm']
+  createdDate datetime [note: 'Thời điểm tạo đơn đặt vé']
+  createdBy varchar(255) [note: 'ID người dùng tạo đơn']
+  updatedDate datetime [note: 'Thời điểm cập nhật đơn lần cuối']
+  updatedBy varchar(255) [note: 'ID người dùng cập nhật đơn lần cuối']
+}
+
+table bookingSeats {
+  id varchar(255) [pk, note: 'Mã định danh duy nhất của chi tiết ghế đặt']
+  bookingId varchar(255) [note: 'Liên kết với bảng bookings - đơn đặt vé chứa ghế này']
+  seatId varchar(255) [note: 'Liên kết với bảng carSeats - ghế được đặt']
+  status varchar(20) [note: 'Trạng thái ghế: "ghế trống", "ghế đã đặt", "ghế đang giữ"']
+  price decimal(10,2) [note: 'Giá của ghế này tại thời điểm đặt']
+  isDeleted bool [note: 'Cờ đánh dấu xóa mềm']
+  createdDate datetime [note: 'Thời điểm đặt ghế']
+  createdBy varchar(255) [note: 'ID người dùng đặt ghế']
+  updatedDate datetime [note: 'Thời điểm cập nhật trạng thái ghế lần cuối']
+  updatedBy varchar(255) [note: 'ID người dùng cập nhật trạng thái ghế lần cuối']
+}
+
+// ==========================
+// Thanh toán và hóa đơn
+// ==========================
+table paymentMethods {
+  id varchar(255) [pk, note: 'Mã định danh duy nhất của phương thức thanh toán']
+  code varchar(255) [unique, note: 'Mã phương thức (VD: CASH, MOMO, VNPAY, BANK_TRANSFER)']
+  name varchar(50) [unique, note: 'Tên phương thức thanh toán (VD: Tiền mặt, Ví MoMo, VNPay)']
+  description varchar(255) [note: 'Mô tả chi tiết về phương thức thanh toán']
+  isActive bool [note: 'Trạng thái kích hoạt của phương thức (true = đang hoạt động)']
+  isDeleted bool [note: 'Cờ đánh dấu xóa mềm']
+  createdDate datetime [note: 'Thời điểm thêm phương thức thanh toán']
+  createdBy varchar(255) [note: 'ID người dùng thêm phương thức']
+  updatedDate datetime [note: 'Thời điểm cập nhật phương thức lần cuối']
+  updatedBy varchar(255) [note: 'ID người dùng cập nhật phương thức lần cuối']
+}
+
+table payments {
+  id varchar(255) [pk, note: 'Mã định danh duy nhất của giao dịch thanh toán']
+  bookingId varchar(255) [note: 'Liên kết với bảng bookings - đơn đặt vé được thanh toán']
+  methodId varchar(255) [note: 'Liên kết với bảng paymentMethods - phương thức thanh toán sử dụng']
+  amount decimal(10,2) [note: 'Số tiền thanh toán']
+  status varchar(20) [note: 'Trạng thái thanh toán: "pending" (chờ), "success" (thành công), "failed" (thất bại)']
+  transactionCode varchar(100) [note: 'Mã giao dịch từ cổng thanh toán (VD: mã từ MoMo, VNPay)']
+  paidAt datetime [note: 'Thời điểm thanh toán thành công']
+  isDeleted bool [note: 'Cờ đánh dấu xóa mềm']
+  createdDate datetime [note: 'Thời điểm tạo giao dịch']
+  createdBy varchar(255) [note: 'ID người dùng tạo giao dịch']
+  updatedDate datetime [note: 'Thời điểm cập nhật giao dịch lần cuối']
+  updatedBy varchar(255) [note: 'ID người dùng cập nhật giao dịch lần cuối']
+}
+
+table invoices {
+  id varchar(255) [pk, note: 'Mã định danh duy nhất của hóa đơn']
+  paymentId varchar(255) [note: 'Liên kết với bảng payments - giao dịch thanh toán tạo hóa đơn']
+  invoiceNumber varchar(50) [unique, note: 'Số hóa đơn duy nhất (VD: INV20241225001)']
+  fileUrl varchar(255) [note: 'Đường dẫn URL đến file hóa đơn (PDF hoặc ảnh)']
+  issuedAt datetime [note: 'Thời điểm xuất hóa đơn']
+  isDeleted bool [note: 'Cờ đánh dấu xóa mềm']
+  createdDate datetime [note: 'Thời điểm tạo bản ghi hóa đơn']
+  createdBy varchar(255) [note: 'ID người dùng tạo hóa đơn']
+  updatedDate datetime [note: 'Thời điểm cập nhật hóa đơn lần cuối']
+  updatedBy varchar(255) [note: 'ID người dùng cập nhật hóa đơn lần cuối']
+}
+
+// ==========================
+// Thông báo
+// ==========================
+table notificationTypes {
+  id varchar(255) [pk, note: 'Mã định danh duy nhất của loại thông báo']
+  code varchar(255) [unique, note: 'Mã loại thông báo (VD: BOOKING_CONFIRM, PAYMENT_SUCCESS, TRIP_REMINDER)']
+  name varchar(50) [unique, note: 'Tên loại thông báo (VD: Xác nhận đặt vé, Thanh toán thành công)']
+  description varchar(255) [note: 'Mô tả mục đích và nội dung của loại thông báo']
+  isDeleted bool [note: 'Cờ đánh dấu xóa mềm']
+  createdDate datetime [note: 'Thời điểm tạo loại thông báo']
+  createdBy varchar(255) [note: 'ID người dùng tạo loại thông báo']
+  updatedDate datetime [note: 'Thời điểm cập nhật loại thông báo lần cuối']
+  updatedBy varchar(255) [note: 'ID người dùng cập nhật loại thông báo lần cuối']
+}
+
+table notifications {
+  id varchar(255) [pk, note: 'Mã định danh duy nhất của thông báo']
+  userId varchar(255) [note: 'Liên kết với bảng users - người nhận thông báo']
+  bookingId varchar(255) [note: 'Liên kết với bảng bookings - đơn đặt vé liên quan (nếu có)']
+  tripId varchar(255) [note: 'Liên kết với bảng trips - chuyến đi liên quan (nếu có)']
+  typeId varchar(255) [note: 'Liên kết với bảng notificationTypes - loại thông báo']
+  channel varchar(20) [note: 'Kênh gửi thông báo: "Email", "SMS", "App" (push notification)']
+  title varchar(100) [note: 'Tiêu đề thông báo']
+  message text [note: 'Nội dung chi tiết của thông báo']
+  isSent bool [note: 'Trạng thái gửi: true = đã gửi, false = chưa gửi']
+  sentAt datetime [note: 'Thời điểm gửi thông báo thành công']
+  isDeleted bool [note: 'Cờ đánh dấu xóa mềm']
+  createdDate datetime [note: 'Thời điểm tạo thông báo']
+  createdBy varchar(255) [note: 'ID người dùng/hệ thống tạo thông báo']
+  updatedDate datetime [note: 'Thời điểm cập nhật thông báo lần cuối']
+  updatedBy varchar(255) [note: 'ID người dùng cập nhật thông báo lần cuối']
+}
+
+// ==========================
+// Quan hệ
+// ==========================
+ref: users.roleId > role.id
+ref: users.employeeId > employee.id
+ref: users.customerId > customer.id
+
+ref: employee.id < carEmployees.employeeId
+ref: cars.id < carEmployees.carId
+
+ref: customerType.id < customer.customerTypeId
+
+ref: cars.carTypeId > carTypes.id
+ref: carSeats.carId > cars.id
+
+ref: trips.routeId > routes.id
+ref: tripCars.tripId > trips.id
+ref: tripCars.carId > cars.id
+ref: tripStops.tripId > trips.id
+
+ref: bookings.userId > users.id
+ref: bookings.tripId > trips.id
+ref: bookings.pickupStopId > tripStops.id
+ref: bookings.dropoffStopId > tripStops.id
+ref: bookingSeats.bookingId > bookings.id
+ref: bookingSeats.seatId > carSeats.id
+
+ref: payments.bookingId > bookings.id
+ref: payments.methodId > paymentMethods.id
+ref: invoices.paymentId > payments.id
+
+ref: notifications.userId > users.id
+ref: notifications.bookingId > bookings.id
+ref: notifications.tripId > trips.id
+ref: notifications.typeId > notificationTypes.id
