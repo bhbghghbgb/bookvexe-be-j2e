@@ -1,8 +1,10 @@
 package org.example.bookvexebej2e.mappers;
 
 import org.example.bookvexebej2e.models.db.CarDbModel;
+import org.example.bookvexebej2e.models.dto.car.CarCreate;
 import org.example.bookvexebej2e.models.dto.car.CarResponse;
 import org.example.bookvexebej2e.models.dto.car.CarSelectResponse;
+import org.example.bookvexebej2e.models.dto.car.CarUpdate;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
