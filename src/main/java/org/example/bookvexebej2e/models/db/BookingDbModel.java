@@ -37,7 +37,7 @@ public class BookingDbModel extends BaseModel {
     private TripStopDbModel dropoffStop;
 
     @Column(length = 20, name = "bookingStatus")
-    private String bookingStatus;
+    private String bookingStatus = "pending";
 
     @Column(precision = 10, scale = 2, name = "totalPrice")
     private BigDecimal totalPrice;

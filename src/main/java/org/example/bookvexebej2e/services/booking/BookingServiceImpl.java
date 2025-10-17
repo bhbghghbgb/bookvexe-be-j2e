@@ -31,6 +31,7 @@ public class BookingServiceImpl implements BookingService {
     private final UserRepository userRepository;
     private final TripRepository tripRepository;
     private final TripStopRepository tripStopRepository;
+    private final BookingSeatService bookingSeatService;
     private final BookingMapper bookingMapper;
 
     @Override
@@ -75,14 +76,25 @@ public class BookingServiceImpl implements BookingService {
         entity.setTrip(trip);
 
         TripStopDbModel pickupStop = tripStopRepository.findById(createDto.getPickupStopId())
-            .orElseThrow(() -> new RuntimeException("TripStop not found with id: " + createDto.getPickupStopId()));
+            .orElseThrow(
+                () -> new RuntimeException("TripStop Pickup not found with id: " + createDto.getPickupStopId()));
         entity.setPickupStop(pickupStop);
 
         TripStopDbModel dropoffStop = tripStopRepository.findById(createDto.getDropoffStopId())
-            .orElseThrow(() -> new RuntimeException("TripStop not found with id: " + createDto.getDropoffStopId()));
+            .orElseThrow(
+                () -> new RuntimeException("TripStop Dropoff not found with id: " + createDto.getDropoffStopId()));
         entity.setDropoffStop(dropoffStop);
 
         BookingDbModel savedEntity = bookingRepository.save(entity);
+
+        // Create booking seats via service
+        if (createDto.getBookingSeats() != null) {
+            for (BookingSeatCreate seatDto : createDto.getBookingSeats()) {
+                seatDto.setBookingId(savedEntity.getId()); // Inject booking ID
+                bookingSeatService.create(seatDto);         // Reuse service logic
+            }
+        }
+
         return bookingMapper.toResponse(savedEntity);
     }
 
