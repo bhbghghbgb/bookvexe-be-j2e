@@ -12,7 +12,7 @@ public class CustomerResponse {
     private String name;
     private String email;
     private String phone;
-    private UUID customerTypeId;
+    private CustomerTypeResponse customerType;
     private String description;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
