@@ -29,7 +29,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public List<InvoiceResponse> findAll() {
-        List<InvoiceDbModel> entities = invoiceRepository.findAllByIsDeletedFalse();
+        List<InvoiceDbModel> entities = invoiceRepository.findAllNotDeleted();
         return entities.stream()
             .map(invoiceMapper::toResponse)
             .toList();
@@ -104,7 +104,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public List<InvoiceSelectResponse> findAllForSelect() {
-        List<InvoiceDbModel> entities = invoiceRepository.findAllByIsDeletedFalse();
+        List<InvoiceDbModel> entities = invoiceRepository.findAllNotDeleted();
         return entities.stream()
             .map(invoiceMapper::toSelectResponse)
             .toList();

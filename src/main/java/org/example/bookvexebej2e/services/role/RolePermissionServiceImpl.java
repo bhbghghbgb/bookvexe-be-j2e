@@ -29,7 +29,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 
     @Override
     public List<RolePermissionResponse> findAll() {
-        List<RolePermissionDbModel> entities = rolePermissionRepository.findAllByIsDeletedFalse();
+        List<RolePermissionDbModel> entities = rolePermissionRepository.findAllNotDeleted();
         return entities.stream()
             .map(rolePermissionMapper::toResponse)
             .toList();
@@ -114,7 +114,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 
     @Override
     public List<RolePermissionSelectResponse> findAllForSelect() {
-        List<RolePermissionDbModel> entities = rolePermissionRepository.findAllByIsDeletedFalse();
+        List<RolePermissionDbModel> entities = rolePermissionRepository.findAllNotDeleted();
         return entities.stream()
             .map(rolePermissionMapper::toSelectResponse)
             .toList();
