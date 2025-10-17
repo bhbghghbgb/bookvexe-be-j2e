@@ -1,10 +1,20 @@
 package org.example.bookvexebej2e.models.db;
 
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.math.BigDecimal;
 import java.util.List;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "bookings")
@@ -14,10 +24,10 @@ import java.util.List;
 @AllArgsConstructor
 @ToString
 public class BookingDbModel extends BaseModel {
-    @Column(length = 255, name = "Mã đặt chỗ")
+    @Column(length = 255, name = "code")
     private String code;
 
-    @Column(length = 255, name = "Loại đặt chỗ")
+    @Column(length = 255, name = "type")
     private String type;
 
     @ManyToOne
@@ -36,10 +46,10 @@ public class BookingDbModel extends BaseModel {
     @JoinColumn(name = "dropoffStopId")
     private TripStopDbModel dropoffStop;
 
-    @Column(length = 20, name = "Trạng thái đặt chỗ")
+    @Column(length = 20, name = "bookingStatus")
     private String bookingStatus;
 
-    @Column(precision = 10, scale = 2, name = "Tổng giá")
+    @Column(precision = 10, scale = 2, name = "totalPrice")
     private BigDecimal totalPrice;
 
     @OneToMany(mappedBy = "booking")
