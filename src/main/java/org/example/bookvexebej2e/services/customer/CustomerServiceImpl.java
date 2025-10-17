@@ -1,13 +1,16 @@
 package org.example.bookvexebej2e.services.customer;
 
 import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.mappers.CustomerMapper;
 import org.example.bookvexebej2e.models.db.CustomerDbModel;
 import org.example.bookvexebej2e.models.db.CustomerTypeDbModel;
+import org.example.bookvexebej2e.models.db.UserDbModel;
 import org.example.bookvexebej2e.models.dto.customer.*;
 import org.example.bookvexebej2e.repositories.customer.CustomerRepository;
 import org.example.bookvexebej2e.repositories.customer.CustomerTypeRepository;
+import org.example.bookvexebej2e.repositories.user.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +26,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CustomerServiceImpl implements CustomerService {
 
+    private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
     private final CustomerTypeRepository customerTypeRepository;
     private final CustomerMapper customerMapper;
@@ -50,6 +54,7 @@ public class CustomerServiceImpl implements CustomerService {
         return customerMapper.toResponse(entity);
     }
 
+    @Transactional
     @Override
     public CustomerResponse create(CustomerCreate createDto) {
         CustomerDbModel entity = new CustomerDbModel();
@@ -65,6 +70,16 @@ public class CustomerServiceImpl implements CustomerService {
         entity.setCustomerType(customerType);
 
         CustomerDbModel savedEntity = customerRepository.save(entity);
+
+
+        UserDbModel userEntity = new UserDbModel();
+        userEntity.setUsername(entity.getPhone());
+        userEntity.setPassword("123456");
+        userEntity.setIsGoogle(false);
+        userEntity.setCustomer(savedEntity);
+
+        userRepository.save(userEntity);
+
         return customerMapper.toResponse(savedEntity);
     }
 
@@ -119,7 +134,7 @@ public class CustomerServiceImpl implements CustomerService {
     private Specification<CustomerDbModel> buildSpecification(CustomerQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.equal(root.get("isDeleted"), false));
+            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
 
             if (query.getCode() != null && !query.getCode()
                 .isEmpty()) {

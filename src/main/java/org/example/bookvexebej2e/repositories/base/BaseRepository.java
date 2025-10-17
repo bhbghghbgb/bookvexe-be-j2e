@@ -14,9 +14,9 @@ public interface BaseRepository<T extends BaseModel> extends JpaRepository<T, UU
 
     Optional<T> findByIdAndIsDeletedFalse(UUID id);
 
-//    List<T> findAllNotDeleted();
-//
-//    Page<T> findAllNotDeleted(Pageable pageable);
+    //    List<T> findAllNotDeleted();
+    //
+    //    Page<T> findAllNotDeleted(Pageable pageable);
 
     default void softDelete(T entity) {
         if (entity != null) {

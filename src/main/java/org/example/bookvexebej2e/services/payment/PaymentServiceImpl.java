@@ -128,7 +128,7 @@ public class PaymentServiceImpl implements PaymentService {
     private Specification<PaymentDbModel> buildSpecification(PaymentQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.equal(root.get("isDeleted"), false));
+            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
 
             if (query.getBookingId() != null) {
                 predicates.add(cb.equal(root.get("booking")

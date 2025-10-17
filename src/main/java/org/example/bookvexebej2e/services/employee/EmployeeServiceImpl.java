@@ -1,11 +1,14 @@
 package org.example.bookvexebej2e.services.employee;
 
 import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.mappers.EmployeeMapper;
 import org.example.bookvexebej2e.models.db.EmployeeDbModel;
+import org.example.bookvexebej2e.models.db.UserDbModel;
 import org.example.bookvexebej2e.models.dto.employee.*;
 import org.example.bookvexebej2e.repositories.employee.EmployeeRepository;
+import org.example.bookvexebej2e.repositories.user.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +24,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService {
 
+    private final UserRepository userRepository;
     private final EmployeeRepository employeeRepository;
     private final EmployeeMapper employeeMapper;
 
@@ -47,6 +51,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeMapper.toResponse(entity);
     }
 
+    @Transactional
     @Override
     public EmployeeResponse create(EmployeeCreate createDto) {
         EmployeeDbModel entity = new EmployeeDbModel();
@@ -57,6 +62,15 @@ public class EmployeeServiceImpl implements EmployeeService {
         entity.setDescription(createDto.getDescription());
 
         EmployeeDbModel savedEntity = employeeRepository.save(entity);
+
+        UserDbModel userEntity = new UserDbModel();
+        userEntity.setUsername(entity.getPhone());
+        userEntity.setPassword("123456");
+        userEntity.setIsGoogle(false);
+        userEntity.setEmployee(savedEntity);
+
+        userRepository.save(userEntity);
+
         return employeeMapper.toResponse(savedEntity);
     }
 
@@ -104,7 +118,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private Specification<EmployeeDbModel> buildSpecification(EmployeeQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.equal(root.get("isDeleted"), false));
+            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
 
             if (query.getCode() != null && !query.getCode()
                 .isEmpty()) {

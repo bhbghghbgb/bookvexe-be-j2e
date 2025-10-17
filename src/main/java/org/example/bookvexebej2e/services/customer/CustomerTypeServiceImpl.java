@@ -100,7 +100,7 @@ public class CustomerTypeServiceImpl implements CustomerTypeService {
     private Specification<CustomerTypeDbModel> buildSpecification(CustomerTypeQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.equal(root.get("isDeleted"), false));
+            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
 
             if (query.getCode() != null && !query.getCode()
                 .isEmpty()) {
