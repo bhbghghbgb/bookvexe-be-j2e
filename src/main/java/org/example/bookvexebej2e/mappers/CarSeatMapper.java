@@ -6,11 +6,13 @@ import org.example.bookvexebej2e.models.dto.car.CarSeatResponse;
 import org.example.bookvexebej2e.models.dto.car.CarSeatSelectResponse;
 import org.example.bookvexebej2e.models.dto.car.CarSeatUpdate;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface CarSeatMapper {
 
+    @Mapping(target = "carId", source = "car.id")
     CarSeatResponse toResponse(CarSeatDbModel entity);
 
     CarSeatSelectResponse toSelectResponse(CarSeatDbModel entity);
@@ -22,6 +24,7 @@ public interface CarSeatMapper {
 //    @Mapping(target = "updatedDate", ignore = true)
 //    @Mapping(target = "updatedBy", ignore = true)
 //    @Mapping(target = "bookingSeats", ignore = true)
+    @Mapping(target = "car.id", source = "carId")
     CarSeatDbModel toEntity(CarSeatCreate createDto);
 
 //    @Mapping(target = "id", ignore = true)
@@ -31,5 +34,6 @@ public interface CarSeatMapper {
 //    @Mapping(target = "updatedDate", ignore = true)
 //    @Mapping(target = "updatedBy", ignore = true)
 //    @Mapping(target = "bookingSeats", ignore = true)
+    @Mapping(target = "car.id", source = "carId")
     void updateEntity(CarSeatUpdate updateDto, @MappingTarget CarSeatDbModel entity);
 }
