@@ -1,6 +1,6 @@
 package org.example.bookvexebej2e.controller.booking;
 
-import org.example.bookvexebej2e.dto.booking.*;
+import org.example.bookvexebej2e.models.dto.booking.*;
 import org.example.bookvexebej2e.service.booking.BookingService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;

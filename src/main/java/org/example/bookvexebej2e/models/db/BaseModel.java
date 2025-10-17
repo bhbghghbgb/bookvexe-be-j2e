@@ -16,7 +16,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @ToString
 @EntityListeners(AuditingEntityListener.class)
-public abstract class BaseModel {
+public class BaseModel {
     @Id
     @Column(length = 255, name = "uuid")
     @GeneratedValue(strategy = GenerationType.UUID)

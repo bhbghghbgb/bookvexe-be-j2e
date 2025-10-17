@@ -1,6 +1,6 @@
 package org.example.bookvexebej2e.controller.notification;
 
-import org.example.bookvexebej2e.dto.notification.*;
+import org.example.bookvexebej2e.models.dto.notification.*;
 import org.example.bookvexebej2e.service.notification.NotificationTypeService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;

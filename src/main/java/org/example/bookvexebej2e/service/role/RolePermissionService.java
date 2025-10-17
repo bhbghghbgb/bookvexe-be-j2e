@@ -1,6 +1,6 @@
 package org.example.bookvexebej2e.service.role;
 
-import org.example.bookvexebej2e.dto.role.*;
+import org.example.bookvexebej2e.models.dto.role.*;
 import org.springframework.data.domain.Page;
 
 import java.util.List;

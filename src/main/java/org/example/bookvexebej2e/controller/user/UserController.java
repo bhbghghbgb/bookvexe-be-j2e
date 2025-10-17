@@ -1,6 +1,6 @@
 package org.example.bookvexebej2e.controller.user;
 
-import org.example.bookvexebej2e.dto.user.*;
+import org.example.bookvexebej2e.models.dto.user.*;
 import org.example.bookvexebej2e.service.user.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;

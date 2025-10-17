@@ -1,6 +1,6 @@
 package org.example.bookvexebej2e.service.booking;
 
-import org.example.bookvexebej2e.dto.booking.*;
+import org.example.bookvexebej2e.models.dto.booking.*;
 import org.springframework.data.domain.Page;
 
 import java.util.List;

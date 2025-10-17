@@ -1,6 +1,6 @@
 package org.example.bookvexebej2e.service.employee;
 
-import org.example.bookvexebej2e.dto.employee.*;
+import org.example.bookvexebej2e.models.dto.employee.*;
 import org.springframework.data.domain.Page;
 
 import java.util.List;

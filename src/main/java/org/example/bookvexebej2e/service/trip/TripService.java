@@ -1,6 +1,6 @@
 package org.example.bookvexebej2e.service.trip;
 
-import org.example.bookvexebej2e.dto.trip.*;
+import org.example.bookvexebej2e.models.dto.trip.*;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
