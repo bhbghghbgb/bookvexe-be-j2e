@@ -1,9 +1,18 @@
 package org.example.bookvexebej2e.models.db;
 
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.util.List;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "tripStops")
@@ -17,13 +26,13 @@ public class TripStopDbModel extends BaseModel {
     @JoinColumn(name = "tripId")
     private TripDbModel trip;
 
-    @Column(length = 10, name = "Loại điểm dừng")
+    @Column(length = 10, name = "stopType")
     private String stopType;
 
-    @Column(length = 255, name = "Địa điểm")
+    @Column(length = 255, name = "location")
     private String location;
 
-    @Column(name = "Chỉ số thứ tự")
+    @Column(name = "orderIndex")
     private Integer orderIndex;
 
     @OneToMany(mappedBy = "pickupStop")
