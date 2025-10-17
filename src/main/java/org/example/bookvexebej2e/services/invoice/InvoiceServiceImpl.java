@@ -45,7 +45,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public InvoiceResponse findById(UUID id) {
-        InvoiceDbModel entity = invoiceRepository.findByIdAndIsDeletedFalse(id)
+        InvoiceDbModel entity = invoiceRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("Invoice not found with id: " + id));
         return invoiceMapper.toResponse(entity);
     }
@@ -67,7 +67,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public InvoiceResponse update(UUID id, InvoiceUpdate updateDto) {
-        InvoiceDbModel entity = invoiceRepository.findByIdAndIsDeletedFalse(id)
+        InvoiceDbModel entity = invoiceRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("Invoice not found with id: " + id));
 
         entity.setInvoiceNumber(updateDto.getInvoiceNumber());

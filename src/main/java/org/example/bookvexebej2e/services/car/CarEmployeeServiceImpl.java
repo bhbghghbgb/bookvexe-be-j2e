@@ -48,7 +48,7 @@ public class CarEmployeeServiceImpl implements CarEmployeeService {
 
     @Override
     public CarEmployeeResponse findById(UUID id) {
-        CarEmployeeDbModel entity = carEmployeeRepository.findByIdAndIsDeletedFalse(id)
+        CarEmployeeDbModel entity = carEmployeeRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("CarEmployee not found with id: " + id));
         return carEmployeeMapper.toResponse(entity);
     }
@@ -71,7 +71,7 @@ public class CarEmployeeServiceImpl implements CarEmployeeService {
 
     @Override
     public CarEmployeeResponse update(UUID id, CarEmployeeUpdate updateDto) {
-        CarEmployeeDbModel entity = carEmployeeRepository.findByIdAndIsDeletedFalse(id)
+        CarEmployeeDbModel entity = carEmployeeRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("CarEmployee not found with id: " + id));
 
         if (updateDto.getCarId() != null) {

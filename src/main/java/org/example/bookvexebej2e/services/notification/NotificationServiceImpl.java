@@ -50,7 +50,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public NotificationResponse findById(UUID id) {
-        NotificationDbModel entity = notificationRepository.findByIdAndIsDeletedFalse(id)
+        NotificationDbModel entity = notificationRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("Notification not found with id: " + id));
         return notificationMapper.toResponse(entity);
     }
@@ -90,7 +90,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public NotificationResponse update(UUID id, NotificationUpdate updateDto) {
-        NotificationDbModel entity = notificationRepository.findByIdAndIsDeletedFalse(id)
+        NotificationDbModel entity = notificationRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("Notification not found with id: " + id));
 
         entity.setChannel(updateDto.getChannel());

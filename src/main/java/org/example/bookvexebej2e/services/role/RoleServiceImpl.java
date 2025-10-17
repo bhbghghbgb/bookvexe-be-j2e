@@ -42,7 +42,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleResponse findById(UUID id) {
-        RoleDbModel entity = roleRepository.findByIdAndIsDeletedFalse(id)
+        RoleDbModel entity = roleRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("Role not found with id: " + id));
         return roleMapper.toResponse(entity);
     }
@@ -60,7 +60,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleResponse update(UUID id, RoleUpdate updateDto) {
-        RoleDbModel entity = roleRepository.findByIdAndIsDeletedFalse(id)
+        RoleDbModel entity = roleRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("Role not found with id: " + id));
 
         entity.setCode(updateDto.getCode());

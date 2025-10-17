@@ -52,7 +52,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingResponse findById(UUID id) {
-        BookingDbModel entity = bookingRepository.findByIdAndIsDeletedFalse(id)
+        BookingDbModel entity = bookingRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
         return bookingMapper.toResponse(entity);
     }
@@ -100,7 +100,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingResponse update(UUID id, BookingUpdate updateDto) {
-        BookingDbModel entity = bookingRepository.findByIdAndIsDeletedFalse(id)
+        BookingDbModel entity = bookingRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
 
         entity.setCode(updateDto.getCode());

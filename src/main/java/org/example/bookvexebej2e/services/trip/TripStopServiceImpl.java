@@ -45,7 +45,7 @@ public class TripStopServiceImpl implements TripStopService {
 
     @Override
     public TripStopResponse findById(UUID id) {
-        TripStopDbModel entity = tripStopRepository.findByIdAndIsDeletedFalse(id)
+        TripStopDbModel entity = tripStopRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("TripStop not found with id: " + id));
         return tripStopMapper.toResponse(entity);
     }
@@ -67,7 +67,7 @@ public class TripStopServiceImpl implements TripStopService {
 
     @Override
     public TripStopResponse update(UUID id, TripStopUpdate updateDto) {
-        TripStopDbModel entity = tripStopRepository.findByIdAndIsDeletedFalse(id)
+        TripStopDbModel entity = tripStopRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("TripStop not found with id: " + id));
 
         entity.setStopType(updateDto.getStopType());

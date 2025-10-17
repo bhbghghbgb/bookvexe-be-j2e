@@ -5,18 +5,17 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.NoRepositoryBean;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @NoRepositoryBean
 public interface BaseRepository<T extends BaseModel> extends JpaRepository<T, UUID>, JpaSpecificationExecutor<T>,
     BaseRepositoryCustom<T> {
 
-    Optional<T> findByIdAndIsDeletedFalse(UUID id);
+//    Optional<T> findByIdAndIsDeletedFalse(UUID id);
 
-    //    List<T> findAllNotDeleted();
-    //
-    //    Page<T> findAllNotDeleted(Pageable pageable);
+//        List<T> findAllIsDeletedFalse();
+
+//        Page<T> findAllIsDeletedFalse(Pageable pageable);
 
     default void softDelete(T entity) {
         if (entity != null) {

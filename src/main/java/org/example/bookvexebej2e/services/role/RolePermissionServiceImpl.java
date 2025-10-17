@@ -45,7 +45,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 
     @Override
     public RolePermissionResponse findById(UUID id) {
-        RolePermissionDbModel entity = rolePermissionRepository.findByIdAndIsDeletedFalse(id)
+        RolePermissionDbModel entity = rolePermissionRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("RolePermission not found with id: " + id));
         return rolePermissionMapper.toResponse(entity);
     }
@@ -72,7 +72,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 
     @Override
     public RolePermissionResponse update(UUID id, RolePermissionUpdate updateDto) {
-        RolePermissionDbModel entity = rolePermissionRepository.findByIdAndIsDeletedFalse(id)
+        RolePermissionDbModel entity = rolePermissionRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("RolePermission not found with id: " + id));
 
         entity.setIsCanRead(updateDto.getIsCanRead());

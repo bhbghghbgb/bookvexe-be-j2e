@@ -42,7 +42,7 @@ public class NotificationTypeServiceImpl implements NotificationTypeService {
 
     @Override
     public NotificationTypeResponse findById(UUID id) {
-        NotificationTypeDbModel entity = notificationTypeRepository.findByIdAndIsDeletedFalse(id)
+        NotificationTypeDbModel entity = notificationTypeRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("NotificationType not found with id: " + id));
         return notificationTypeMapper.toResponse(entity);
     }
@@ -60,7 +60,7 @@ public class NotificationTypeServiceImpl implements NotificationTypeService {
 
     @Override
     public NotificationTypeResponse update(UUID id, NotificationTypeUpdate updateDto) {
-        NotificationTypeDbModel entity = notificationTypeRepository.findByIdAndIsDeletedFalse(id)
+        NotificationTypeDbModel entity = notificationTypeRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("NotificationType not found with id: " + id));
 
         entity.setCode(updateDto.getCode());

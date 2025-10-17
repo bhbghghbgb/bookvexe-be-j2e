@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse findById(UUID id) {
-        UserDbModel entity = userRepository.findByIdAndIsDeletedFalse(id)
+        UserDbModel entity = userRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
         return userMapper.toResponse(entity);
     }
@@ -79,7 +79,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse update(UUID id, UserUpdate updateDto) {
-        UserDbModel entity = userRepository.findByIdAndIsDeletedFalse(id)
+        UserDbModel entity = userRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
         entity.setUsername(updateDto.getUsername());

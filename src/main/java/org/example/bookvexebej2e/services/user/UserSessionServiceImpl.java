@@ -45,7 +45,7 @@ public class UserSessionServiceImpl implements UserSessionService {
 
     @Override
     public UserSessionResponse findById(UUID id) {
-        UserSessionDbModel entity = userSessionRepository.findByIdAndIsDeletedFalse(id)
+        UserSessionDbModel entity = userSessionRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("UserSession not found with id: " + id));
         return userSessionMapper.toResponse(entity);
     }
@@ -67,7 +67,7 @@ public class UserSessionServiceImpl implements UserSessionService {
 
     @Override
     public UserSessionResponse update(UUID id, UserSessionUpdate updateDto) {
-        UserSessionDbModel entity = userSessionRepository.findByIdAndIsDeletedFalse(id)
+        UserSessionDbModel entity = userSessionRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("UserSession not found with id: " + id));
 
         entity.setAccessToken(updateDto.getAccessToken());

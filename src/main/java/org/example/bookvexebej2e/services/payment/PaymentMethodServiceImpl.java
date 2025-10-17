@@ -42,7 +42,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
 
     @Override
     public PaymentMethodResponse findById(UUID id) {
-        PaymentMethodDbModel entity = paymentMethodRepository.findByIdAndIsDeletedFalse(id)
+        PaymentMethodDbModel entity = paymentMethodRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("PaymentMethod not found with id: " + id));
         return paymentMethodMapper.toResponse(entity);
     }
@@ -61,7 +61,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
 
     @Override
     public PaymentMethodResponse update(UUID id, PaymentMethodUpdate updateDto) {
-        PaymentMethodDbModel entity = paymentMethodRepository.findByIdAndIsDeletedFalse(id)
+        PaymentMethodDbModel entity = paymentMethodRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("PaymentMethod not found with id: " + id));
 
         entity.setCode(updateDto.getCode());

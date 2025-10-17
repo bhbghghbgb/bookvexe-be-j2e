@@ -45,7 +45,7 @@ public class CarSeatServiceImpl implements CarSeatService {
 
     @Override
     public CarSeatResponse findById(UUID id) {
-        CarSeatDbModel entity = carSeatRepository.findByIdAndIsDeletedFalse(id)
+        CarSeatDbModel entity = carSeatRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("CarSeat not found with id: " + id));
         return carSeatMapper.toResponse(entity);
     }
@@ -66,7 +66,7 @@ public class CarSeatServiceImpl implements CarSeatService {
 
     @Override
     public CarSeatResponse update(UUID id, CarSeatUpdate updateDto) {
-        CarSeatDbModel entity = carSeatRepository.findByIdAndIsDeletedFalse(id)
+        CarSeatDbModel entity = carSeatRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("CarSeat not found with id: " + id));
 
         entity.setSeatNumber(updateDto.getSeatNumber());
