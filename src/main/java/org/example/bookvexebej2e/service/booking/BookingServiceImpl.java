@@ -1,10 +1,16 @@
 package org.example.bookvexebej2e.service.booking;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.mappers.BookingMapper;
 import org.example.bookvexebej2e.models.db.BookingDbModel;
-import org.example.bookvexebej2e.models.dto.booking.*;
+import org.example.bookvexebej2e.models.dto.booking.BookingCreate;
+import org.example.bookvexebej2e.models.dto.booking.BookingQuery;
+import org.example.bookvexebej2e.models.dto.booking.BookingResponse;
+import org.example.bookvexebej2e.models.dto.booking.BookingSelectResponse;
+import org.example.bookvexebej2e.models.dto.booking.BookingUpdate;
 import org.example.bookvexebej2e.repository.booking.BookingRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,9 +19,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -28,8 +33,8 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingResponse> findAll() {
         List<BookingDbModel> entities = bookingRepository.findAllByIsDeletedFalse();
         return entities.stream()
-            .map(bookingMapper::toResponse)
-            .toList();
+                .map(bookingMapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -43,7 +48,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingResponse findById(UUID id) {
         BookingDbModel entity = bookingRepository.findByIdAndIsDeletedFalse(id)
-            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
         return bookingMapper.toResponse(entity);
     }
 
@@ -57,7 +62,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingResponse update(UUID id, BookingUpdate updateDto) {
         BookingDbModel entity = bookingRepository.findByIdAndIsDeletedFalse(id)
-            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
         bookingMapper.updateEntity(updateDto, entity);
         BookingDbModel updatedEntity = bookingRepository.save(entity);
         return bookingMapper.toResponse(updatedEntity);
@@ -71,7 +76,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public void activate(UUID id) {
         BookingDbModel entity = bookingRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
         entity.setIsDeleted(false);
         bookingRepository.save(entity);
     }
@@ -85,8 +90,8 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingSelectResponse> findAllForSelect() {
         List<BookingDbModel> entities = bookingRepository.findAllByIsDeletedFalse();
         return entities.stream()
-            .map(bookingMapper::toSelectResponse)
-            .toList();
+                .map(bookingMapper::toSelectResponse)
+                .toList();
     }
 
     private Specification<BookingDbModel> buildSpecification(BookingQuery query) {
@@ -95,26 +100,26 @@ public class BookingServiceImpl implements BookingService {
             predicates.add(cb.equal(root.get("isDeleted"), false));
 
             if (query.getCode() != null && !query.getCode()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("code")), "%" + query.getCode()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
             if (query.getType() != null && !query.getType()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("type")), "%" + query.getType()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
             if (query.getBookingStatus() != null && !query.getBookingStatus()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.equal(root.get("bookingStatus"), query.getBookingStatus()));
             }
             if (query.getUserId() != null) {
                 predicates.add(cb.equal(root.get("user")
-                    .get("id"), query.getUserId()));
+                        .get("id"), query.getUserId()));
             }
             if (query.getTripId() != null) {
                 predicates.add(cb.equal(root.get("trip")
-                    .get("id"), query.getTripId()));
+                        .get("id"), query.getTripId()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

@@ -1,9 +1,18 @@
 package org.example.bookvexebej2e.models.db;
 
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.util.List;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "users")
@@ -13,16 +22,16 @@ import java.util.List;
 @AllArgsConstructor
 @ToString
 public class UserDbModel extends BaseModel {
-    @Column(length = 255, name = "Tên đăng nhập", unique = true)
+    @Column(length = 255, name = "username", unique = true)
     private String username;
 
-    @Column(length = 255, name = "Mật khẩu")
+    @Column(length = 255, name = "password")
     private String password;
 
-    @Column(length = 255, name = "Đăng nhập bằng google")
+    @Column(length = 255, name = "isGoogle")
     private Boolean isGoogle;
 
-    @Column(length = 255, name = "Tài khoản Google")
+    @Column(length = 255, name = "googleAccount")
     private String googleAccount;
 
     @OneToOne

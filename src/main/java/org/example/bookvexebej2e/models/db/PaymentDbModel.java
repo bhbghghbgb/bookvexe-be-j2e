@@ -1,10 +1,19 @@
 package org.example.bookvexebej2e.models.db;
 
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "payments")
@@ -22,16 +31,16 @@ public class PaymentDbModel extends BaseModel {
     @JoinColumn(name = "methodId")
     private PaymentMethodDbModel method;
 
-    @Column(precision = 10, scale = 2, name = "Số tiền")
+    @Column(precision = 10, scale = 2, name = "amount")
     private BigDecimal amount;
 
-    @Column(length = 20, name = "Trạng thái")
+    @Column(length = 20, name = "status")
     private String status;
 
-    @Column(length = 100, name = "Mã giao dịch")
+    @Column(length = 100, name = "transactionCode")
     private String transactionCode;
 
-    @Column(name = "Ngày thanh toán")
+    @Column(name = "paidAt")
     private LocalDateTime paidAt;
 
     @OneToOne(mappedBy = "payment")
