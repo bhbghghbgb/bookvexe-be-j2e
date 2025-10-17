@@ -1,10 +1,8 @@
 package org.example.bookvexebej2e.mappers;
 
 import org.example.bookvexebej2e.models.db.TripStopDbModel;
-import org.example.bookvexebej2e.models.dto.trip.TripStopCreate;
 import org.example.bookvexebej2e.models.dto.trip.TripStopResponse;
 import org.example.bookvexebej2e.models.dto.trip.TripStopSelectResponse;
-import org.example.bookvexebej2e.models.dto.trip.TripStopUpdate;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;

@@ -7,6 +7,6 @@ import java.util.UUID;
 @Data
 public class UserSessionSelectResponse {
     private UUID id;
-    private UUID userId;
+    private UserResponse user;
     private String accessToken;
 }
