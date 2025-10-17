@@ -27,7 +27,9 @@ public class RouteServiceImpl implements RouteService {
     @Override
     public List<RouteResponse> findAll() {
         List<RouteDbModel> entities = routeRepository.findAllByIsDeletedFalse();
-        return entities.stream().map(routeMapper::toResponse).toList();
+        return entities.stream()
+            .map(routeMapper::toResponse)
+            .toList();
     }
 
     @Override
@@ -41,13 +43,18 @@ public class RouteServiceImpl implements RouteService {
     @Override
     public RouteResponse findById(UUID id) {
         RouteDbModel entity = routeRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new RuntimeException("Route not found with id: " + id));
+            .orElseThrow(() -> new RuntimeException("Route not found with id: " + id));
         return routeMapper.toResponse(entity);
     }
 
     @Override
     public RouteResponse create(RouteCreate createDto) {
-        RouteDbModel entity = routeMapper.toEntity(createDto);
+        RouteDbModel entity = new RouteDbModel();
+        entity.setStartLocation(createDto.getStartLocation());
+        entity.setEndLocation(createDto.getEndLocation());
+        entity.setDistanceKm(createDto.getDistanceKm());
+        entity.setEstimatedDuration(createDto.getEstimatedDuration());
+
         RouteDbModel savedEntity = routeRepository.save(entity);
         return routeMapper.toResponse(savedEntity);
     }
@@ -55,8 +62,13 @@ public class RouteServiceImpl implements RouteService {
     @Override
     public RouteResponse update(UUID id, RouteUpdate updateDto) {
         RouteDbModel entity = routeRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new RuntimeException("Route not found with id: " + id));
-        routeMapper.updateEntity(updateDto, entity);
+            .orElseThrow(() -> new RuntimeException("Route not found with id: " + id));
+
+        entity.setStartLocation(updateDto.getStartLocation());
+        entity.setEndLocation(updateDto.getEndLocation());
+        entity.setDistanceKm(updateDto.getDistanceKm());
+        entity.setEstimatedDuration(updateDto.getEstimatedDuration());
+
         RouteDbModel updatedEntity = routeRepository.save(entity);
         return routeMapper.toResponse(updatedEntity);
     }
@@ -69,7 +81,7 @@ public class RouteServiceImpl implements RouteService {
     @Override
     public void activate(UUID id) {
         RouteDbModel entity = routeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Route not found with id: " + id));
+            .orElseThrow(() -> new RuntimeException("Route not found with id: " + id));
         entity.setIsDeleted(false);
         routeRepository.save(entity);
     }
@@ -82,7 +94,9 @@ public class RouteServiceImpl implements RouteService {
     @Override
     public List<RouteSelectResponse> findAllForSelect() {
         List<RouteDbModel> entities = routeRepository.findAllByIsDeletedFalse();
-        return entities.stream().map(routeMapper::toSelectResponse).toList();
+        return entities.stream()
+            .map(routeMapper::toSelectResponse)
+            .toList();
     }
 
     private Specification<RouteDbModel> buildSpecification(RouteQuery query) {
@@ -90,11 +104,15 @@ public class RouteServiceImpl implements RouteService {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("isDeleted"), false));
 
-            if (query.getStartLocation() != null && !query.getStartLocation().isEmpty()) {
-                predicates.add(cb.like(cb.lower(root.get("startLocation")), "%" + query.getStartLocation().toLowerCase() + "%"));
+            if (query.getStartLocation() != null && !query.getStartLocation()
+                .isEmpty()) {
+                predicates.add(cb.like(cb.lower(root.get("startLocation")), "%" + query.getStartLocation()
+                    .toLowerCase() + "%"));
             }
-            if (query.getEndLocation() != null && !query.getEndLocation().isEmpty()) {
-                predicates.add(cb.like(cb.lower(root.get("endLocation")), "%" + query.getEndLocation().toLowerCase() + "%"));
+            if (query.getEndLocation() != null && !query.getEndLocation()
+                .isEmpty()) {
+                predicates.add(cb.like(cb.lower(root.get("endLocation")), "%" + query.getEndLocation()
+                    .toLowerCase() + "%"));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

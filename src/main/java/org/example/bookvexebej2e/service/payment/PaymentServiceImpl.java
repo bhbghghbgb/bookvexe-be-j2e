@@ -3,8 +3,12 @@ package org.example.bookvexebej2e.service.payment;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.mappers.PaymentMapper;
+import org.example.bookvexebej2e.models.db.BookingDbModel;
 import org.example.bookvexebej2e.models.db.PaymentDbModel;
+import org.example.bookvexebej2e.models.db.PaymentMethodDbModel;
 import org.example.bookvexebej2e.models.dto.payment.*;
+import org.example.bookvexebej2e.repository.booking.BookingRepository;
+import org.example.bookvexebej2e.repository.payment.PaymentMethodRepository;
 import org.example.bookvexebej2e.repository.payment.PaymentRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +26,8 @@ import java.util.UUID;
 public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
+    private final BookingRepository bookingRepository;
+    private final PaymentMethodRepository paymentMethodRepository;
     private final PaymentMapper paymentMapper;
 
     @Override
@@ -49,7 +55,20 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentResponse create(PaymentCreate createDto) {
-        PaymentDbModel entity = paymentMapper.toEntity(createDto);
+        PaymentDbModel entity = new PaymentDbModel();
+        entity.setAmount(createDto.getAmount());
+        entity.setStatus(createDto.getStatus());
+        entity.setTransactionCode(createDto.getTransactionCode());
+        entity.setPaidAt(createDto.getPaidAt());
+
+        BookingDbModel booking = bookingRepository.findById(createDto.getBookingId())
+            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + createDto.getBookingId()));
+        entity.setBooking(booking);
+
+        PaymentMethodDbModel method = paymentMethodRepository.findById(createDto.getMethodId())
+            .orElseThrow(() -> new RuntimeException("PaymentMethod not found with id: " + createDto.getMethodId()));
+        entity.setMethod(method);
+
         PaymentDbModel savedEntity = paymentRepository.save(entity);
         return paymentMapper.toResponse(savedEntity);
     }
@@ -58,7 +77,24 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponse update(UUID id, PaymentUpdate updateDto) {
         PaymentDbModel entity = paymentRepository.findByIdAndIsDeletedFalse(id)
             .orElseThrow(() -> new RuntimeException("Payment not found with id: " + id));
-        paymentMapper.updateEntity(updateDto, entity);
+
+        entity.setAmount(updateDto.getAmount());
+        entity.setStatus(updateDto.getStatus());
+        entity.setTransactionCode(updateDto.getTransactionCode());
+        entity.setPaidAt(updateDto.getPaidAt());
+
+        if (updateDto.getBookingId() != null) {
+            BookingDbModel booking = bookingRepository.findById(updateDto.getBookingId())
+                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + updateDto.getBookingId()));
+            entity.setBooking(booking);
+        }
+
+        if (updateDto.getMethodId() != null) {
+            PaymentMethodDbModel method = paymentMethodRepository.findById(updateDto.getMethodId())
+                .orElseThrow(() -> new RuntimeException("PaymentMethod not found with id: " + updateDto.getMethodId()));
+            entity.setMethod(method);
+        }
+
         PaymentDbModel updatedEntity = paymentRepository.save(entity);
         return paymentMapper.toResponse(updatedEntity);
     }

@@ -4,8 +4,10 @@ import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.mappers.InvoiceMapper;
 import org.example.bookvexebej2e.models.db.InvoiceDbModel;
+import org.example.bookvexebej2e.models.db.PaymentDbModel;
 import org.example.bookvexebej2e.models.dto.invoice.*;
 import org.example.bookvexebej2e.repository.invoice.InvoiceRepository;
+import org.example.bookvexebej2e.repository.payment.PaymentRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +24,7 @@ import java.util.UUID;
 public class InvoiceServiceImpl implements InvoiceService {
 
     private final InvoiceRepository invoiceRepository;
+    private final PaymentRepository paymentRepository;
     private final InvoiceMapper invoiceMapper;
 
     @Override
@@ -49,7 +52,15 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public InvoiceResponse create(InvoiceCreate createDto) {
-        InvoiceDbModel entity = invoiceMapper.toEntity(createDto);
+        InvoiceDbModel entity = new InvoiceDbModel();
+        entity.setInvoiceNumber(createDto.getInvoiceNumber());
+        entity.setFileUrl(createDto.getFileUrl());
+        entity.setIssuedAt(createDto.getIssuedAt());
+
+        PaymentDbModel payment = paymentRepository.findById(createDto.getPaymentId())
+            .orElseThrow(() -> new RuntimeException("Payment not found with id: " + createDto.getPaymentId()));
+        entity.setPayment(payment);
+
         InvoiceDbModel savedEntity = invoiceRepository.save(entity);
         return invoiceMapper.toResponse(savedEntity);
     }
@@ -58,7 +69,17 @@ public class InvoiceServiceImpl implements InvoiceService {
     public InvoiceResponse update(UUID id, InvoiceUpdate updateDto) {
         InvoiceDbModel entity = invoiceRepository.findByIdAndIsDeletedFalse(id)
             .orElseThrow(() -> new RuntimeException("Invoice not found with id: " + id));
-        invoiceMapper.updateEntity(updateDto, entity);
+
+        entity.setInvoiceNumber(updateDto.getInvoiceNumber());
+        entity.setFileUrl(updateDto.getFileUrl());
+        entity.setIssuedAt(updateDto.getIssuedAt());
+
+        if (updateDto.getPaymentId() != null) {
+            PaymentDbModel payment = paymentRepository.findById(updateDto.getPaymentId())
+                .orElseThrow(() -> new RuntimeException("Payment not found with id: " + updateDto.getPaymentId()));
+            entity.setPayment(payment);
+        }
+
         InvoiceDbModel updatedEntity = invoiceRepository.save(entity);
         return invoiceMapper.toResponse(updatedEntity);
     }

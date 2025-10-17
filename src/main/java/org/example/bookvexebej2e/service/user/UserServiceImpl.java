@@ -3,8 +3,12 @@ package org.example.bookvexebej2e.service.user;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.mappers.UserMapper;
+import org.example.bookvexebej2e.models.db.CustomerDbModel;
+import org.example.bookvexebej2e.models.db.EmployeeDbModel;
 import org.example.bookvexebej2e.models.db.UserDbModel;
 import org.example.bookvexebej2e.models.dto.user.*;
+import org.example.bookvexebej2e.repository.customer.CustomerRepository;
+import org.example.bookvexebej2e.repository.employee.EmployeeRepository;
 import org.example.bookvexebej2e.repository.user.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,12 +26,16 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final EmployeeRepository employeeRepository;
+    private final CustomerRepository customerRepository;
     private final UserMapper userMapper;
 
     @Override
     public List<UserResponse> findAll() {
         List<UserDbModel> entities = userRepository.findAllByIsDeletedFalse();
-        return entities.stream().map(userMapper::toResponse).toList();
+        return entities.stream()
+            .map(userMapper::toResponse)
+            .toList();
     }
 
     @Override
@@ -41,13 +49,30 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse findById(UUID id) {
         UserDbModel entity = userRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+            .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
         return userMapper.toResponse(entity);
     }
 
     @Override
     public UserResponse create(UserCreate createDto) {
-        UserDbModel entity = userMapper.toEntity(createDto);
+        UserDbModel entity = new UserDbModel();
+        entity.setUsername(createDto.getUsername());
+        entity.setPassword(createDto.getPassword());
+        entity.setIsGoogle(createDto.getIsGoogle());
+        entity.setGoogleAccount(createDto.getGoogleAccount());
+
+        if (createDto.getEmployeeId() != null) {
+            EmployeeDbModel employee = employeeRepository.findById(createDto.getEmployeeId())
+                .orElseThrow(() -> new RuntimeException("Employee not found with id: " + createDto.getEmployeeId()));
+            entity.setEmployee(employee);
+        }
+
+        if (createDto.getCustomerId() != null) {
+            CustomerDbModel customer = customerRepository.findById(createDto.getCustomerId())
+                .orElseThrow(() -> new RuntimeException("Customer not found with id: " + createDto.getCustomerId()));
+            entity.setCustomer(customer);
+        }
+
         UserDbModel savedEntity = userRepository.save(entity);
         return userMapper.toResponse(savedEntity);
     }
@@ -55,8 +80,29 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse update(UUID id, UserUpdate updateDto) {
         UserDbModel entity = userRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-        userMapper.updateEntity(updateDto, entity);
+            .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+
+        entity.setUsername(updateDto.getUsername());
+        entity.setPassword(updateDto.getPassword());
+        entity.setIsGoogle(updateDto.getIsGoogle());
+        entity.setGoogleAccount(updateDto.getGoogleAccount());
+
+        if (updateDto.getEmployeeId() != null) {
+            EmployeeDbModel employee = employeeRepository.findById(updateDto.getEmployeeId())
+                .orElseThrow(() -> new RuntimeException("Employee not found with id: " + updateDto.getEmployeeId()));
+            entity.setEmployee(employee);
+        } else {
+            entity.setEmployee(null);
+        }
+
+        if (updateDto.getCustomerId() != null) {
+            CustomerDbModel customer = customerRepository.findById(updateDto.getCustomerId())
+                .orElseThrow(() -> new RuntimeException("Customer not found with id: " + updateDto.getCustomerId()));
+            entity.setCustomer(customer);
+        } else {
+            entity.setCustomer(null);
+        }
+
         UserDbModel updatedEntity = userRepository.save(entity);
         return userMapper.toResponse(updatedEntity);
     }
@@ -69,7 +115,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void activate(UUID id) {
         UserDbModel entity = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+            .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
         entity.setIsDeleted(false);
         userRepository.save(entity);
     }
@@ -82,7 +128,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserSelectResponse> findAllForSelect() {
         List<UserDbModel> entities = userRepository.findAllByIsDeletedFalse();
-        return entities.stream().map(userMapper::toSelectResponse).toList();
+        return entities.stream()
+            .map(userMapper::toSelectResponse)
+            .toList();
     }
 
     private Specification<UserDbModel> buildSpecification(UserQuery query) {
@@ -90,13 +138,20 @@ public class UserServiceImpl implements UserService {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("isDeleted"), false));
 
-            if (query.getUsername() != null && !query.getUsername().isEmpty()) {
-                predicates.add(cb.like(cb.lower(root.get("username")), "%" + query.getUsername().toLowerCase() + "%"));
+            if (query.getUsername() != null && !query.getUsername()
+                .isEmpty()) {
+                predicates.add(cb.like(cb.lower(root.get("username")), "%" + query.getUsername()
+                    .toLowerCase() + "%"));
             }
-            if (query.getEmail() != null && !query.getEmail().isEmpty()) {
+            if (query.getEmail() != null && !query.getEmail()
+                .isEmpty()) {
                 // Search in related customer or employee email
-                Predicate customerEmailPredicate = cb.like(cb.lower(root.get("customer").get("email")), "%" + query.getEmail().toLowerCase() + "%");
-                Predicate employeeEmailPredicate = cb.like(cb.lower(root.get("employee").get("email")), "%" + query.getEmail().toLowerCase() + "%");
+                Predicate customerEmailPredicate = cb.like(cb.lower(root.get("customer")
+                    .get("email")), "%" + query.getEmail()
+                    .toLowerCase() + "%");
+                Predicate employeeEmailPredicate = cb.like(cb.lower(root.get("employee")
+                    .get("email")), "%" + query.getEmail()
+                    .toLowerCase() + "%");
                 predicates.add(cb.or(customerEmailPredicate, employeeEmailPredicate));
             }
             if (query.getIsGoogle() != null) {

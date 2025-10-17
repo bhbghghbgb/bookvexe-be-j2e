@@ -4,8 +4,10 @@ import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.mappers.CarMapper;
 import org.example.bookvexebej2e.models.db.CarDbModel;
+import org.example.bookvexebej2e.models.db.CarTypeDbModel;
 import org.example.bookvexebej2e.models.dto.car.*;
 import org.example.bookvexebej2e.repository.car.CarRepository;
+import org.example.bookvexebej2e.repository.car.CarTypeRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +24,7 @@ import java.util.UUID;
 public class CarServiceImpl implements CarService {
 
     private final CarRepository carRepository;
+    private final CarTypeRepository carTypeRepository;
     private final CarMapper carMapper;
 
     @Override
@@ -49,7 +52,13 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public CarResponse create(CarCreate createDto) {
-        CarDbModel entity = carMapper.toEntity(createDto);
+        CarDbModel entity = new CarDbModel();
+        entity.setLicensePlate(createDto.getLicensePlate());
+
+        CarTypeDbModel carType = carTypeRepository.findById(createDto.getCarTypeId())
+            .orElseThrow(() -> new RuntimeException("CarType not found with id: " + createDto.getCarTypeId()));
+        entity.setCarType(carType);
+
         CarDbModel savedEntity = carRepository.save(entity);
         return carMapper.toResponse(savedEntity);
     }
@@ -58,7 +67,15 @@ public class CarServiceImpl implements CarService {
     public CarResponse update(UUID id, CarUpdate updateDto) {
         CarDbModel entity = carRepository.findByIdAndIsDeletedFalse(id)
             .orElseThrow(() -> new RuntimeException("Car not found with id: " + id));
-        carMapper.updateEntity(updateDto, entity);
+
+        entity.setLicensePlate(updateDto.getLicensePlate());
+
+        if (updateDto.getCarTypeId() != null) {
+            CarTypeDbModel carType = carTypeRepository.findById(updateDto.getCarTypeId())
+                .orElseThrow(() -> new RuntimeException("CarType not found with id: " + updateDto.getCarTypeId()));
+            entity.setCarType(carType);
+        }
+
         CarDbModel updatedEntity = carRepository.save(entity);
         return carMapper.toResponse(updatedEntity);
     }

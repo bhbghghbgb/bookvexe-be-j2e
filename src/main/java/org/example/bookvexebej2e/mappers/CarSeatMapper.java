@@ -15,21 +15,4 @@ public interface CarSeatMapper {
 
     CarSeatSelectResponse toSelectResponse(CarSeatDbModel entity);
 
-//    @Mapping(target = "id", ignore = true)
-//    @Mapping(target = "isDeleted", ignore = true)
-//    @Mapping(target = "createdDate", ignore = true)
-//    @Mapping(target = "createdBy", ignore = true)
-//    @Mapping(target = "updatedDate", ignore = true)
-//    @Mapping(target = "updatedBy", ignore = true)
-//    @Mapping(target = "bookingSeats", ignore = true)
-    CarSeatDbModel toEntity(CarSeatCreate createDto);
-
-//    @Mapping(target = "id", ignore = true)
-//    @Mapping(target = "isDeleted", ignore = true)
-//    @Mapping(target = "createdDate", ignore = true)
-//    @Mapping(target = "createdBy", ignore = true)
-//    @Mapping(target = "updatedDate", ignore = true)
-//    @Mapping(target = "updatedBy", ignore = true)
-//    @Mapping(target = "bookingSeats", ignore = true)
-    void updateEntity(CarSeatUpdate updateDto, @MappingTarget CarSeatDbModel entity);
 }

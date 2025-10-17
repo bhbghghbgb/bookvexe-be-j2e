@@ -49,7 +49,13 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public EmployeeResponse create(EmployeeCreate createDto) {
-        EmployeeDbModel entity = employeeMapper.toEntity(createDto);
+        EmployeeDbModel entity = new EmployeeDbModel();
+        entity.setCode(createDto.getCode());
+        entity.setName(createDto.getName());
+        entity.setEmail(createDto.getEmail());
+        entity.setPhone(createDto.getPhone());
+        entity.setDescription(createDto.getDescription());
+
         EmployeeDbModel savedEntity = employeeRepository.save(entity);
         return employeeMapper.toResponse(savedEntity);
     }
@@ -58,7 +64,13 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmployeeResponse update(UUID id, EmployeeUpdate updateDto) {
         EmployeeDbModel entity = employeeRepository.findByIdAndIsDeletedFalse(id)
             .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id));
-        employeeMapper.updateEntity(updateDto, entity);
+
+        entity.setCode(updateDto.getCode());
+        entity.setName(updateDto.getName());
+        entity.setEmail(updateDto.getEmail());
+        entity.setPhone(updateDto.getPhone());
+        entity.setDescription(updateDto.getDescription());
+
         EmployeeDbModel updatedEntity = employeeRepository.save(entity);
         return employeeMapper.toResponse(updatedEntity);
     }

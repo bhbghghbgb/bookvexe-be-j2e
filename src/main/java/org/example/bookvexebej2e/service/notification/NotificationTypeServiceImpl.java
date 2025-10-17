@@ -49,7 +49,11 @@ public class NotificationTypeServiceImpl implements NotificationTypeService {
 
     @Override
     public NotificationTypeResponse create(NotificationTypeCreate createDto) {
-        NotificationTypeDbModel entity = notificationTypeMapper.toEntity(createDto);
+        NotificationTypeDbModel entity = new NotificationTypeDbModel();
+        entity.setCode(createDto.getCode());
+        entity.setName(createDto.getName());
+        entity.setDescription(createDto.getDescription());
+
         NotificationTypeDbModel savedEntity = notificationTypeRepository.save(entity);
         return notificationTypeMapper.toResponse(savedEntity);
     }
@@ -58,7 +62,11 @@ public class NotificationTypeServiceImpl implements NotificationTypeService {
     public NotificationTypeResponse update(UUID id, NotificationTypeUpdate updateDto) {
         NotificationTypeDbModel entity = notificationTypeRepository.findByIdAndIsDeletedFalse(id)
             .orElseThrow(() -> new RuntimeException("NotificationType not found with id: " + id));
-        notificationTypeMapper.updateEntity(updateDto, entity);
+
+        entity.setCode(updateDto.getCode());
+        entity.setName(updateDto.getName());
+        entity.setDescription(updateDto.getDescription());
+
         NotificationTypeDbModel updatedEntity = notificationTypeRepository.save(entity);
         return notificationTypeMapper.toResponse(updatedEntity);
     }

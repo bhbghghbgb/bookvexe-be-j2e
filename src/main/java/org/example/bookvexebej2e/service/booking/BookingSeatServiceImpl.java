@@ -3,9 +3,13 @@ package org.example.bookvexebej2e.service.booking;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.mappers.BookingSeatMapper;
+import org.example.bookvexebej2e.models.db.BookingDbModel;
 import org.example.bookvexebej2e.models.db.BookingSeatDbModel;
+import org.example.bookvexebej2e.models.db.CarSeatDbModel;
 import org.example.bookvexebej2e.models.dto.booking.*;
+import org.example.bookvexebej2e.repository.booking.BookingRepository;
 import org.example.bookvexebej2e.repository.booking.BookingSeatRepository;
+import org.example.bookvexebej2e.repository.car.CarSeatRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +26,8 @@ import java.util.UUID;
 public class BookingSeatServiceImpl implements BookingSeatService {
 
     private final BookingSeatRepository bookingSeatRepository;
+    private final BookingRepository bookingRepository;
+    private final CarSeatRepository carSeatRepository;
     private final BookingSeatMapper bookingSeatMapper;
 
     @Override
@@ -49,7 +55,20 @@ public class BookingSeatServiceImpl implements BookingSeatService {
 
     @Override
     public BookingSeatResponse create(BookingSeatCreate createDto) {
-        BookingSeatDbModel entity = bookingSeatMapper.toEntity(createDto);
+        BookingSeatDbModel entity = new BookingSeatDbModel();
+        entity.setStatus(createDto.getStatus());
+        entity.setPrice(createDto.getPrice());
+
+        // Resolve booking relationship
+        BookingDbModel booking = bookingRepository.findById(createDto.getBookingId())
+            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + createDto.getBookingId()));
+        entity.setBooking(booking);
+
+        // Resolve seat relationship
+        CarSeatDbModel seat = carSeatRepository.findById(createDto.getSeatId())
+            .orElseThrow(() -> new RuntimeException("CarSeat not found with id: " + createDto.getSeatId()));
+        entity.setSeat(seat);
+
         BookingSeatDbModel savedEntity = bookingSeatRepository.save(entity);
         return bookingSeatMapper.toResponse(savedEntity);
     }
@@ -58,7 +77,23 @@ public class BookingSeatServiceImpl implements BookingSeatService {
     public BookingSeatResponse update(UUID id, BookingSeatUpdate updateDto) {
         BookingSeatDbModel entity = bookingSeatRepository.findByIdAndIsDeletedFalse(id)
             .orElseThrow(() -> new RuntimeException("BookingSeat not found with id: " + id));
-        bookingSeatMapper.updateEntity(updateDto, entity);
+
+        entity.setStatus(updateDto.getStatus());
+        entity.setPrice(updateDto.getPrice());
+
+        // Resolve relationships if provided
+        if (updateDto.getBookingId() != null) {
+            BookingDbModel booking = bookingRepository.findById(updateDto.getBookingId())
+                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + updateDto.getBookingId()));
+            entity.setBooking(booking);
+        }
+
+        if (updateDto.getSeatId() != null) {
+            CarSeatDbModel seat = carSeatRepository.findById(updateDto.getSeatId())
+                .orElseThrow(() -> new RuntimeException("CarSeat not found with id: " + updateDto.getSeatId()));
+            entity.setSeat(seat);
+        }
+
         BookingSeatDbModel updatedEntity = bookingSeatRepository.save(entity);
         return bookingSeatMapper.toResponse(updatedEntity);
     }

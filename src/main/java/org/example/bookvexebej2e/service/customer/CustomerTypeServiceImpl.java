@@ -49,7 +49,11 @@ public class CustomerTypeServiceImpl implements CustomerTypeService {
 
     @Override
     public CustomerTypeResponse create(CustomerTypeCreate createDto) {
-        CustomerTypeDbModel entity = customerTypeMapper.toEntity(createDto);
+        CustomerTypeDbModel entity = new CustomerTypeDbModel();
+        entity.setCode(createDto.getCode());
+        entity.setName(createDto.getName());
+        entity.setDescription(createDto.getDescription());
+
         CustomerTypeDbModel savedEntity = customerTypeRepository.save(entity);
         return customerTypeMapper.toResponse(savedEntity);
     }
@@ -58,7 +62,11 @@ public class CustomerTypeServiceImpl implements CustomerTypeService {
     public CustomerTypeResponse update(UUID id, CustomerTypeUpdate updateDto) {
         CustomerTypeDbModel entity = customerTypeRepository.findByIdAndIsDeletedFalse(id)
             .orElseThrow(() -> new RuntimeException("CustomerType not found with id: " + id));
-        customerTypeMapper.updateEntity(updateDto, entity);
+
+        entity.setCode(updateDto.getCode());
+        entity.setName(updateDto.getName());
+        entity.setDescription(updateDto.getDescription());
+
         CustomerTypeDbModel updatedEntity = customerTypeRepository.save(entity);
         return customerTypeMapper.toResponse(updatedEntity);
     }

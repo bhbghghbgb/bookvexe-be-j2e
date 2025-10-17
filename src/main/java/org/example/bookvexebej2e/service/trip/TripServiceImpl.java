@@ -3,8 +3,10 @@ package org.example.bookvexebej2e.service.trip;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.mappers.TripMapper;
+import org.example.bookvexebej2e.models.db.RouteDbModel;
 import org.example.bookvexebej2e.models.db.TripDbModel;
 import org.example.bookvexebej2e.models.dto.trip.*;
+import org.example.bookvexebej2e.repository.route.RouteRepository;
 import org.example.bookvexebej2e.repository.trip.TripRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,12 +24,15 @@ import java.util.UUID;
 public class TripServiceImpl implements TripService {
 
     private final TripRepository tripRepository;
+    private final RouteRepository routeRepository;
     private final TripMapper tripMapper;
 
     @Override
     public List<TripResponse> findAll() {
         List<TripDbModel> entities = tripRepository.findAllByIsDeletedFalse();
-        return entities.stream().map(tripMapper::toResponse).toList();
+        return entities.stream()
+            .map(tripMapper::toResponse)
+            .toList();
     }
 
     @Override
@@ -41,13 +46,21 @@ public class TripServiceImpl implements TripService {
     @Override
     public TripResponse findById(UUID id) {
         TripDbModel entity = tripRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new RuntimeException("Trip not found with id: " + id));
+            .orElseThrow(() -> new RuntimeException("Trip not found with id: " + id));
         return tripMapper.toResponse(entity);
     }
 
     @Override
     public TripResponse create(TripCreate createDto) {
-        TripDbModel entity = tripMapper.toEntity(createDto);
+        TripDbModel entity = new TripDbModel();
+        entity.setDepartureTime(createDto.getDepartureTime());
+        entity.setPrice(createDto.getPrice());
+        entity.setAvailableSeats(createDto.getAvailableSeats());
+
+        RouteDbModel route = routeRepository.findById(createDto.getRouteId())
+            .orElseThrow(() -> new RuntimeException("Route not found with id: " + createDto.getRouteId()));
+        entity.setRoute(route);
+
         TripDbModel savedEntity = tripRepository.save(entity);
         return tripMapper.toResponse(savedEntity);
     }
@@ -55,8 +68,18 @@ public class TripServiceImpl implements TripService {
     @Override
     public TripResponse update(UUID id, TripUpdate updateDto) {
         TripDbModel entity = tripRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new RuntimeException("Trip not found with id: " + id));
-        tripMapper.updateEntity(updateDto, entity);
+            .orElseThrow(() -> new RuntimeException("Trip not found with id: " + id));
+
+        entity.setDepartureTime(updateDto.getDepartureTime());
+        entity.setPrice(updateDto.getPrice());
+        entity.setAvailableSeats(updateDto.getAvailableSeats());
+
+        if (updateDto.getRouteId() != null) {
+            RouteDbModel route = routeRepository.findById(updateDto.getRouteId())
+                .orElseThrow(() -> new RuntimeException("Route not found with id: " + updateDto.getRouteId()));
+            entity.setRoute(route);
+        }
+
         TripDbModel updatedEntity = tripRepository.save(entity);
         return tripMapper.toResponse(updatedEntity);
     }
@@ -69,7 +92,7 @@ public class TripServiceImpl implements TripService {
     @Override
     public void activate(UUID id) {
         TripDbModel entity = tripRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Trip not found with id: " + id));
+            .orElseThrow(() -> new RuntimeException("Trip not found with id: " + id));
         entity.setIsDeleted(false);
         tripRepository.save(entity);
     }
@@ -82,7 +105,9 @@ public class TripServiceImpl implements TripService {
     @Override
     public List<TripSelectResponse> findAllForSelect() {
         List<TripDbModel> entities = tripRepository.findAllByIsDeletedFalse();
-        return entities.stream().map(tripMapper::toSelectResponse).toList();
+        return entities.stream()
+            .map(tripMapper::toSelectResponse)
+            .toList();
     }
 
     private Specification<TripDbModel> buildSpecification(TripQuery query) {
@@ -91,7 +116,8 @@ public class TripServiceImpl implements TripService {
             predicates.add(cb.equal(root.get("isDeleted"), false));
 
             if (query.getRouteId() != null) {
-                predicates.add(cb.equal(root.get("route").get("id"), query.getRouteId()));
+                predicates.add(cb.equal(root.get("route")
+                    .get("id"), query.getRouteId()));
             }
             if (query.getDepartureTimeFrom() != null) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("departureTime"), query.getDepartureTimeFrom()));

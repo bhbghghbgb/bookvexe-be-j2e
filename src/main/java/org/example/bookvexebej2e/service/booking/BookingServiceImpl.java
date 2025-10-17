@@ -4,8 +4,14 @@ import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.mappers.BookingMapper;
 import org.example.bookvexebej2e.models.db.BookingDbModel;
+import org.example.bookvexebej2e.models.db.TripDbModel;
+import org.example.bookvexebej2e.models.db.TripStopDbModel;
+import org.example.bookvexebej2e.models.db.UserDbModel;
 import org.example.bookvexebej2e.models.dto.booking.*;
 import org.example.bookvexebej2e.repository.booking.BookingRepository;
+import org.example.bookvexebej2e.repository.trip.TripRepository;
+import org.example.bookvexebej2e.repository.trip.TripStopRepository;
+import org.example.bookvexebej2e.repository.user.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +28,9 @@ import java.util.UUID;
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
+    private final UserRepository userRepository;
+    private final TripRepository tripRepository;
+    private final TripStopRepository tripStopRepository;
     private final BookingMapper bookingMapper;
 
     @Override
@@ -47,9 +56,32 @@ public class BookingServiceImpl implements BookingService {
         return bookingMapper.toResponse(entity);
     }
 
+
     @Override
     public BookingResponse create(BookingCreate createDto) {
-        BookingDbModel entity = bookingMapper.toEntity(createDto);
+        BookingDbModel entity = new BookingDbModel();
+        entity.setCode(createDto.getCode());
+        entity.setType(createDto.getType());
+        entity.setBookingStatus(createDto.getBookingStatus());
+        entity.setTotalPrice(createDto.getTotalPrice());
+
+        // Resolve relationships
+        UserDbModel user = userRepository.findById(createDto.getUserId())
+            .orElseThrow(() -> new RuntimeException("User not found with id: " + createDto.getUserId()));
+        entity.setUser(user);
+
+        TripDbModel trip = tripRepository.findById(createDto.getTripId())
+            .orElseThrow(() -> new RuntimeException("Trip not found with id: " + createDto.getTripId()));
+        entity.setTrip(trip);
+
+        TripStopDbModel pickupStop = tripStopRepository.findById(createDto.getPickupStopId())
+            .orElseThrow(() -> new RuntimeException("TripStop not found with id: " + createDto.getPickupStopId()));
+        entity.setPickupStop(pickupStop);
+
+        TripStopDbModel dropoffStop = tripStopRepository.findById(createDto.getDropoffStopId())
+            .orElseThrow(() -> new RuntimeException("TripStop not found with id: " + createDto.getDropoffStopId()));
+        entity.setDropoffStop(dropoffStop);
+
         BookingDbModel savedEntity = bookingRepository.save(entity);
         return bookingMapper.toResponse(savedEntity);
     }
@@ -58,7 +90,37 @@ public class BookingServiceImpl implements BookingService {
     public BookingResponse update(UUID id, BookingUpdate updateDto) {
         BookingDbModel entity = bookingRepository.findByIdAndIsDeletedFalse(id)
             .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
-        bookingMapper.updateEntity(updateDto, entity);
+
+        entity.setCode(updateDto.getCode());
+        entity.setType(updateDto.getType());
+        entity.setBookingStatus(updateDto.getBookingStatus());
+        entity.setTotalPrice(updateDto.getTotalPrice());
+
+        // Resolve relationships if provided
+        if (updateDto.getUserId() != null) {
+            UserDbModel user = userRepository.findById(updateDto.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + updateDto.getUserId()));
+            entity.setUser(user);
+        }
+
+        if (updateDto.getTripId() != null) {
+            TripDbModel trip = tripRepository.findById(updateDto.getTripId())
+                .orElseThrow(() -> new RuntimeException("Trip not found with id: " + updateDto.getTripId()));
+            entity.setTrip(trip);
+        }
+
+        if (updateDto.getPickupStopId() != null) {
+            TripStopDbModel pickupStop = tripStopRepository.findById(updateDto.getPickupStopId())
+                .orElseThrow(() -> new RuntimeException("TripStop not found with id: " + updateDto.getPickupStopId()));
+            entity.setPickupStop(pickupStop);
+        }
+
+        if (updateDto.getDropoffStopId() != null) {
+            TripStopDbModel dropoffStop = tripStopRepository.findById(updateDto.getDropoffStopId())
+                .orElseThrow(() -> new RuntimeException("TripStop not found with id: " + updateDto.getDropoffStopId()));
+            entity.setDropoffStop(dropoffStop);
+        }
+
         BookingDbModel updatedEntity = bookingRepository.save(entity);
         return bookingMapper.toResponse(updatedEntity);
     }

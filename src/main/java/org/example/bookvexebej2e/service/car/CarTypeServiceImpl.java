@@ -49,7 +49,12 @@ public class CarTypeServiceImpl implements CarTypeService {
 
     @Override
     public CarTypeResponse create(CarTypeCreate createDto) {
-        CarTypeDbModel entity = carTypeMapper.toEntity(createDto);
+        CarTypeDbModel entity = new CarTypeDbModel();
+        entity.setCode(createDto.getCode());
+        entity.setName(createDto.getName());
+        entity.setDescription(createDto.getDescription());
+        entity.setSeatCount(createDto.getSeatCount());
+
         CarTypeDbModel savedEntity = carTypeRepository.save(entity);
         return carTypeMapper.toResponse(savedEntity);
     }
@@ -58,7 +63,12 @@ public class CarTypeServiceImpl implements CarTypeService {
     public CarTypeResponse update(UUID id, CarTypeUpdate updateDto) {
         CarTypeDbModel entity = carTypeRepository.findByIdAndIsDeletedFalse(id)
             .orElseThrow(() -> new RuntimeException("CarType not found with id: " + id));
-        carTypeMapper.updateEntity(updateDto, entity);
+
+        entity.setCode(updateDto.getCode());
+        entity.setName(updateDto.getName());
+        entity.setDescription(updateDto.getDescription());
+        entity.setSeatCount(updateDto.getSeatCount());
+
         CarTypeDbModel updatedEntity = carTypeRepository.save(entity);
         return carTypeMapper.toResponse(updatedEntity);
     }

@@ -8,7 +8,7 @@ import java.util.UUID;
 @Data
 public class RolePermissionResponse {
     private UUID id;
-    private UUID roleId;
+    private RoleResponse role;
     private Boolean isCanRead;
     private Boolean isCanCreate;
     private Boolean isCanUpdate;

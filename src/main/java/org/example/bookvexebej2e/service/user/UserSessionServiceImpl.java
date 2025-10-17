@@ -3,8 +3,10 @@ package org.example.bookvexebej2e.service.user;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.mappers.UserSessionMapper;
+import org.example.bookvexebej2e.models.db.UserDbModel;
 import org.example.bookvexebej2e.models.db.UserSessionDbModel;
 import org.example.bookvexebej2e.models.dto.user.*;
+import org.example.bookvexebej2e.repository.user.UserRepository;
 import org.example.bookvexebej2e.repository.user.UserSessionRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +24,7 @@ import java.util.UUID;
 public class UserSessionServiceImpl implements UserSessionService {
 
     private final UserSessionRepository userSessionRepository;
+    private final UserRepository userRepository;
     private final UserSessionMapper userSessionMapper;
 
     @Override
@@ -49,7 +52,15 @@ public class UserSessionServiceImpl implements UserSessionService {
 
     @Override
     public UserSessionResponse create(UserSessionCreate createDto) {
-        UserSessionDbModel entity = userSessionMapper.toEntity(createDto);
+        UserSessionDbModel entity = new UserSessionDbModel();
+        entity.setAccessToken(createDto.getAccessToken());
+        entity.setExpiresAt(createDto.getExpiresAt());
+        entity.setRevoked(createDto.getRevoked());
+
+        UserDbModel user = userRepository.findById(createDto.getUserId())
+            .orElseThrow(() -> new RuntimeException("User not found with id: " + createDto.getUserId()));
+        entity.setUser(user);
+
         UserSessionDbModel savedEntity = userSessionRepository.save(entity);
         return userSessionMapper.toResponse(savedEntity);
     }
@@ -58,7 +69,17 @@ public class UserSessionServiceImpl implements UserSessionService {
     public UserSessionResponse update(UUID id, UserSessionUpdate updateDto) {
         UserSessionDbModel entity = userSessionRepository.findByIdAndIsDeletedFalse(id)
             .orElseThrow(() -> new RuntimeException("UserSession not found with id: " + id));
-        userSessionMapper.updateEntity(updateDto, entity);
+
+        entity.setAccessToken(updateDto.getAccessToken());
+        entity.setExpiresAt(updateDto.getExpiresAt());
+        entity.setRevoked(updateDto.getRevoked());
+
+        if (updateDto.getUserId() != null) {
+            UserDbModel user = userRepository.findById(updateDto.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + updateDto.getUserId()));
+            entity.setUser(user);
+        }
+
         UserSessionDbModel updatedEntity = userSessionRepository.save(entity);
         return userSessionMapper.toResponse(updatedEntity);
     }
