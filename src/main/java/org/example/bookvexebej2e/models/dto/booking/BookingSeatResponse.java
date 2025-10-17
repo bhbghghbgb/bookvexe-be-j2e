@@ -9,8 +9,8 @@ import java.util.UUID;
 @Data
 public class BookingSeatResponse {
     private UUID id;
-    private BookingResponse booking;
-    private BookingSeatResponse seat;
+    private UUID bookingId;
+    private UUID seatId;
     private String status;
     private BigDecimal price;
     private LocalDateTime createdDate;
