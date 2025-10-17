@@ -13,4 +13,5 @@ public class CustomerTypeResponse {
     private String description;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private Boolean isDeleted;
 }

@@ -17,4 +17,5 @@ public class UserResponse {
     private CustomerResponse customer;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private Boolean isDeleted;
 }

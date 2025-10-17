@@ -13,4 +13,5 @@ public class CarEmployeeResponse {
     private EmployeeResponse employee;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private Boolean isDeleted;
 }

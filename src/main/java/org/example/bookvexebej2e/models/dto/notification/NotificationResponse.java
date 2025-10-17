@@ -22,4 +22,5 @@ public class NotificationResponse {
     private LocalDateTime sentAt;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private Boolean isDeleted;
 }

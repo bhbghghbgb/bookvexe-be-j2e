@@ -12,4 +12,5 @@ public class CarResponse {
     private String licensePlate;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private Boolean isDeleted;
 }

@@ -13,4 +13,5 @@ public class RoleUserResponse {
     private UserResponse user;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private Boolean isDeleted;
 }

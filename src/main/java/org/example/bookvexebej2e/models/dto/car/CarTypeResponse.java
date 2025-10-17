@@ -14,4 +14,5 @@ public class CarTypeResponse {
     private Integer seatCount;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private Boolean isDeleted;
 }

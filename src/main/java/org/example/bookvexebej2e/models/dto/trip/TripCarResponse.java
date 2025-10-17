@@ -16,4 +16,5 @@ public class TripCarResponse {
     private Integer availableSeats;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private Boolean isDeleted;
 }

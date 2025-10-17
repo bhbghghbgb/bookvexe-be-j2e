@@ -15,4 +15,5 @@ public class InvoiceResponse {
     private LocalDateTime issuedAt;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private Boolean isDeleted;
 }
