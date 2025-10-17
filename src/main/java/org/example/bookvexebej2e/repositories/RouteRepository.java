@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface RouteRepository extends JpaRepository<RouteDbModel, Integer>, JpaSpecificationExecutor<RouteDbModel> {
+public interface RouteRepository extends JpaRepository<RouteDbModel, String>, JpaSpecificationExecutor<RouteDbModel> {
     // All queries are handled by JpaSpecificationExecutor with dynamic Specification in RouteAdminService
 }

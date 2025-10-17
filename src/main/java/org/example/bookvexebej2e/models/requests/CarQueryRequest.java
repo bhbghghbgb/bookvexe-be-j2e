@@ -12,9 +12,7 @@ import org.example.bookvexebej2e.models.requests.base.BasePageableQueryRequest;
 @AllArgsConstructor
 public class CarQueryRequest extends BasePageableQueryRequest {
     private String licensePlate;
-    private Integer ownerId;
-    private Integer carTypeId;
+    private String carTypeId;
     private Integer minSeatCount;
     private Integer maxSeatCount;
-    private Boolean active;
 }

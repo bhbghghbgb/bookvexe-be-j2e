@@ -15,12 +15,12 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class TripAdminService extends BaseAdminService<TripDbModel, Integer, TripQueryRequest> {
+public class TripAdminService extends BaseAdminService<TripDbModel, String, TripQueryRequest> {
 
     private final TripRepository tripRepository;
 
     @Override
-    protected JpaRepository<TripDbModel, Integer> getRepository() {
+    protected JpaRepository<TripDbModel, String> getRepository() {
         return tripRepository;
     }
 
@@ -31,12 +31,7 @@ public class TripAdminService extends BaseAdminService<TripDbModel, Integer, Tri
 
             // Filter by route ID
             if (request.getRouteId() != null) {
-                predicates.add(cb.equal(root.get("route").get("routeId"), request.getRouteId()));
-            }
-
-            // Filter by bus/car ID
-            if (request.getBusId() != null) {
-                predicates.add(cb.equal(root.get("bus").get("carId"), request.getBusId()));
+                predicates.add(cb.equal(root.get("route").get("id"), request.getRouteId()));
             }
 
             // Filter by route start location (partial, case-insensitive)

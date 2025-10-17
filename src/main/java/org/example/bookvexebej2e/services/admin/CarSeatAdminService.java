@@ -12,12 +12,12 @@ import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
-public class CarSeatAdminService extends BaseAdminService<CarSeatDbModel, Integer, CarSeatQueryRequest> {
+public class CarSeatAdminService extends BaseAdminService<CarSeatDbModel, String, CarSeatQueryRequest> {
 
     private final CarSeatRepository carSeatRepository;
 
     @Override
-    protected JpaRepository<CarSeatDbModel, Integer> getRepository() {
+    protected JpaRepository<CarSeatDbModel, String> getRepository() {
         return carSeatRepository;
     }
 
@@ -28,7 +28,7 @@ public class CarSeatAdminService extends BaseAdminService<CarSeatDbModel, Intege
 
             // Filter by car ID
             if (request.getCarId() != null) {
-                predicates.add(cb.equal(root.get("car").get("carId"), request.getCarId()));
+                predicates.add(cb.equal(root.get("car").get("id"), request.getCarId()));
             }
 
             // Filter by seat number (partial match)
@@ -37,11 +37,6 @@ public class CarSeatAdminService extends BaseAdminService<CarSeatDbModel, Intege
                     root.get("seatNumber"),
                     "%" + request.getSeatNumber() + "%"
                 ));
-            }
-
-            // Filter by active status
-            if (request.getIsActive() != null) {
-                predicates.add(cb.equal(root.get("isActive"), request.getIsActive()));
             }
 
             return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));

@@ -1,6 +1,5 @@
 package org.example.bookvexebej2e.repositories;
 
-import org.example.bookvexebej2e.models.db.CarDbModel;
 import org.example.bookvexebej2e.models.db.RouteDbModel;
 import org.example.bookvexebej2e.models.db.TripDbModel;
 import org.springframework.data.domain.Page;
@@ -14,19 +13,14 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Repository
-public interface TripRepository extends JpaRepository<TripDbModel, Integer>,
+public interface TripRepository extends JpaRepository<TripDbModel, String>,
     JpaSpecificationExecutor<TripDbModel>,
     QuerydslPredicateExecutor<TripDbModel> {
 
     // Route-based queries
     Page<TripDbModel> findByRoute(RouteDbModel route, Pageable pageable);
 
-    Page<TripDbModel> findByRouteRouteId(Integer routeId, Pageable pageable);
-
-    // Bus/Car-based queries
-    Page<TripDbModel> findByBus(CarDbModel bus, Pageable pageable);
-
-    Page<TripDbModel> findByBusCarId(Integer carId, Pageable pageable);
+    Page<TripDbModel> findByRoute_Id(String routeId, Pageable pageable);
 
     // Date-based queries
     Page<TripDbModel> findByDepartureTimeAfter(LocalDateTime after, Pageable pageable);
