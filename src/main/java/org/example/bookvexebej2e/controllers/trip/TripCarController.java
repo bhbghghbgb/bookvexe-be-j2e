@@ -29,6 +29,11 @@ public class TripCarController {
         return ResponseEntity.ok(tripCarService.findAll(query));
     }
 
+    @PostMapping("/pagination")
+    public ResponseEntity<Page<TripCarResponse>> findAll2(@RequestBody TripCarQuery query) {
+        return ResponseEntity.ok(tripCarService.findAll(query));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<TripCarResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(tripCarService.findById(id));

@@ -29,6 +29,11 @@ public class PaymentMethodController {
         return ResponseEntity.ok(paymentMethodService.findAll(query));
     }
 
+    @PostMapping("/pagination")
+    public ResponseEntity<Page<PaymentMethodResponse>> findAll2(@RequestBody PaymentMethodQuery query) {
+        return ResponseEntity.ok(paymentMethodService.findAll(query));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<PaymentMethodResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(paymentMethodService.findById(id));

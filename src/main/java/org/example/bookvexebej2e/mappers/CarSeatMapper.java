@@ -1,12 +1,9 @@
 package org.example.bookvexebej2e.mappers;
 
 import org.example.bookvexebej2e.models.db.CarSeatDbModel;
-import org.example.bookvexebej2e.models.dto.car.CarSeatCreate;
 import org.example.bookvexebej2e.models.dto.car.CarSeatResponse;
 import org.example.bookvexebej2e.models.dto.car.CarSeatSelectResponse;
-import org.example.bookvexebej2e.models.dto.car.CarSeatUpdate;
 import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface CarSeatMapper {

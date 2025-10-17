@@ -29,6 +29,11 @@ public class TripStopController {
         return ResponseEntity.ok(tripStopService.findAll(query));
     }
 
+    @PostMapping("/pagination")
+    public ResponseEntity<Page<TripStopResponse>> findAll2(@RequestBody TripStopQuery query) {
+        return ResponseEntity.ok(tripStopService.findAll(query));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<TripStopResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(tripStopService.findById(id));

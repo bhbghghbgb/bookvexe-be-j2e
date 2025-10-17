@@ -29,6 +29,11 @@ public class UserController {
         return ResponseEntity.ok(userService.findAll(query));
     }
 
+    @PostMapping("/pagination")
+    public ResponseEntity<Page<UserResponse>> findAll2(@RequestBody UserQuery query) {
+        return ResponseEntity.ok(userService.findAll(query));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.findById(id));

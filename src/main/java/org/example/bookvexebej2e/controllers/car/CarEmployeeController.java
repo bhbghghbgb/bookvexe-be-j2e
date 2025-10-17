@@ -29,6 +29,11 @@ public class CarEmployeeController {
         return ResponseEntity.ok(carEmployeeService.findAll(query));
     }
 
+    @PostMapping("/pagination")
+    public ResponseEntity<Page<CarEmployeeResponse>> findAll2(@RequestBody CarEmployeeQuery query) {
+        return ResponseEntity.ok(carEmployeeService.findAll(query));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<CarEmployeeResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(carEmployeeService.findById(id));

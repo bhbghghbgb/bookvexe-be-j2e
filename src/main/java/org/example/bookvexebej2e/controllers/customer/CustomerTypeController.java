@@ -29,6 +29,11 @@ public class CustomerTypeController {
         return ResponseEntity.ok(customerTypeService.findAll(query));
     }
 
+    @PostMapping("/pagination")
+    public ResponseEntity<Page<CustomerTypeResponse>> findAll2(@RequestBody CustomerTypeQuery query) {
+        return ResponseEntity.ok(customerTypeService.findAll(query));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<CustomerTypeResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(customerTypeService.findById(id));

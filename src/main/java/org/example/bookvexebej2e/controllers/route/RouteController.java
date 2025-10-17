@@ -29,6 +29,11 @@ public class RouteController {
         return ResponseEntity.ok(routeService.findAll(query));
     }
 
+    @PostMapping("/pagination")
+    public ResponseEntity<Page<RouteResponse>> findAll2(@RequestBody RouteQuery query) {
+        return ResponseEntity.ok(routeService.findAll(query));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<RouteResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(routeService.findById(id));

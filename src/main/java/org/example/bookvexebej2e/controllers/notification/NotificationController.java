@@ -29,6 +29,11 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.findAll(query));
     }
 
+    @PostMapping("/pagination")
+    public ResponseEntity<Page<NotificationResponse>> findAll2(@RequestBody NotificationQuery query) {
+        return ResponseEntity.ok(notificationService.findAll(query));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<NotificationResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(notificationService.findById(id));
