@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.services.role;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.RoleMapper;
 import org.example.bookvexebej2e.models.db.RoleDbModel;
 import org.example.bookvexebej2e.models.dto.role.*;
@@ -43,7 +44,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public RoleResponse findById(UUID id) {
         RoleDbModel entity = roleRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("Role not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, id));
         return roleMapper.toResponse(entity);
     }
 
@@ -61,7 +62,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public RoleResponse update(UUID id, RoleUpdate updateDto) {
         RoleDbModel entity = roleRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("Role not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, id));
 
         entity.setCode(updateDto.getCode());
         entity.setName(updateDto.getName());
@@ -79,7 +80,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public void activate(UUID id) {
         RoleDbModel entity = roleRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Role not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, id));
         entity.setIsDeleted(false);
         roleRepository.save(entity);
     }

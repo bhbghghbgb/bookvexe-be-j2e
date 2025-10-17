@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.services.invoice;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.InvoiceMapper;
 import org.example.bookvexebej2e.models.db.InvoiceDbModel;
 import org.example.bookvexebej2e.models.db.PaymentDbModel;
@@ -46,7 +47,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public InvoiceResponse findById(UUID id) {
         InvoiceDbModel entity = invoiceRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("Invoice not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(InvoiceDbModel.class, id));
         return invoiceMapper.toResponse(entity);
     }
 
@@ -58,7 +59,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         entity.setIssuedAt(createDto.getIssuedAt());
 
         PaymentDbModel payment = paymentRepository.findById(createDto.getPaymentId())
-            .orElseThrow(() -> new RuntimeException("Payment not found with id: " + createDto.getPaymentId()));
+            .orElseThrow(() -> new ResourceNotFoundException(PaymentDbModel.class, createDto.getPaymentId()));
         entity.setPayment(payment);
 
         InvoiceDbModel savedEntity = invoiceRepository.save(entity);
@@ -68,7 +69,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public InvoiceResponse update(UUID id, InvoiceUpdate updateDto) {
         InvoiceDbModel entity = invoiceRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("Invoice not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(InvoiceDbModel.class, id));
 
         entity.setInvoiceNumber(updateDto.getInvoiceNumber());
         entity.setFileUrl(updateDto.getFileUrl());
@@ -76,7 +77,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         if (updateDto.getPaymentId() != null) {
             PaymentDbModel payment = paymentRepository.findById(updateDto.getPaymentId())
-                .orElseThrow(() -> new RuntimeException("Payment not found with id: " + updateDto.getPaymentId()));
+                .orElseThrow(() -> new ResourceNotFoundException(PaymentDbModel.class, updateDto.getPaymentId()));
             entity.setPayment(payment);
         }
 
@@ -92,7 +93,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public void activate(UUID id) {
         InvoiceDbModel entity = invoiceRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Invoice not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(InvoiceDbModel.class, id));
         entity.setIsDeleted(false);
         invoiceRepository.save(entity);
     }

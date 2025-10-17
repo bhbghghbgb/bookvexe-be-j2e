@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.services.car;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.CarSeatMapper;
 import org.example.bookvexebej2e.models.db.CarDbModel;
 import org.example.bookvexebej2e.models.db.CarSeatDbModel;
@@ -46,7 +47,7 @@ public class CarSeatServiceImpl implements CarSeatService {
     @Override
     public CarSeatResponse findById(UUID id) {
         CarSeatDbModel entity = carSeatRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("CarSeat not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(CarSeatDbModel.class, id));
         return carSeatMapper.toResponse(entity);
     }
 
@@ -57,7 +58,7 @@ public class CarSeatServiceImpl implements CarSeatService {
         entity.setSeatPosition(createDto.getSeatPosition());
 
         CarDbModel car = carRepository.findById(createDto.getCarId())
-            .orElseThrow(() -> new RuntimeException("Car not found with id: " + createDto.getCarId()));
+            .orElseThrow(() -> new ResourceNotFoundException(CarDbModel.class, createDto.getCarId()));
         entity.setCar(car);
 
         CarSeatDbModel savedEntity = carSeatRepository.save(entity);
@@ -67,14 +68,14 @@ public class CarSeatServiceImpl implements CarSeatService {
     @Override
     public CarSeatResponse update(UUID id, CarSeatUpdate updateDto) {
         CarSeatDbModel entity = carSeatRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("CarSeat not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(CarSeatDbModel.class, id));
 
         entity.setSeatNumber(updateDto.getSeatNumber());
         entity.setSeatPosition(updateDto.getSeatPosition());
 
         if (updateDto.getCarId() != null) {
             CarDbModel car = carRepository.findById(updateDto.getCarId())
-                .orElseThrow(() -> new RuntimeException("Car not found with id: " + updateDto.getCarId()));
+                .orElseThrow(() -> new ResourceNotFoundException(CarDbModel.class, updateDto.getCarId()));
             entity.setCar(car);
         }
 
@@ -90,7 +91,7 @@ public class CarSeatServiceImpl implements CarSeatService {
     @Override
     public void activate(UUID id) {
         CarSeatDbModel entity = carSeatRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("CarSeat not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(CarSeatDbModel.class, id));
         entity.setIsDeleted(false);
         carSeatRepository.save(entity);
     }

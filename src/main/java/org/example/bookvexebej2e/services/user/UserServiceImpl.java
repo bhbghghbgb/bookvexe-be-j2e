@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.services.user;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.UserMapper;
 import org.example.bookvexebej2e.models.db.CustomerDbModel;
 import org.example.bookvexebej2e.models.db.EmployeeDbModel;
@@ -49,7 +50,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse findById(UUID id) {
         UserDbModel entity = userRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, id));
         return userMapper.toResponse(entity);
     }
 
@@ -63,13 +64,13 @@ public class UserServiceImpl implements UserService {
 
         if (createDto.getEmployeeId() != null) {
             EmployeeDbModel employee = employeeRepository.findById(createDto.getEmployeeId())
-                .orElseThrow(() -> new RuntimeException("Employee not found with id: " + createDto.getEmployeeId()));
+                .orElseThrow(() -> new ResourceNotFoundException(EmployeeDbModel.class, createDto.getEmployeeId()));
             entity.setEmployee(employee);
         }
 
         if (createDto.getCustomerId() != null) {
             CustomerDbModel customer = customerRepository.findById(createDto.getCustomerId())
-                .orElseThrow(() -> new RuntimeException("Customer not found with id: " + createDto.getCustomerId()));
+                .orElseThrow(() -> new ResourceNotFoundException(CustomerDbModel.class, createDto.getCustomerId()));
             entity.setCustomer(customer);
         }
 
@@ -80,7 +81,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse update(UUID id, UserUpdate updateDto) {
         UserDbModel entity = userRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, id));
 
         entity.setUsername(updateDto.getUsername());
         entity.setPassword(updateDto.getPassword());
@@ -89,7 +90,7 @@ public class UserServiceImpl implements UserService {
 
         if (updateDto.getEmployeeId() != null) {
             EmployeeDbModel employee = employeeRepository.findById(updateDto.getEmployeeId())
-                .orElseThrow(() -> new RuntimeException("Employee not found with id: " + updateDto.getEmployeeId()));
+                .orElseThrow(() -> new ResourceNotFoundException(EmployeeDbModel.class, updateDto.getEmployeeId()));
             entity.setEmployee(employee);
         } else {
             entity.setEmployee(null);
@@ -97,7 +98,7 @@ public class UserServiceImpl implements UserService {
 
         if (updateDto.getCustomerId() != null) {
             CustomerDbModel customer = customerRepository.findById(updateDto.getCustomerId())
-                .orElseThrow(() -> new RuntimeException("Customer not found with id: " + updateDto.getCustomerId()));
+                .orElseThrow(() -> new ResourceNotFoundException(CustomerDbModel.class, updateDto.getCustomerId()));
             entity.setCustomer(customer);
         } else {
             entity.setCustomer(null);
@@ -115,7 +116,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void activate(UUID id) {
         UserDbModel entity = userRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, id));
         entity.setIsDeleted(false);
         userRepository.save(entity);
     }

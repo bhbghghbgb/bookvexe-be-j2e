@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.services.role;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.RoleUserMapper;
 import org.example.bookvexebej2e.models.db.RoleDbModel;
 import org.example.bookvexebej2e.models.db.RoleUserDbModel;
@@ -49,7 +50,7 @@ public class RoleUserServiceImpl implements RoleUserService {
     @Override
     public RoleUserResponse findById(UUID id) {
         RoleUserDbModel entity = roleUserRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("RoleUser not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(RoleUserDbModel.class, id));
         return roleUserMapper.toResponse(entity);
     }
 
@@ -58,11 +59,11 @@ public class RoleUserServiceImpl implements RoleUserService {
         RoleUserDbModel entity = new RoleUserDbModel();
 
         RoleDbModel role = roleRepository.findById(createDto.getRoleId())
-            .orElseThrow(() -> new RuntimeException("Role not found with id: " + createDto.getRoleId()));
+            .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, createDto.getRoleId()));
         entity.setRole(role);
 
         UserDbModel user = userRepository.findById(createDto.getUserId())
-            .orElseThrow(() -> new RuntimeException("User not found with id: " + createDto.getUserId()));
+            .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, createDto.getUserId()));
         entity.setUser(user);
 
         RoleUserDbModel savedEntity = roleUserRepository.save(entity);
@@ -72,17 +73,17 @@ public class RoleUserServiceImpl implements RoleUserService {
     @Override
     public RoleUserResponse update(UUID id, RoleUserUpdate updateDto) {
         RoleUserDbModel entity = roleUserRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("RoleUser not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(RoleUserDbModel.class, id));
 
         if (updateDto.getRoleId() != null) {
             RoleDbModel role = roleRepository.findById(updateDto.getRoleId())
-                .orElseThrow(() -> new RuntimeException("Role not found with id: " + updateDto.getRoleId()));
+                .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, updateDto.getRoleId()));
             entity.setRole(role);
         }
 
         if (updateDto.getUserId() != null) {
             UserDbModel user = userRepository.findById(updateDto.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + updateDto.getUserId()));
+                .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, updateDto.getUserId()));
             entity.setUser(user);
         }
 
@@ -98,7 +99,7 @@ public class RoleUserServiceImpl implements RoleUserService {
     @Override
     public void activate(UUID id) {
         RoleUserDbModel entity = roleUserRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("RoleUser not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(RoleUserDbModel.class, id));
         entity.setIsDeleted(false);
         roleUserRepository.save(entity);
     }

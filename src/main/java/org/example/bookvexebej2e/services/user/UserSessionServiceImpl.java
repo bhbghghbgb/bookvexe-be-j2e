@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.services.user;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.UserSessionMapper;
 import org.example.bookvexebej2e.models.db.UserDbModel;
 import org.example.bookvexebej2e.models.db.UserSessionDbModel;
@@ -46,7 +47,7 @@ public class UserSessionServiceImpl implements UserSessionService {
     @Override
     public UserSessionResponse findById(UUID id) {
         UserSessionDbModel entity = userSessionRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("UserSession not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(UserSessionDbModel.class, id));
         return userSessionMapper.toResponse(entity);
     }
 
@@ -58,7 +59,7 @@ public class UserSessionServiceImpl implements UserSessionService {
         entity.setRevoked(createDto.getRevoked());
 
         UserDbModel user = userRepository.findById(createDto.getUserId())
-            .orElseThrow(() -> new RuntimeException("User not found with id: " + createDto.getUserId()));
+            .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, createDto.getUserId()));
         entity.setUser(user);
 
         UserSessionDbModel savedEntity = userSessionRepository.save(entity);
@@ -68,7 +69,7 @@ public class UserSessionServiceImpl implements UserSessionService {
     @Override
     public UserSessionResponse update(UUID id, UserSessionUpdate updateDto) {
         UserSessionDbModel entity = userSessionRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("UserSession not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(UserSessionDbModel.class, id));
 
         entity.setAccessToken(updateDto.getAccessToken());
         entity.setExpiresAt(updateDto.getExpiresAt());
@@ -76,7 +77,7 @@ public class UserSessionServiceImpl implements UserSessionService {
 
         if (updateDto.getUserId() != null) {
             UserDbModel user = userRepository.findById(updateDto.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + updateDto.getUserId()));
+                .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, updateDto.getUserId()));
             entity.setUser(user);
         }
 
@@ -92,7 +93,7 @@ public class UserSessionServiceImpl implements UserSessionService {
     @Override
     public void activate(UUID id) {
         UserSessionDbModel entity = userSessionRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("UserSession not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(UserSessionDbModel.class, id));
         entity.setIsDeleted(false);
         userSessionRepository.save(entity);
     }

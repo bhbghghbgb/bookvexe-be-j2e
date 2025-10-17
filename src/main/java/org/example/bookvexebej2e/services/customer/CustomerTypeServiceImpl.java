@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.services.customer;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.CustomerTypeMapper;
 import org.example.bookvexebej2e.models.db.CustomerTypeDbModel;
 import org.example.bookvexebej2e.models.dto.customer.*;
@@ -43,7 +44,7 @@ public class CustomerTypeServiceImpl implements CustomerTypeService {
     @Override
     public CustomerTypeResponse findById(UUID id) {
         CustomerTypeDbModel entity = customerTypeRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("CustomerType not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(CustomerTypeDbModel.class, id));
         return customerTypeMapper.toResponse(entity);
     }
 
@@ -61,7 +62,7 @@ public class CustomerTypeServiceImpl implements CustomerTypeService {
     @Override
     public CustomerTypeResponse update(UUID id, CustomerTypeUpdate updateDto) {
         CustomerTypeDbModel entity = customerTypeRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("CustomerType not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(CustomerTypeDbModel.class, id));
 
         entity.setCode(updateDto.getCode());
         entity.setName(updateDto.getName());
@@ -79,7 +80,7 @@ public class CustomerTypeServiceImpl implements CustomerTypeService {
     @Override
     public void activate(UUID id) {
         CustomerTypeDbModel entity = customerTypeRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("CustomerType not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(CustomerTypeDbModel.class, id));
         entity.setIsDeleted(false);
         customerTypeRepository.save(entity);
     }
