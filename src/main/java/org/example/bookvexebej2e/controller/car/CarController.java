@@ -24,8 +24,8 @@ public class CarController {
         return ResponseEntity.ok(carService.findAll());
     }
 
-    @GetMapping("/pagination")
-    public ResponseEntity<Page<CarResponse>> findAll(CarQuery query) {
+    @PostMapping("/pagination")
+    public ResponseEntity<Page<CarResponse>> findAll(@RequestBody CarQuery query) {
         return ResponseEntity.ok(carService.findAll(query));
     }
 
