@@ -1,18 +1,9 @@
-
 package org.example.bookvexebej2e.models.db;
 
-import java.math.BigDecimal;
+import jakarta.persistence.*;
+import lombok.*;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "tripCars")
@@ -30,8 +21,9 @@ public class TripCarDbModel extends BaseModel {
     @JoinColumn(name = "carId")
     private CarDbModel car;
 
-    @Column(precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2, name = "Giá")
     private BigDecimal price;
 
+    @Column(name = "Ghế còn trống")
     private Integer availableSeats;
 }

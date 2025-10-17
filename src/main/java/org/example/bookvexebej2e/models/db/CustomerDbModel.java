@@ -1,17 +1,7 @@
-
 package org.example.bookvexebej2e.models.db;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "customer")
@@ -21,16 +11,16 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class CustomerDbModel extends BaseModel {
-    @Column(length = 255)
+    @Column(length = 255, name = "Mã khách hàng")
     private String code;
 
-    @Column(length = 255)
+    @Column(length = 255, name = "Tên khách hàng")
     private String name;
 
-    @Column(length = 100)
+    @Column(length = 100, name = "Email")
     private String email;
 
-    @Column(length = 15)
+    @Column(length = 15, name = "Số điện thoại")
     private String phone;
 
     @ManyToOne

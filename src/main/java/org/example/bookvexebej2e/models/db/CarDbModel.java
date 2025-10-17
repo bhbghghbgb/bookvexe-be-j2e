@@ -1,19 +1,9 @@
-
 package org.example.bookvexebej2e.models.db;
 
-import java.util.List;
+import jakarta.persistence.*;
+import lombok.*;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import java.util.List;
 
 @Entity
 @Table(name = "cars")
@@ -27,7 +17,7 @@ public class CarDbModel extends BaseModel {
     @JoinColumn(name = "carTypeId")
     private CarTypeDbModel carType;
 
-    @Column(length = 20, unique = true)
+    @Column(length = 20, unique = true, name = "Biển số xe")
     private String licensePlate;
 
     @OneToMany(mappedBy = "car")

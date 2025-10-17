@@ -1,18 +1,9 @@
-
 package org.example.bookvexebej2e.models.db;
 
-import java.util.List;
+import jakarta.persistence.*;
+import lombok.*;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import java.util.List;
 
 @Entity
 @Table(name = "employee")
@@ -22,19 +13,19 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class EmployeeDbModel extends BaseModel {
-    @Column(length = 255)
+    @Column(length = 255, name = "Mã nhân viên")
     private String code;
 
-    @Column(length = 255)
+    @Column(length = 255, name = "Tên nhân viên")
     private String name;
 
-    @Column(length = 100)
+    @Column(length = 100, name = "Email")
     private String email;
 
-    @Column(length = 15)
+    @Column(length = 15, name = "Số điện thoại")
     private String phone;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", name = "Mô tả")
     private String description;
 
     @OneToOne(mappedBy = "employee")

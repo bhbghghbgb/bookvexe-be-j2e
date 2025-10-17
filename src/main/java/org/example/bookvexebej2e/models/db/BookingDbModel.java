@@ -1,20 +1,10 @@
 package org.example.bookvexebej2e.models.db;
 
+import jakarta.persistence.*;
+import lombok.*;
+
 import java.math.BigDecimal;
 import java.util.List;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 @Entity
 @Table(name = "bookings")
@@ -24,10 +14,10 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class BookingDbModel extends BaseModel {
-    @Column(length = 255)
+    @Column(length = 255, name = "Mã đặt chỗ")
     private String code;
 
-    @Column(length = 255)
+    @Column(length = 255, name = "Loại đặt chỗ")
     private String type;
 
     @ManyToOne
@@ -46,10 +36,10 @@ public class BookingDbModel extends BaseModel {
     @JoinColumn(name = "dropoffStopId")
     private TripStopDbModel dropoffStop;
 
-    @Column(length = 20)
+    @Column(length = 20, name = "Trạng thái đặt chỗ")
     private String bookingStatus;
 
-    @Column(precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2, name = "Tổng giá")
     private BigDecimal totalPrice;
 
     @OneToMany(mappedBy = "booking")
