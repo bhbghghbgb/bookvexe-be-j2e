@@ -3,9 +3,11 @@ package org.example.bookvexebej2e.service.role;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.mappers.RolePermissionMapper;
+import org.example.bookvexebej2e.models.db.RoleDbModel;
 import org.example.bookvexebej2e.models.db.RolePermissionDbModel;
 import org.example.bookvexebej2e.models.dto.role.*;
 import org.example.bookvexebej2e.repository.role.RolePermissionRepository;
+import org.example.bookvexebej2e.repository.role.RoleRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +24,7 @@ import java.util.UUID;
 public class RolePermissionServiceImpl implements RolePermissionService {
 
     private final RolePermissionRepository rolePermissionRepository;
+    private final RoleRepository roleRepository;
     private final RolePermissionMapper rolePermissionMapper;
 
     @Override
@@ -49,7 +52,20 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 
     @Override
     public RolePermissionResponse create(RolePermissionCreate createDto) {
-        RolePermissionDbModel entity = rolePermissionMapper.toEntity(createDto);
+        RolePermissionDbModel entity = new RolePermissionDbModel();
+        entity.setIsCanRead(createDto.getIsCanRead());
+        entity.setIsCanCreate(createDto.getIsCanCreate());
+        entity.setIsCanUpdate(createDto.getIsCanUpdate());
+        entity.setIsCanDelete(createDto.getIsCanDelete());
+        entity.setIsCanActivate(createDto.getIsCanActivate());
+        entity.setIsCanDeactivate(createDto.getIsCanDeactivate());
+        entity.setIsCanImport(createDto.getIsCanImport());
+        entity.setIsCanExport(createDto.getIsCanExport());
+
+        RoleDbModel role = roleRepository.findById(createDto.getRoleId())
+            .orElseThrow(() -> new RuntimeException("Role not found with id: " + createDto.getRoleId()));
+        entity.setRole(role);
+
         RolePermissionDbModel savedEntity = rolePermissionRepository.save(entity);
         return rolePermissionMapper.toResponse(savedEntity);
     }
@@ -58,7 +74,22 @@ public class RolePermissionServiceImpl implements RolePermissionService {
     public RolePermissionResponse update(UUID id, RolePermissionUpdate updateDto) {
         RolePermissionDbModel entity = rolePermissionRepository.findByIdAndIsDeletedFalse(id)
             .orElseThrow(() -> new RuntimeException("RolePermission not found with id: " + id));
-        rolePermissionMapper.updateEntity(updateDto, entity);
+
+        entity.setIsCanRead(updateDto.getIsCanRead());
+        entity.setIsCanCreate(updateDto.getIsCanCreate());
+        entity.setIsCanUpdate(updateDto.getIsCanUpdate());
+        entity.setIsCanDelete(updateDto.getIsCanDelete());
+        entity.setIsCanActivate(updateDto.getIsCanActivate());
+        entity.setIsCanDeactivate(updateDto.getIsCanDeactivate());
+        entity.setIsCanImport(updateDto.getIsCanImport());
+        entity.setIsCanExport(updateDto.getIsCanExport());
+
+        if (updateDto.getRoleId() != null) {
+            RoleDbModel role = roleRepository.findById(updateDto.getRoleId())
+                .orElseThrow(() -> new RuntimeException("Role not found with id: " + updateDto.getRoleId()));
+            entity.setRole(role);
+        }
+
         RolePermissionDbModel updatedEntity = rolePermissionRepository.save(entity);
         return rolePermissionMapper.toResponse(updatedEntity);
     }

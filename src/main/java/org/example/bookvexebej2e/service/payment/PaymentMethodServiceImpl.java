@@ -49,7 +49,12 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
 
     @Override
     public PaymentMethodResponse create(PaymentMethodCreate createDto) {
-        PaymentMethodDbModel entity = paymentMethodMapper.toEntity(createDto);
+        PaymentMethodDbModel entity = new PaymentMethodDbModel();
+        entity.setCode(createDto.getCode());
+        entity.setName(createDto.getName());
+        entity.setDescription(createDto.getDescription());
+        entity.setIsActive(createDto.getIsActive());
+
         PaymentMethodDbModel savedEntity = paymentMethodRepository.save(entity);
         return paymentMethodMapper.toResponse(savedEntity);
     }
@@ -58,7 +63,12 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     public PaymentMethodResponse update(UUID id, PaymentMethodUpdate updateDto) {
         PaymentMethodDbModel entity = paymentMethodRepository.findByIdAndIsDeletedFalse(id)
             .orElseThrow(() -> new RuntimeException("PaymentMethod not found with id: " + id));
-        paymentMethodMapper.updateEntity(updateDto, entity);
+
+        entity.setCode(updateDto.getCode());
+        entity.setName(updateDto.getName());
+        entity.setDescription(updateDto.getDescription());
+        entity.setIsActive(updateDto.getIsActive());
+
         PaymentMethodDbModel updatedEntity = paymentMethodRepository.save(entity);
         return paymentMethodMapper.toResponse(updatedEntity);
     }

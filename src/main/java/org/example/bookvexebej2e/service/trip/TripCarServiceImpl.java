@@ -3,9 +3,13 @@ package org.example.bookvexebej2e.service.trip;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.mappers.TripCarMapper;
+import org.example.bookvexebej2e.models.db.CarDbModel;
 import org.example.bookvexebej2e.models.db.TripCarDbModel;
+import org.example.bookvexebej2e.models.db.TripDbModel;
 import org.example.bookvexebej2e.models.dto.trip.*;
+import org.example.bookvexebej2e.repository.car.CarRepository;
 import org.example.bookvexebej2e.repository.trip.TripCarRepository;
+import org.example.bookvexebej2e.repository.trip.TripRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +26,8 @@ import java.util.UUID;
 public class TripCarServiceImpl implements TripCarService {
 
     private final TripCarRepository tripCarRepository;
+    private final TripRepository tripRepository;
+    private final CarRepository carRepository;
     private final TripCarMapper tripCarMapper;
 
     @Override
@@ -49,7 +55,18 @@ public class TripCarServiceImpl implements TripCarService {
 
     @Override
     public TripCarResponse create(TripCarCreate createDto) {
-        TripCarDbModel entity = tripCarMapper.toEntity(createDto);
+        TripCarDbModel entity = new TripCarDbModel();
+        entity.setPrice(createDto.getPrice());
+        entity.setAvailableSeats(createDto.getAvailableSeats());
+
+        TripDbModel trip = tripRepository.findById(createDto.getTripId())
+            .orElseThrow(() -> new RuntimeException("Trip not found with id: " + createDto.getTripId()));
+        entity.setTrip(trip);
+
+        CarDbModel car = carRepository.findById(createDto.getCarId())
+            .orElseThrow(() -> new RuntimeException("Car not found with id: " + createDto.getCarId()));
+        entity.setCar(car);
+
         TripCarDbModel savedEntity = tripCarRepository.save(entity);
         return tripCarMapper.toResponse(savedEntity);
     }
@@ -58,7 +75,22 @@ public class TripCarServiceImpl implements TripCarService {
     public TripCarResponse update(UUID id, TripCarUpdate updateDto) {
         TripCarDbModel entity = tripCarRepository.findByIdAndIsDeletedFalse(id)
             .orElseThrow(() -> new RuntimeException("TripCar not found with id: " + id));
-        tripCarMapper.updateEntity(updateDto, entity);
+
+        entity.setPrice(updateDto.getPrice());
+        entity.setAvailableSeats(updateDto.getAvailableSeats());
+
+        if (updateDto.getTripId() != null) {
+            TripDbModel trip = tripRepository.findById(updateDto.getTripId())
+                .orElseThrow(() -> new RuntimeException("Trip not found with id: " + updateDto.getTripId()));
+            entity.setTrip(trip);
+        }
+
+        if (updateDto.getCarId() != null) {
+            CarDbModel car = carRepository.findById(updateDto.getCarId())
+                .orElseThrow(() -> new RuntimeException("Car not found with id: " + updateDto.getCarId()));
+            entity.setCar(car);
+        }
+
         TripCarDbModel updatedEntity = tripCarRepository.save(entity);
         return tripCarMapper.toResponse(updatedEntity);
     }

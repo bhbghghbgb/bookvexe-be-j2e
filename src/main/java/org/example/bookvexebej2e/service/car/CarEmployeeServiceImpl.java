@@ -3,9 +3,13 @@ package org.example.bookvexebej2e.service.car;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.mappers.CarEmployeeMapper;
+import org.example.bookvexebej2e.models.db.CarDbModel;
 import org.example.bookvexebej2e.models.db.CarEmployeeDbModel;
+import org.example.bookvexebej2e.models.db.EmployeeDbModel;
 import org.example.bookvexebej2e.models.dto.car.*;
 import org.example.bookvexebej2e.repository.car.CarEmployeeRepository;
+import org.example.bookvexebej2e.repository.car.CarRepository;
+import org.example.bookvexebej2e.repository.employee.EmployeeRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +26,8 @@ import java.util.UUID;
 public class CarEmployeeServiceImpl implements CarEmployeeService {
 
     private final CarEmployeeRepository carEmployeeRepository;
+    private final EmployeeRepository employeeRepository;
+    private final CarRepository carRepository;
     private final CarEmployeeMapper carEmployeeMapper;
 
     @Override
@@ -49,7 +55,16 @@ public class CarEmployeeServiceImpl implements CarEmployeeService {
 
     @Override
     public CarEmployeeResponse create(CarEmployeeCreate createDto) {
-        CarEmployeeDbModel entity = carEmployeeMapper.toEntity(createDto);
+        CarEmployeeDbModel entity = new CarEmployeeDbModel();
+
+        CarDbModel car = carRepository.findById(createDto.getCarId())
+            .orElseThrow(() -> new RuntimeException("Car not found with id: " + createDto.getCarId()));
+        entity.setCar(car);
+
+        EmployeeDbModel employee = employeeRepository.findById(createDto.getEmployeeId())
+            .orElseThrow(() -> new RuntimeException("Employee not found with id: " + createDto.getEmployeeId()));
+        entity.setEmployee(employee);
+
         CarEmployeeDbModel savedEntity = carEmployeeRepository.save(entity);
         return carEmployeeMapper.toResponse(savedEntity);
     }
@@ -58,7 +73,19 @@ public class CarEmployeeServiceImpl implements CarEmployeeService {
     public CarEmployeeResponse update(UUID id, CarEmployeeUpdate updateDto) {
         CarEmployeeDbModel entity = carEmployeeRepository.findByIdAndIsDeletedFalse(id)
             .orElseThrow(() -> new RuntimeException("CarEmployee not found with id: " + id));
-        carEmployeeMapper.updateEntity(updateDto, entity);
+
+        if (updateDto.getCarId() != null) {
+            CarDbModel car = carRepository.findById(updateDto.getCarId())
+                .orElseThrow(() -> new RuntimeException("Car not found with id: " + updateDto.getCarId()));
+            entity.setCar(car);
+        }
+
+        if (updateDto.getEmployeeId() != null) {
+            EmployeeDbModel employee = employeeRepository.findById(updateDto.getEmployeeId())
+                .orElseThrow(() -> new RuntimeException("Employee not found with id: " + updateDto.getEmployeeId()));
+            entity.setEmployee(employee);
+        }
+
         CarEmployeeDbModel updatedEntity = carEmployeeRepository.save(entity);
         return carEmployeeMapper.toResponse(updatedEntity);
     }

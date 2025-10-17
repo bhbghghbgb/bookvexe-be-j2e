@@ -3,9 +3,13 @@ package org.example.bookvexebej2e.service.notification;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.mappers.NotificationMapper;
-import org.example.bookvexebej2e.models.db.NotificationDbModel;
+import org.example.bookvexebej2e.models.db.*;
 import org.example.bookvexebej2e.models.dto.notification.*;
+import org.example.bookvexebej2e.repository.booking.BookingRepository;
 import org.example.bookvexebej2e.repository.notification.NotificationRepository;
+import org.example.bookvexebej2e.repository.notification.NotificationTypeRepository;
+import org.example.bookvexebej2e.repository.trip.TripRepository;
+import org.example.bookvexebej2e.repository.user.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +26,10 @@ import java.util.UUID;
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final BookingRepository bookingRepository;
+    private final TripRepository tripRepository;
+    private final NotificationTypeRepository notificationTypeRepository;
+    private final UserRepository userRepository;
     private final NotificationMapper notificationMapper;
 
     @Override
@@ -49,7 +57,33 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public NotificationResponse create(NotificationCreate createDto) {
-        NotificationDbModel entity = notificationMapper.toEntity(createDto);
+        NotificationDbModel entity = new NotificationDbModel();
+        entity.setChannel(createDto.getChannel());
+        entity.setTitle(createDto.getTitle());
+        entity.setMessage(createDto.getMessage());
+        entity.setIsSent(createDto.getIsSent());
+        entity.setSentAt(createDto.getSentAt());
+
+        UserDbModel user = userRepository.findById(createDto.getUserId())
+            .orElseThrow(() -> new RuntimeException("User not found with id: " + createDto.getUserId()));
+        entity.setUser(user);
+
+        if (createDto.getBookingId() != null) {
+            BookingDbModel booking = bookingRepository.findById(createDto.getBookingId())
+                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + createDto.getBookingId()));
+            entity.setBooking(booking);
+        }
+
+        if (createDto.getTripId() != null) {
+            TripDbModel trip = tripRepository.findById(createDto.getTripId())
+                .orElseThrow(() -> new RuntimeException("Trip not found with id: " + createDto.getTripId()));
+            entity.setTrip(trip);
+        }
+
+        NotificationTypeDbModel type = notificationTypeRepository.findById(createDto.getTypeId())
+            .orElseThrow(() -> new RuntimeException("NotificationType not found with id: " + createDto.getTypeId()));
+        entity.setType(type);
+
         NotificationDbModel savedEntity = notificationRepository.save(entity);
         return notificationMapper.toResponse(savedEntity);
     }
@@ -58,7 +92,38 @@ public class NotificationServiceImpl implements NotificationService {
     public NotificationResponse update(UUID id, NotificationUpdate updateDto) {
         NotificationDbModel entity = notificationRepository.findByIdAndIsDeletedFalse(id)
             .orElseThrow(() -> new RuntimeException("Notification not found with id: " + id));
-        notificationMapper.updateEntity(updateDto, entity);
+
+        entity.setChannel(updateDto.getChannel());
+        entity.setTitle(updateDto.getTitle());
+        entity.setMessage(updateDto.getMessage());
+        entity.setIsSent(updateDto.getIsSent());
+        entity.setSentAt(updateDto.getSentAt());
+
+        if (updateDto.getUserId() != null) {
+            UserDbModel user = userRepository.findById(updateDto.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + updateDto.getUserId()));
+            entity.setUser(user);
+        }
+
+        if (updateDto.getBookingId() != null) {
+            BookingDbModel booking = bookingRepository.findById(updateDto.getBookingId())
+                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + updateDto.getBookingId()));
+            entity.setBooking(booking);
+        }
+
+        if (updateDto.getTripId() != null) {
+            TripDbModel trip = tripRepository.findById(updateDto.getTripId())
+                .orElseThrow(() -> new RuntimeException("Trip not found with id: " + updateDto.getTripId()));
+            entity.setTrip(trip);
+        }
+
+        if (updateDto.getTypeId() != null) {
+            NotificationTypeDbModel type = notificationTypeRepository.findById(updateDto.getTypeId())
+                .orElseThrow(
+                    () -> new RuntimeException("NotificationType not found with id: " + updateDto.getTypeId()));
+            entity.setType(type);
+        }
+
         NotificationDbModel updatedEntity = notificationRepository.save(entity);
         return notificationMapper.toResponse(updatedEntity);
     }

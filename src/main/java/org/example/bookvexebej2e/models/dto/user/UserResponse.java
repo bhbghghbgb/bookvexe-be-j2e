@@ -1,6 +1,8 @@
 package org.example.bookvexebej2e.models.dto.user;
 
 import lombok.Data;
+import org.example.bookvexebej2e.models.dto.customer.CustomerResponse;
+import org.example.bookvexebej2e.models.dto.employee.EmployeeResponse;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -11,8 +13,8 @@ public class UserResponse {
     private String username;
     private Boolean isGoogle;
     private String googleAccount;
-    private UUID employeeId;
-    private UUID customerId;
+    private EmployeeResponse employee;
+    private CustomerResponse customer;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
 }

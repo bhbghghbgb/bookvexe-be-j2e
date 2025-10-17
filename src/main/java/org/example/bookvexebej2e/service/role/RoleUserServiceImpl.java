@@ -3,9 +3,13 @@ package org.example.bookvexebej2e.service.role;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.mappers.RoleUserMapper;
+import org.example.bookvexebej2e.models.db.RoleDbModel;
 import org.example.bookvexebej2e.models.db.RoleUserDbModel;
+import org.example.bookvexebej2e.models.db.UserDbModel;
 import org.example.bookvexebej2e.models.dto.role.*;
+import org.example.bookvexebej2e.repository.role.RoleRepository;
 import org.example.bookvexebej2e.repository.role.RoleUserRepository;
+import org.example.bookvexebej2e.repository.user.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +26,8 @@ import java.util.UUID;
 public class RoleUserServiceImpl implements RoleUserService {
 
     private final RoleUserRepository roleUserRepository;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final RoleUserMapper roleUserMapper;
 
     @Override
@@ -49,7 +55,16 @@ public class RoleUserServiceImpl implements RoleUserService {
 
     @Override
     public RoleUserResponse create(RoleUserCreate createDto) {
-        RoleUserDbModel entity = roleUserMapper.toEntity(createDto);
+        RoleUserDbModel entity = new RoleUserDbModel();
+
+        RoleDbModel role = roleRepository.findById(createDto.getRoleId())
+            .orElseThrow(() -> new RuntimeException("Role not found with id: " + createDto.getRoleId()));
+        entity.setRole(role);
+
+        UserDbModel user = userRepository.findById(createDto.getUserId())
+            .orElseThrow(() -> new RuntimeException("User not found with id: " + createDto.getUserId()));
+        entity.setUser(user);
+
         RoleUserDbModel savedEntity = roleUserRepository.save(entity);
         return roleUserMapper.toResponse(savedEntity);
     }
@@ -58,7 +73,19 @@ public class RoleUserServiceImpl implements RoleUserService {
     public RoleUserResponse update(UUID id, RoleUserUpdate updateDto) {
         RoleUserDbModel entity = roleUserRepository.findByIdAndIsDeletedFalse(id)
             .orElseThrow(() -> new RuntimeException("RoleUser not found with id: " + id));
-        roleUserMapper.updateEntity(updateDto, entity);
+
+        if (updateDto.getRoleId() != null) {
+            RoleDbModel role = roleRepository.findById(updateDto.getRoleId())
+                .orElseThrow(() -> new RuntimeException("Role not found with id: " + updateDto.getRoleId()));
+            entity.setRole(role);
+        }
+
+        if (updateDto.getUserId() != null) {
+            UserDbModel user = userRepository.findById(updateDto.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + updateDto.getUserId()));
+            entity.setUser(user);
+        }
+
         RoleUserDbModel updatedEntity = roleUserRepository.save(entity);
         return roleUserMapper.toResponse(updatedEntity);
     }

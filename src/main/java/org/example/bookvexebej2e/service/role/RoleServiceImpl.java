@@ -49,7 +49,11 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleResponse create(RoleCreate createDto) {
-        RoleDbModel entity = roleMapper.toEntity(createDto);
+        RoleDbModel entity = new RoleDbModel();
+        entity.setCode(createDto.getCode());
+        entity.setName(createDto.getName());
+        entity.setDescription(createDto.getDescription());
+
         RoleDbModel savedEntity = roleRepository.save(entity);
         return roleMapper.toResponse(savedEntity);
     }
@@ -58,7 +62,11 @@ public class RoleServiceImpl implements RoleService {
     public RoleResponse update(UUID id, RoleUpdate updateDto) {
         RoleDbModel entity = roleRepository.findByIdAndIsDeletedFalse(id)
             .orElseThrow(() -> new RuntimeException("Role not found with id: " + id));
-        roleMapper.updateEntity(updateDto, entity);
+
+        entity.setCode(updateDto.getCode());
+        entity.setName(updateDto.getName());
+        entity.setDescription(updateDto.getDescription());
+
         RoleDbModel updatedEntity = roleRepository.save(entity);
         return roleMapper.toResponse(updatedEntity);
     }

@@ -3,8 +3,10 @@ package org.example.bookvexebej2e.service.trip;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.mappers.TripStopMapper;
+import org.example.bookvexebej2e.models.db.TripDbModel;
 import org.example.bookvexebej2e.models.db.TripStopDbModel;
 import org.example.bookvexebej2e.models.dto.trip.*;
+import org.example.bookvexebej2e.repository.trip.TripRepository;
 import org.example.bookvexebej2e.repository.trip.TripStopRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,12 +24,15 @@ import java.util.UUID;
 public class TripStopServiceImpl implements TripStopService {
 
     private final TripStopRepository tripStopRepository;
+    private final TripRepository tripRepository;
     private final TripStopMapper tripStopMapper;
 
     @Override
     public List<TripStopResponse> findAll() {
         List<TripStopDbModel> entities = tripStopRepository.findAllByIsDeletedFalse();
-        return entities.stream().map(tripStopMapper::toResponse).toList();
+        return entities.stream()
+            .map(tripStopMapper::toResponse)
+            .toList();
     }
 
     @Override
@@ -41,13 +46,21 @@ public class TripStopServiceImpl implements TripStopService {
     @Override
     public TripStopResponse findById(UUID id) {
         TripStopDbModel entity = tripStopRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new RuntimeException("TripStop not found with id: " + id));
+            .orElseThrow(() -> new RuntimeException("TripStop not found with id: " + id));
         return tripStopMapper.toResponse(entity);
     }
 
     @Override
     public TripStopResponse create(TripStopCreate createDto) {
-        TripStopDbModel entity = tripStopMapper.toEntity(createDto);
+        TripStopDbModel entity = new TripStopDbModel();
+        entity.setStopType(createDto.getStopType());
+        entity.setLocation(createDto.getLocation());
+        entity.setOrderIndex(createDto.getOrderIndex());
+
+        TripDbModel trip = tripRepository.findById(createDto.getTripId())
+            .orElseThrow(() -> new RuntimeException("Trip not found with id: " + createDto.getTripId()));
+        entity.setTrip(trip);
+
         TripStopDbModel savedEntity = tripStopRepository.save(entity);
         return tripStopMapper.toResponse(savedEntity);
     }
@@ -55,8 +68,18 @@ public class TripStopServiceImpl implements TripStopService {
     @Override
     public TripStopResponse update(UUID id, TripStopUpdate updateDto) {
         TripStopDbModel entity = tripStopRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new RuntimeException("TripStop not found with id: " + id));
-        tripStopMapper.updateEntity(updateDto, entity);
+            .orElseThrow(() -> new RuntimeException("TripStop not found with id: " + id));
+
+        entity.setStopType(updateDto.getStopType());
+        entity.setLocation(updateDto.getLocation());
+        entity.setOrderIndex(updateDto.getOrderIndex());
+
+        if (updateDto.getTripId() != null) {
+            TripDbModel trip = tripRepository.findById(updateDto.getTripId())
+                .orElseThrow(() -> new RuntimeException("Trip not found with id: " + updateDto.getTripId()));
+            entity.setTrip(trip);
+        }
+
         TripStopDbModel updatedEntity = tripStopRepository.save(entity);
         return tripStopMapper.toResponse(updatedEntity);
     }
@@ -69,7 +92,7 @@ public class TripStopServiceImpl implements TripStopService {
     @Override
     public void activate(UUID id) {
         TripStopDbModel entity = tripStopRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("TripStop not found with id: " + id));
+            .orElseThrow(() -> new RuntimeException("TripStop not found with id: " + id));
         entity.setIsDeleted(false);
         tripStopRepository.save(entity);
     }
@@ -82,7 +105,9 @@ public class TripStopServiceImpl implements TripStopService {
     @Override
     public List<TripStopSelectResponse> findAllForSelect() {
         List<TripStopDbModel> entities = tripStopRepository.findAllByIsDeletedFalse();
-        return entities.stream().map(tripStopMapper::toSelectResponse).toList();
+        return entities.stream()
+            .map(tripStopMapper::toSelectResponse)
+            .toList();
     }
 
     private Specification<TripStopDbModel> buildSpecification(TripStopQuery query) {
@@ -91,13 +116,17 @@ public class TripStopServiceImpl implements TripStopService {
             predicates.add(cb.equal(root.get("isDeleted"), false));
 
             if (query.getTripId() != null) {
-                predicates.add(cb.equal(root.get("trip").get("id"), query.getTripId()));
+                predicates.add(cb.equal(root.get("trip")
+                    .get("id"), query.getTripId()));
             }
-            if (query.getStopType() != null && !query.getStopType().isEmpty()) {
+            if (query.getStopType() != null && !query.getStopType()
+                .isEmpty()) {
                 predicates.add(cb.equal(root.get("stopType"), query.getStopType()));
             }
-            if (query.getLocation() != null && !query.getLocation().isEmpty()) {
-                predicates.add(cb.like(cb.lower(root.get("location")), "%" + query.getLocation().toLowerCase() + "%"));
+            if (query.getLocation() != null && !query.getLocation()
+                .isEmpty()) {
+                predicates.add(cb.like(cb.lower(root.get("location")), "%" + query.getLocation()
+                    .toLowerCase() + "%"));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

@@ -3,8 +3,10 @@ package org.example.bookvexebej2e.service.car;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.mappers.CarSeatMapper;
+import org.example.bookvexebej2e.models.db.CarDbModel;
 import org.example.bookvexebej2e.models.db.CarSeatDbModel;
 import org.example.bookvexebej2e.models.dto.car.*;
+import org.example.bookvexebej2e.repository.car.CarRepository;
 import org.example.bookvexebej2e.repository.car.CarSeatRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +24,7 @@ import java.util.UUID;
 public class CarSeatServiceImpl implements CarSeatService {
 
     private final CarSeatRepository carSeatRepository;
+    private final CarRepository carRepository;
     private final CarSeatMapper carSeatMapper;
 
     @Override
@@ -49,7 +52,14 @@ public class CarSeatServiceImpl implements CarSeatService {
 
     @Override
     public CarSeatResponse create(CarSeatCreate createDto) {
-        CarSeatDbModel entity = carSeatMapper.toEntity(createDto);
+        CarSeatDbModel entity = new CarSeatDbModel();
+        entity.setSeatNumber(createDto.getSeatNumber());
+        entity.setSeatPosition(createDto.getSeatPosition());
+
+        CarDbModel car = carRepository.findById(createDto.getCarId())
+            .orElseThrow(() -> new RuntimeException("Car not found with id: " + createDto.getCarId()));
+        entity.setCar(car);
+
         CarSeatDbModel savedEntity = carSeatRepository.save(entity);
         return carSeatMapper.toResponse(savedEntity);
     }
@@ -58,7 +68,16 @@ public class CarSeatServiceImpl implements CarSeatService {
     public CarSeatResponse update(UUID id, CarSeatUpdate updateDto) {
         CarSeatDbModel entity = carSeatRepository.findByIdAndIsDeletedFalse(id)
             .orElseThrow(() -> new RuntimeException("CarSeat not found with id: " + id));
-        carSeatMapper.updateEntity(updateDto, entity);
+
+        entity.setSeatNumber(updateDto.getSeatNumber());
+        entity.setSeatPosition(updateDto.getSeatPosition());
+
+        if (updateDto.getCarId() != null) {
+            CarDbModel car = carRepository.findById(updateDto.getCarId())
+                .orElseThrow(() -> new RuntimeException("Car not found with id: " + updateDto.getCarId()));
+            entity.setCar(car);
+        }
+
         CarSeatDbModel updatedEntity = carSeatRepository.save(entity);
         return carSeatMapper.toResponse(updatedEntity);
     }

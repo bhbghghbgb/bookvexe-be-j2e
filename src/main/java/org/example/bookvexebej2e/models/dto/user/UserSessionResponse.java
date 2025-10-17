@@ -8,7 +8,7 @@ import java.util.UUID;
 @Data
 public class UserSessionResponse {
     private UUID id;
-    private UUID userId;
+    private UserResponse user;
     private String accessToken;
     private LocalDateTime expiresAt;
     private Boolean revoked;
