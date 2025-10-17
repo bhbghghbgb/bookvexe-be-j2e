@@ -29,7 +29,7 @@ public class UserSessionServiceImpl implements UserSessionService {
 
     @Override
     public List<UserSessionResponse> findAll() {
-        List<UserSessionDbModel> entities = userSessionRepository.findAllNotDeleted();
+        List<UserSessionDbModel> entities = userSessionRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(userSessionMapper::toResponse)
             .toList();
@@ -104,7 +104,7 @@ public class UserSessionServiceImpl implements UserSessionService {
 
     @Override
     public List<UserSessionSelectResponse> findAllForSelect() {
-        List<UserSessionDbModel> entities = userSessionRepository.findAllNotDeleted();
+        List<UserSessionDbModel> entities = userSessionRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(userSessionMapper::toSelectResponse)
             .toList();

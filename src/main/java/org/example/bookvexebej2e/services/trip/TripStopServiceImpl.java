@@ -29,7 +29,7 @@ public class TripStopServiceImpl implements TripStopService {
 
     @Override
     public List<TripStopResponse> findAll() {
-        List<TripStopDbModel> entities = tripStopRepository.findAllNotDeleted();
+        List<TripStopDbModel> entities = tripStopRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(tripStopMapper::toResponse)
             .toList();
@@ -104,7 +104,7 @@ public class TripStopServiceImpl implements TripStopService {
 
     @Override
     public List<TripStopSelectResponse> findAllForSelect() {
-        List<TripStopDbModel> entities = tripStopRepository.findAllNotDeleted();
+        List<TripStopDbModel> entities = tripStopRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(tripStopMapper::toSelectResponse)
             .toList();

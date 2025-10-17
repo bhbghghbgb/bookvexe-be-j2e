@@ -29,7 +29,7 @@ public class CarSeatServiceImpl implements CarSeatService {
 
     @Override
     public List<CarSeatResponse> findAll() {
-        List<CarSeatDbModel> entities = carSeatRepository.findAllNotDeleted();
+        List<CarSeatDbModel> entities = carSeatRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(carSeatMapper::toResponse)
             .toList();
@@ -102,7 +102,7 @@ public class CarSeatServiceImpl implements CarSeatService {
 
     @Override
     public List<CarSeatSelectResponse> findAllForSelect() {
-        List<CarSeatDbModel> entities = carSeatRepository.findAllNotDeleted();
+        List<CarSeatDbModel> entities = carSeatRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(carSeatMapper::toSelectResponse)
             .toList();

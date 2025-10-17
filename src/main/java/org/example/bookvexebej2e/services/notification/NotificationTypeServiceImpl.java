@@ -26,7 +26,7 @@ public class NotificationTypeServiceImpl implements NotificationTypeService {
 
     @Override
     public List<NotificationTypeResponse> findAll() {
-        List<NotificationTypeDbModel> entities = notificationTypeRepository.findAllNotDeleted();
+        List<NotificationTypeDbModel> entities = notificationTypeRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(notificationTypeMapper::toResponse)
             .toList();
@@ -91,7 +91,7 @@ public class NotificationTypeServiceImpl implements NotificationTypeService {
 
     @Override
     public List<NotificationTypeSelectResponse> findAllForSelect() {
-        List<NotificationTypeDbModel> entities = notificationTypeRepository.findAllNotDeleted();
+        List<NotificationTypeDbModel> entities = notificationTypeRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(notificationTypeMapper::toSelectResponse)
             .toList();

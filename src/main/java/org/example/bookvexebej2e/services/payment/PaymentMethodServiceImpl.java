@@ -26,7 +26,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
 
     @Override
     public List<PaymentMethodResponse> findAll() {
-        List<PaymentMethodDbModel> entities = paymentMethodRepository.findAllNotDeleted();
+        List<PaymentMethodDbModel> entities = paymentMethodRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(paymentMethodMapper::toResponse)
             .toList();
@@ -93,7 +93,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
 
     @Override
     public List<PaymentMethodSelectResponse> findAllForSelect() {
-        List<PaymentMethodDbModel> entities = paymentMethodRepository.findAllNotDeleted();
+        List<PaymentMethodDbModel> entities = paymentMethodRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(paymentMethodMapper::toSelectResponse)
             .toList();

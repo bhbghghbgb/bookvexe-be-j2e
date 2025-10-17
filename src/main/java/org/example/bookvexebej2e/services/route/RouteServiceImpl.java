@@ -26,7 +26,7 @@ public class RouteServiceImpl implements RouteService {
 
     @Override
     public List<RouteResponse> findAll() {
-        List<RouteDbModel> entities = routeRepository.findAllNotDeleted();
+        List<RouteDbModel> entities = routeRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(routeMapper::toResponse)
             .toList();
@@ -93,7 +93,7 @@ public class RouteServiceImpl implements RouteService {
 
     @Override
     public List<RouteSelectResponse> findAllForSelect() {
-        List<RouteDbModel> entities = routeRepository.findAllNotDeleted();
+        List<RouteDbModel> entities = routeRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(routeMapper::toSelectResponse)
             .toList();

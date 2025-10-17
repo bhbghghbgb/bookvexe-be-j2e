@@ -29,7 +29,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public List<CustomerResponse> findAll() {
-        List<CustomerDbModel> entities = customerRepository.findAllNotDeleted();
+        List<CustomerDbModel> entities = customerRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(customerMapper::toResponse)
             .toList();
@@ -110,7 +110,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public List<CustomerSelectResponse> findAllForSelect() {
-        List<CustomerDbModel> entities = customerRepository.findAllNotDeleted();
+        List<CustomerDbModel> entities = customerRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(customerMapper::toSelectResponse)
             .toList();

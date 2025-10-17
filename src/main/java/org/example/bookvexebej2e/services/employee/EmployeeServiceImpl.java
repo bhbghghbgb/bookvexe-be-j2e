@@ -26,7 +26,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<EmployeeResponse> findAll() {
-        List<EmployeeDbModel> entities = employeeRepository.findAllNotDeleted();
+        List<EmployeeDbModel> entities = employeeRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(employeeMapper::toResponse)
             .toList();
@@ -95,7 +95,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<EmployeeSelectResponse> findAllForSelect() {
-        List<EmployeeDbModel> entities = employeeRepository.findAllNotDeleted();
+        List<EmployeeDbModel> entities = employeeRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(employeeMapper::toSelectResponse)
             .toList();

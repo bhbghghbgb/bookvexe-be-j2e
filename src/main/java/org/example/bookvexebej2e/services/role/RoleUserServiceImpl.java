@@ -32,7 +32,7 @@ public class RoleUserServiceImpl implements RoleUserService {
 
     @Override
     public List<RoleUserResponse> findAll() {
-        List<RoleUserDbModel> entities = roleUserRepository.findAllNotDeleted();
+        List<RoleUserDbModel> entities = roleUserRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(roleUserMapper::toResponse)
             .toList();
@@ -110,7 +110,7 @@ public class RoleUserServiceImpl implements RoleUserService {
 
     @Override
     public List<RoleUserSelectResponse> findAllForSelect() {
-        List<RoleUserDbModel> entities = roleUserRepository.findAllNotDeleted();
+        List<RoleUserDbModel> entities = roleUserRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(roleUserMapper::toSelectResponse)
             .toList();
