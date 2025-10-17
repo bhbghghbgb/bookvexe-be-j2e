@@ -8,5 +8,4 @@ import java.util.UUID;
 public class UserSelectResponse {
     private UUID id;
     private String username;
-    private String email;
 }
