@@ -1,6 +1,6 @@
 package org.example.bookvexebej2e.controller.invoice;
 
-import org.example.bookvexebej2e.dto.invoice.*;
+import org.example.bookvexebej2e.models.dto.invoice.*;
 import org.example.bookvexebej2e.service.invoice.InvoiceService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;

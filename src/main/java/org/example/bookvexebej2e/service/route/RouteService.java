@@ -1,6 +1,6 @@
 package org.example.bookvexebej2e.service.route;
 
-import org.example.bookvexebej2e.dto.route.*;
+import org.example.bookvexebej2e.models.dto.route.*;
 import org.springframework.data.domain.Page;
 
 import java.util.List;

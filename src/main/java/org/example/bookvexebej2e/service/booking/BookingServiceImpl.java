@@ -2,9 +2,9 @@ package org.example.bookvexebej2e.service.booking;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
-import org.example.bookvexebej2e.dto.booking.*;
 import org.example.bookvexebej2e.mappers.BookingMapper;
 import org.example.bookvexebej2e.models.db.BookingDbModel;
+import org.example.bookvexebej2e.models.dto.booking.*;
 import org.example.bookvexebej2e.repository.booking.BookingRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

@@ -1,6 +1,6 @@
 package org.example.bookvexebej2e.controller.payment;
 
-import org.example.bookvexebej2e.dto.payment.*;
+import org.example.bookvexebej2e.models.dto.payment.*;
 import org.example.bookvexebej2e.service.payment.PaymentService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;

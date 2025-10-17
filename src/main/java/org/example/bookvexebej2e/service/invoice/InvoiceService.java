@@ -1,6 +1,6 @@
 package org.example.bookvexebej2e.service.invoice;
 
-import org.example.bookvexebej2e.dto.invoice.*;
+import org.example.bookvexebej2e.models.dto.invoice.*;
 import org.springframework.data.domain.Page;
 
 import java.util.List;

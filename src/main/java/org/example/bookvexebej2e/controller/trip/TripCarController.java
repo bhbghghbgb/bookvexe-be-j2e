@@ -1,6 +1,6 @@
 package org.example.bookvexebej2e.controller.trip;
 
-import org.example.bookvexebej2e.dto.trip.*;
+import org.example.bookvexebej2e.models.dto.trip.*;
 import org.example.bookvexebej2e.service.trip.TripCarService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;

@@ -2,9 +2,9 @@ package org.example.bookvexebej2e.service.car;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
-import org.example.bookvexebej2e.dto.car.*;
 import org.example.bookvexebej2e.mappers.CarMapper;
 import org.example.bookvexebej2e.models.db.CarDbModel;
+import org.example.bookvexebej2e.models.dto.car.*;
 import org.example.bookvexebej2e.repository.car.CarRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
