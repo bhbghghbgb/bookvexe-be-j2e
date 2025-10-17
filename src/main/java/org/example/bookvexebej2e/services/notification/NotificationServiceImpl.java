@@ -157,7 +157,7 @@ public class NotificationServiceImpl implements NotificationService {
     private Specification<NotificationDbModel> buildSpecification(NotificationQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.equal(root.get("isDeleted"), false));
+            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
 
             if (query.getUserId() != null) {
                 predicates.add(cb.equal(root.get("user")

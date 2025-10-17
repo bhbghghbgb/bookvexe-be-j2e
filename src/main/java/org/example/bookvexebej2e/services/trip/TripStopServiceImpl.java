@@ -113,7 +113,7 @@ public class TripStopServiceImpl implements TripStopService {
     private Specification<TripStopDbModel> buildSpecification(TripStopQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.equal(root.get("isDeleted"), false));
+            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
 
             if (query.getTripId() != null) {
                 predicates.add(cb.equal(root.get("trip")
