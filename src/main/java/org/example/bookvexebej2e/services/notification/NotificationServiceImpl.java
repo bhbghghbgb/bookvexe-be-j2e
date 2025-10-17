@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.services.notification;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.NotificationMapper;
 import org.example.bookvexebej2e.models.db.*;
 import org.example.bookvexebej2e.models.dto.notification.*;
@@ -51,7 +52,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public NotificationResponse findById(UUID id) {
         NotificationDbModel entity = notificationRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("Notification not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(NotificationDbModel.class, id));
         return notificationMapper.toResponse(entity);
     }
 
@@ -65,23 +66,23 @@ public class NotificationServiceImpl implements NotificationService {
         entity.setSentAt(createDto.getSentAt());
 
         UserDbModel user = userRepository.findById(createDto.getUserId())
-            .orElseThrow(() -> new RuntimeException("User not found with id: " + createDto.getUserId()));
+            .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, createDto.getUserId()));
         entity.setUser(user);
 
         if (createDto.getBookingId() != null) {
             BookingDbModel booking = bookingRepository.findById(createDto.getBookingId())
-                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + createDto.getBookingId()));
+                .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, createDto.getBookingId()));
             entity.setBooking(booking);
         }
 
         if (createDto.getTripId() != null) {
             TripDbModel trip = tripRepository.findById(createDto.getTripId())
-                .orElseThrow(() -> new RuntimeException("Trip not found with id: " + createDto.getTripId()));
+                .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, createDto.getTripId()));
             entity.setTrip(trip);
         }
 
         NotificationTypeDbModel type = notificationTypeRepository.findById(createDto.getTypeId())
-            .orElseThrow(() -> new RuntimeException("NotificationType not found with id: " + createDto.getTypeId()));
+            .orElseThrow(() -> new ResourceNotFoundException(NotificationTypeDbModel.class, createDto.getTypeId()));
         entity.setType(type);
 
         NotificationDbModel savedEntity = notificationRepository.save(entity);
@@ -91,7 +92,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public NotificationResponse update(UUID id, NotificationUpdate updateDto) {
         NotificationDbModel entity = notificationRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("Notification not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(NotificationDbModel.class, id));
 
         entity.setChannel(updateDto.getChannel());
         entity.setTitle(updateDto.getTitle());
@@ -101,26 +102,25 @@ public class NotificationServiceImpl implements NotificationService {
 
         if (updateDto.getUserId() != null) {
             UserDbModel user = userRepository.findById(updateDto.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + updateDto.getUserId()));
+                .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, updateDto.getUserId()));
             entity.setUser(user);
         }
 
         if (updateDto.getBookingId() != null) {
             BookingDbModel booking = bookingRepository.findById(updateDto.getBookingId())
-                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + updateDto.getBookingId()));
+                .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, updateDto.getBookingId()));
             entity.setBooking(booking);
         }
 
         if (updateDto.getTripId() != null) {
             TripDbModel trip = tripRepository.findById(updateDto.getTripId())
-                .orElseThrow(() -> new RuntimeException("Trip not found with id: " + updateDto.getTripId()));
+                .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, updateDto.getTripId()));
             entity.setTrip(trip);
         }
 
         if (updateDto.getTypeId() != null) {
             NotificationTypeDbModel type = notificationTypeRepository.findById(updateDto.getTypeId())
-                .orElseThrow(
-                    () -> new RuntimeException("NotificationType not found with id: " + updateDto.getTypeId()));
+                .orElseThrow(() -> new ResourceNotFoundException(NotificationTypeDbModel.class, updateDto.getTypeId()));
             entity.setType(type);
         }
 
@@ -136,7 +136,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void activate(UUID id) {
         NotificationDbModel entity = notificationRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Notification not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(NotificationDbModel.class, id));
         entity.setIsDeleted(false);
         notificationRepository.save(entity);
     }

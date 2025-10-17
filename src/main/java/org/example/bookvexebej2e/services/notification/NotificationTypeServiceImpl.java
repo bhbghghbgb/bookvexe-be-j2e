@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.services.notification;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.NotificationTypeMapper;
 import org.example.bookvexebej2e.models.db.NotificationTypeDbModel;
 import org.example.bookvexebej2e.models.dto.notification.*;
@@ -43,7 +44,7 @@ public class NotificationTypeServiceImpl implements NotificationTypeService {
     @Override
     public NotificationTypeResponse findById(UUID id) {
         NotificationTypeDbModel entity = notificationTypeRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("NotificationType not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(NotificationTypeDbModel.class, id));
         return notificationTypeMapper.toResponse(entity);
     }
 
@@ -61,7 +62,7 @@ public class NotificationTypeServiceImpl implements NotificationTypeService {
     @Override
     public NotificationTypeResponse update(UUID id, NotificationTypeUpdate updateDto) {
         NotificationTypeDbModel entity = notificationTypeRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("NotificationType not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(NotificationTypeDbModel.class, id));
 
         entity.setCode(updateDto.getCode());
         entity.setName(updateDto.getName());
@@ -79,7 +80,7 @@ public class NotificationTypeServiceImpl implements NotificationTypeService {
     @Override
     public void activate(UUID id) {
         NotificationTypeDbModel entity = notificationTypeRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("NotificationType not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(NotificationTypeDbModel.class, id));
         entity.setIsDeleted(false);
         notificationTypeRepository.save(entity);
     }

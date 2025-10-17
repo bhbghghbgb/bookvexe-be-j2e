@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.services.trip;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.TripStopMapper;
 import org.example.bookvexebej2e.models.db.TripDbModel;
 import org.example.bookvexebej2e.models.db.TripStopDbModel;
@@ -46,7 +47,7 @@ public class TripStopServiceImpl implements TripStopService {
     @Override
     public TripStopResponse findById(UUID id) {
         TripStopDbModel entity = tripStopRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("TripStop not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(TripStopDbModel.class, id));
         return tripStopMapper.toResponse(entity);
     }
 
@@ -58,7 +59,7 @@ public class TripStopServiceImpl implements TripStopService {
         entity.setOrderIndex(createDto.getOrderIndex());
 
         TripDbModel trip = tripRepository.findById(createDto.getTripId())
-            .orElseThrow(() -> new RuntimeException("Trip not found with id: " + createDto.getTripId()));
+            .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, createDto.getTripId()));
         entity.setTrip(trip);
 
         TripStopDbModel savedEntity = tripStopRepository.save(entity);
@@ -68,7 +69,7 @@ public class TripStopServiceImpl implements TripStopService {
     @Override
     public TripStopResponse update(UUID id, TripStopUpdate updateDto) {
         TripStopDbModel entity = tripStopRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("TripStop not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(TripStopDbModel.class, id));
 
         entity.setStopType(updateDto.getStopType());
         entity.setLocation(updateDto.getLocation());
@@ -76,7 +77,7 @@ public class TripStopServiceImpl implements TripStopService {
 
         if (updateDto.getTripId() != null) {
             TripDbModel trip = tripRepository.findById(updateDto.getTripId())
-                .orElseThrow(() -> new RuntimeException("Trip not found with id: " + updateDto.getTripId()));
+                .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, updateDto.getTripId()));
             entity.setTrip(trip);
         }
 
@@ -92,7 +93,7 @@ public class TripStopServiceImpl implements TripStopService {
     @Override
     public void activate(UUID id) {
         TripStopDbModel entity = tripStopRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("TripStop not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(TripStopDbModel.class, id));
         entity.setIsDeleted(false);
         tripStopRepository.save(entity);
     }

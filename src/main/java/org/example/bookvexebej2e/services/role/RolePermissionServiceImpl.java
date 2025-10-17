@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.services.role;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.RolePermissionMapper;
 import org.example.bookvexebej2e.models.db.RoleDbModel;
 import org.example.bookvexebej2e.models.db.RolePermissionDbModel;
@@ -46,7 +47,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
     @Override
     public RolePermissionResponse findById(UUID id) {
         RolePermissionDbModel entity = rolePermissionRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("RolePermission not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(RolePermissionDbModel.class, id));
         return rolePermissionMapper.toResponse(entity);
     }
 
@@ -63,7 +64,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
         entity.setIsCanExport(createDto.getIsCanExport());
 
         RoleDbModel role = roleRepository.findById(createDto.getRoleId())
-            .orElseThrow(() -> new RuntimeException("Role not found with id: " + createDto.getRoleId()));
+            .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, createDto.getRoleId()));
         entity.setRole(role);
 
         RolePermissionDbModel savedEntity = rolePermissionRepository.save(entity);
@@ -73,7 +74,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
     @Override
     public RolePermissionResponse update(UUID id, RolePermissionUpdate updateDto) {
         RolePermissionDbModel entity = rolePermissionRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("RolePermission not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(RolePermissionDbModel.class, id));
 
         entity.setIsCanRead(updateDto.getIsCanRead());
         entity.setIsCanCreate(updateDto.getIsCanCreate());
@@ -86,7 +87,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 
         if (updateDto.getRoleId() != null) {
             RoleDbModel role = roleRepository.findById(updateDto.getRoleId())
-                .orElseThrow(() -> new RuntimeException("Role not found with id: " + updateDto.getRoleId()));
+                .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, updateDto.getRoleId()));
             entity.setRole(role);
         }
 
@@ -102,7 +103,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
     @Override
     public void activate(UUID id) {
         RolePermissionDbModel entity = rolePermissionRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("RolePermission not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(RolePermissionDbModel.class, id));
         entity.setIsDeleted(false);
         rolePermissionRepository.save(entity);
     }

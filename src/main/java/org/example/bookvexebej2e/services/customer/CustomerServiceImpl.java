@@ -3,6 +3,7 @@ package org.example.bookvexebej2e.services.customer;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.CustomerMapper;
 import org.example.bookvexebej2e.models.db.CustomerDbModel;
 import org.example.bookvexebej2e.models.db.CustomerTypeDbModel;
@@ -50,7 +51,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerResponse findById(UUID id) {
         CustomerDbModel entity = customerRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("Customer not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(CustomerDbModel.class, id));
         return customerMapper.toResponse(entity);
     }
 
@@ -65,8 +66,7 @@ public class CustomerServiceImpl implements CustomerService {
         entity.setDescription(createDto.getDescription());
 
         CustomerTypeDbModel customerType = customerTypeRepository.findById(createDto.getCustomerTypeId())
-            .orElseThrow(
-                () -> new RuntimeException("CustomerType not found with id: " + createDto.getCustomerTypeId()));
+            .orElseThrow(() -> new ResourceNotFoundException(CustomerTypeDbModel.class, createDto.getCustomerTypeId()));
         entity.setCustomerType(customerType);
 
         CustomerDbModel savedEntity = customerRepository.save(entity);
@@ -86,7 +86,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerResponse update(UUID id, CustomerUpdate updateDto) {
         CustomerDbModel entity = customerRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("Customer not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(CustomerDbModel.class, id));
 
         entity.setCode(updateDto.getCode());
         entity.setName(updateDto.getName());
@@ -97,7 +97,7 @@ public class CustomerServiceImpl implements CustomerService {
         if (updateDto.getCustomerTypeId() != null) {
             CustomerTypeDbModel customerType = customerTypeRepository.findById(updateDto.getCustomerTypeId())
                 .orElseThrow(
-                    () -> new RuntimeException("CustomerType not found with id: " + updateDto.getCustomerTypeId()));
+                    () -> new ResourceNotFoundException(CustomerTypeDbModel.class, updateDto.getCustomerTypeId()));
             entity.setCustomerType(customerType);
         }
 
@@ -113,7 +113,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public void activate(UUID id) {
         CustomerDbModel entity = customerRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Customer not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(CustomerDbModel.class, id));
         entity.setIsDeleted(false);
         customerRepository.save(entity);
     }

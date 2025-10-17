@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.services.route;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.RouteMapper;
 import org.example.bookvexebej2e.models.db.RouteDbModel;
 import org.example.bookvexebej2e.models.dto.route.*;
@@ -43,7 +44,7 @@ public class RouteServiceImpl implements RouteService {
     @Override
     public RouteResponse findById(UUID id) {
         RouteDbModel entity = routeRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("Route not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(RouteDbModel.class, id));
         return routeMapper.toResponse(entity);
     }
 
@@ -62,7 +63,7 @@ public class RouteServiceImpl implements RouteService {
     @Override
     public RouteResponse update(UUID id, RouteUpdate updateDto) {
         RouteDbModel entity = routeRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("Route not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(RouteDbModel.class, id));
 
         entity.setStartLocation(updateDto.getStartLocation());
         entity.setEndLocation(updateDto.getEndLocation());
@@ -81,7 +82,7 @@ public class RouteServiceImpl implements RouteService {
     @Override
     public void activate(UUID id) {
         RouteDbModel entity = routeRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Route not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(RouteDbModel.class, id));
         entity.setIsDeleted(false);
         routeRepository.save(entity);
     }

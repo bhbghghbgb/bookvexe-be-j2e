@@ -3,6 +3,7 @@ package org.example.bookvexebej2e.services.employee;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.EmployeeMapper;
 import org.example.bookvexebej2e.models.db.EmployeeDbModel;
 import org.example.bookvexebej2e.models.db.UserDbModel;
@@ -47,7 +48,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public EmployeeResponse findById(UUID id) {
         EmployeeDbModel entity = employeeRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(EmployeeDbModel.class, id));
         return employeeMapper.toResponse(entity);
     }
 
@@ -77,7 +78,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public EmployeeResponse update(UUID id, EmployeeUpdate updateDto) {
         EmployeeDbModel entity = employeeRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(EmployeeDbModel.class, id));
 
         entity.setCode(updateDto.getCode());
         entity.setName(updateDto.getName());
@@ -97,7 +98,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public void activate(UUID id) {
         EmployeeDbModel entity = employeeRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(EmployeeDbModel.class, id));
         entity.setIsDeleted(false);
         employeeRepository.save(entity);
     }

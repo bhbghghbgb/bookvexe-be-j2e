@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.services.trip;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.TripCarMapper;
 import org.example.bookvexebej2e.models.db.CarDbModel;
 import org.example.bookvexebej2e.models.db.TripCarDbModel;
@@ -49,7 +50,7 @@ public class TripCarServiceImpl implements TripCarService {
     @Override
     public TripCarResponse findById(UUID id) {
         TripCarDbModel entity = tripCarRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("TripCar not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(TripCarDbModel.class, id));
         return tripCarMapper.toResponse(entity);
     }
 
@@ -60,11 +61,11 @@ public class TripCarServiceImpl implements TripCarService {
         entity.setAvailableSeats(createDto.getAvailableSeats());
 
         TripDbModel trip = tripRepository.findById(createDto.getTripId())
-            .orElseThrow(() -> new RuntimeException("Trip not found with id: " + createDto.getTripId()));
+            .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, createDto.getTripId()));
         entity.setTrip(trip);
 
         CarDbModel car = carRepository.findById(createDto.getCarId())
-            .orElseThrow(() -> new RuntimeException("Car not found with id: " + createDto.getCarId()));
+            .orElseThrow(() -> new ResourceNotFoundException(CarDbModel.class, createDto.getCarId()));
         entity.setCar(car);
 
         TripCarDbModel savedEntity = tripCarRepository.save(entity);
@@ -74,20 +75,20 @@ public class TripCarServiceImpl implements TripCarService {
     @Override
     public TripCarResponse update(UUID id, TripCarUpdate updateDto) {
         TripCarDbModel entity = tripCarRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("TripCar not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(TripCarDbModel.class, id));
 
         entity.setPrice(updateDto.getPrice());
         entity.setAvailableSeats(updateDto.getAvailableSeats());
 
         if (updateDto.getTripId() != null) {
             TripDbModel trip = tripRepository.findById(updateDto.getTripId())
-                .orElseThrow(() -> new RuntimeException("Trip not found with id: " + updateDto.getTripId()));
+                .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, updateDto.getTripId()));
             entity.setTrip(trip);
         }
 
         if (updateDto.getCarId() != null) {
             CarDbModel car = carRepository.findById(updateDto.getCarId())
-                .orElseThrow(() -> new RuntimeException("Car not found with id: " + updateDto.getCarId()));
+                .orElseThrow(() -> new ResourceNotFoundException(CarDbModel.class, updateDto.getCarId()));
             entity.setCar(car);
         }
 
@@ -103,7 +104,7 @@ public class TripCarServiceImpl implements TripCarService {
     @Override
     public void activate(UUID id) {
         TripCarDbModel entity = tripCarRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("TripCar not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(TripCarDbModel.class, id));
         entity.setIsDeleted(false);
         tripCarRepository.save(entity);
     }

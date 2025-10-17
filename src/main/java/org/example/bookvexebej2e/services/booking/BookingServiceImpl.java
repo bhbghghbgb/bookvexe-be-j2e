@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.services.booking;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.BookingMapper;
 import org.example.bookvexebej2e.models.db.BookingDbModel;
 import org.example.bookvexebej2e.models.db.TripDbModel;
@@ -53,7 +54,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingResponse findById(UUID id) {
         BookingDbModel entity = bookingRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, id));
         return bookingMapper.toResponse(entity);
     }
 
@@ -68,21 +69,19 @@ public class BookingServiceImpl implements BookingService {
 
         // Resolve relationships
         UserDbModel user = userRepository.findById(createDto.getUserId())
-            .orElseThrow(() -> new RuntimeException("User not found with id: " + createDto.getUserId()));
+            .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, createDto.getUserId()));
         entity.setUser(user);
 
         TripDbModel trip = tripRepository.findById(createDto.getTripId())
-            .orElseThrow(() -> new RuntimeException("Trip not found with id: " + createDto.getTripId()));
+            .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, createDto.getTripId()));
         entity.setTrip(trip);
 
         TripStopDbModel pickupStop = tripStopRepository.findById(createDto.getPickupStopId())
-            .orElseThrow(
-                () -> new RuntimeException("TripStop Pickup not found with id: " + createDto.getPickupStopId()));
+            .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, createDto.getPickupStopId()));
         entity.setPickupStop(pickupStop);
 
         TripStopDbModel dropoffStop = tripStopRepository.findById(createDto.getDropoffStopId())
-            .orElseThrow(
-                () -> new RuntimeException("TripStop Dropoff not found with id: " + createDto.getDropoffStopId()));
+            .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, createDto.getDropoffStopId()));
         entity.setDropoffStop(dropoffStop);
 
         BookingDbModel savedEntity = bookingRepository.save(entity);
@@ -101,7 +100,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingResponse update(UUID id, BookingUpdate updateDto) {
         BookingDbModel entity = bookingRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, id));
 
         entity.setCode(updateDto.getCode());
         entity.setType(updateDto.getType());
@@ -111,25 +110,25 @@ public class BookingServiceImpl implements BookingService {
         // Resolve relationships if provided
         if (updateDto.getUserId() != null) {
             UserDbModel user = userRepository.findById(updateDto.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + updateDto.getUserId()));
+                .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, updateDto.getUserId()));
             entity.setUser(user);
         }
 
         if (updateDto.getTripId() != null) {
             TripDbModel trip = tripRepository.findById(updateDto.getTripId())
-                .orElseThrow(() -> new RuntimeException("Trip not found with id: " + updateDto.getTripId()));
+                .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, updateDto.getTripId()));
             entity.setTrip(trip);
         }
 
         if (updateDto.getPickupStopId() != null) {
             TripStopDbModel pickupStop = tripStopRepository.findById(updateDto.getPickupStopId())
-                .orElseThrow(() -> new RuntimeException("TripStop not found with id: " + updateDto.getPickupStopId()));
+                .orElseThrow(() -> new ResourceNotFoundException(TripStopDbModel.class, updateDto.getPickupStopId()));
             entity.setPickupStop(pickupStop);
         }
 
         if (updateDto.getDropoffStopId() != null) {
             TripStopDbModel dropoffStop = tripStopRepository.findById(updateDto.getDropoffStopId())
-                .orElseThrow(() -> new RuntimeException("TripStop not found with id: " + updateDto.getDropoffStopId()));
+                .orElseThrow(() -> new ResourceNotFoundException(TripStopDbModel.class, updateDto.getDropoffStopId()));
             entity.setDropoffStop(dropoffStop);
         }
 
@@ -145,7 +144,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public void activate(UUID id) {
         BookingDbModel entity = bookingRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, id));
         entity.setIsDeleted(false);
         bookingRepository.save(entity);
     }

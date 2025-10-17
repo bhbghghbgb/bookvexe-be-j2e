@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.services.booking;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.BookingSeatMapper;
 import org.example.bookvexebej2e.models.db.BookingDbModel;
 import org.example.bookvexebej2e.models.db.BookingSeatDbModel;
@@ -49,7 +50,7 @@ public class BookingSeatServiceImpl implements BookingSeatService {
     @Override
     public BookingSeatResponse findById(UUID id) {
         BookingSeatDbModel entity = bookingSeatRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("BookingSeat not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(BookingSeatDbModel.class, id));
         return bookingSeatMapper.toResponse(entity);
     }
 
@@ -61,12 +62,12 @@ public class BookingSeatServiceImpl implements BookingSeatService {
 
         // Resolve booking relationship
         BookingDbModel booking = bookingRepository.findById(createDto.getBookingId())
-            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + createDto.getBookingId()));
+            .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, createDto.getBookingId()));
         entity.setBooking(booking);
 
         // Resolve seat relationship
         CarSeatDbModel seat = carSeatRepository.findById(createDto.getSeatId())
-            .orElseThrow(() -> new RuntimeException("CarSeat not found with id: " + createDto.getSeatId()));
+            .orElseThrow(() -> new ResourceNotFoundException(CarSeatDbModel.class, createDto.getSeatId()));
         entity.setSeat(seat);
 
         BookingSeatDbModel savedEntity = bookingSeatRepository.save(entity);
@@ -76,7 +77,7 @@ public class BookingSeatServiceImpl implements BookingSeatService {
     @Override
     public BookingSeatResponse update(UUID id, BookingSeatUpdate updateDto) {
         BookingSeatDbModel entity = bookingSeatRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("BookingSeat not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(BookingSeatDbModel.class, id));
 
         entity.setStatus(updateDto.getStatus());
         entity.setPrice(updateDto.getPrice());
@@ -84,13 +85,13 @@ public class BookingSeatServiceImpl implements BookingSeatService {
         // Resolve relationships if provided
         if (updateDto.getBookingId() != null) {
             BookingDbModel booking = bookingRepository.findById(updateDto.getBookingId())
-                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + updateDto.getBookingId()));
+                .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, updateDto.getBookingId()));
             entity.setBooking(booking);
         }
 
         if (updateDto.getSeatId() != null) {
             CarSeatDbModel seat = carSeatRepository.findById(updateDto.getSeatId())
-                .orElseThrow(() -> new RuntimeException("CarSeat not found with id: " + updateDto.getSeatId()));
+                .orElseThrow(() -> new ResourceNotFoundException(CarSeatDbModel.class, updateDto.getSeatId()));
             entity.setSeat(seat);
         }
 
@@ -106,7 +107,7 @@ public class BookingSeatServiceImpl implements BookingSeatService {
     @Override
     public void activate(UUID id) {
         BookingSeatDbModel entity = bookingSeatRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("BookingSeat not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(BookingSeatDbModel.class, id));
         entity.setIsDeleted(false);
         bookingSeatRepository.save(entity);
     }

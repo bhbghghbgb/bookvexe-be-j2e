@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.services.payment;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.PaymentMapper;
 import org.example.bookvexebej2e.models.db.BookingDbModel;
 import org.example.bookvexebej2e.models.db.PaymentDbModel;
@@ -49,7 +50,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public PaymentResponse findById(UUID id) {
         PaymentDbModel entity = paymentRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("Payment not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(PaymentDbModel.class, id));
         return paymentMapper.toResponse(entity);
     }
 
@@ -62,11 +63,11 @@ public class PaymentServiceImpl implements PaymentService {
         entity.setPaidAt(createDto.getPaidAt());
 
         BookingDbModel booking = bookingRepository.findById(createDto.getBookingId())
-            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + createDto.getBookingId()));
+            .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, createDto.getBookingId()));
         entity.setBooking(booking);
 
         PaymentMethodDbModel method = paymentMethodRepository.findById(createDto.getMethodId())
-            .orElseThrow(() -> new RuntimeException("PaymentMethod not found with id: " + createDto.getMethodId()));
+            .orElseThrow(() -> new ResourceNotFoundException(PaymentMethodDbModel.class, createDto.getMethodId()));
         entity.setMethod(method);
 
         PaymentDbModel savedEntity = paymentRepository.save(entity);
@@ -76,7 +77,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public PaymentResponse update(UUID id, PaymentUpdate updateDto) {
         PaymentDbModel entity = paymentRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("Payment not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(PaymentDbModel.class, id));
 
         entity.setAmount(updateDto.getAmount());
         entity.setStatus(updateDto.getStatus());
@@ -85,13 +86,13 @@ public class PaymentServiceImpl implements PaymentService {
 
         if (updateDto.getBookingId() != null) {
             BookingDbModel booking = bookingRepository.findById(updateDto.getBookingId())
-                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + updateDto.getBookingId()));
+                .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, updateDto.getBookingId()));
             entity.setBooking(booking);
         }
 
         if (updateDto.getMethodId() != null) {
             PaymentMethodDbModel method = paymentMethodRepository.findById(updateDto.getMethodId())
-                .orElseThrow(() -> new RuntimeException("PaymentMethod not found with id: " + updateDto.getMethodId()));
+                .orElseThrow(() -> new ResourceNotFoundException(PaymentMethodDbModel.class, updateDto.getMethodId()));
             entity.setMethod(method);
         }
 
@@ -107,7 +108,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public void activate(UUID id) {
         PaymentDbModel entity = paymentRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Payment not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(PaymentDbModel.class, id));
         entity.setIsDeleted(false);
         paymentRepository.save(entity);
     }

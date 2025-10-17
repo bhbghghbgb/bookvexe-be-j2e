@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.services.payment;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.PaymentMethodMapper;
 import org.example.bookvexebej2e.models.db.PaymentMethodDbModel;
 import org.example.bookvexebej2e.models.dto.payment.*;
@@ -43,7 +44,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     @Override
     public PaymentMethodResponse findById(UUID id) {
         PaymentMethodDbModel entity = paymentMethodRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("PaymentMethod not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(PaymentMethodDbModel.class, id));
         return paymentMethodMapper.toResponse(entity);
     }
 
@@ -62,7 +63,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     @Override
     public PaymentMethodResponse update(UUID id, PaymentMethodUpdate updateDto) {
         PaymentMethodDbModel entity = paymentMethodRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new RuntimeException("PaymentMethod not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(PaymentMethodDbModel.class, id));
 
         entity.setCode(updateDto.getCode());
         entity.setName(updateDto.getName());
@@ -81,7 +82,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     @Override
     public void activate(UUID id) {
         PaymentMethodDbModel entity = paymentMethodRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("PaymentMethod not found with id: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException(PaymentMethodDbModel.class, id));
         entity.setIsDeleted(false);
         paymentMethodRepository.save(entity);
     }
