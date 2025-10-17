@@ -29,6 +29,11 @@ public class RoleController {
         return ResponseEntity.ok(roleService.findAll(query));
     }
 
+    @PostMapping("/pagination")
+    public ResponseEntity<Page<RoleResponse>> findAll2(@RequestBody RoleQuery query) {
+        return ResponseEntity.ok(roleService.findAll(query));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<RoleResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(roleService.findById(id));

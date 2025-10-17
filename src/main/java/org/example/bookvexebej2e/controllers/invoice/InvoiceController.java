@@ -29,6 +29,11 @@ public class InvoiceController {
         return ResponseEntity.ok(invoiceService.findAll(query));
     }
 
+    @PostMapping("/pagination")
+    public ResponseEntity<Page<InvoiceResponse>> findAll2(@RequestBody InvoiceQuery query) {
+        return ResponseEntity.ok(invoiceService.findAll(query));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<InvoiceResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(invoiceService.findById(id));

@@ -29,6 +29,11 @@ public class RolePermissionController {
         return ResponseEntity.ok(rolePermissionService.findAll(query));
     }
 
+    @PostMapping("/pagination")
+    public ResponseEntity<Page<RolePermissionResponse>> findAll2(@RequestBody RolePermissionQuery query) {
+        return ResponseEntity.ok(rolePermissionService.findAll(query));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<RolePermissionResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(rolePermissionService.findById(id));

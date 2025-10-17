@@ -29,6 +29,11 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.findAll(query));
     }
 
+    @PostMapping("/pagination")
+    public ResponseEntity<Page<BookingResponse>> findAll2(@RequestBody BookingQuery query) {
+        return ResponseEntity.ok(bookingService.findAll(query));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<BookingResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(bookingService.findById(id));
