@@ -14,4 +14,5 @@ public class UserSessionResponse {
     private Boolean revoked;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private Boolean isDeleted;
 }

@@ -14,4 +14,5 @@ public class PaymentMethodResponse {
     private Boolean isActive;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private Boolean isDeleted;
 }

@@ -14,4 +14,5 @@ public class TripStopResponse {
     private Integer orderIndex;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private Boolean isDeleted;
 }

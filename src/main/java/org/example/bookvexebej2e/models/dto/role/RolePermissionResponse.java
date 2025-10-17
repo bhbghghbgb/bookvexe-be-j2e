@@ -19,4 +19,5 @@ public class RolePermissionResponse {
     private Boolean isCanExport;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private Boolean isDeleted;
 }

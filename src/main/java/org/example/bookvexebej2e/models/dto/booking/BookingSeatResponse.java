@@ -15,4 +15,5 @@ public class BookingSeatResponse {
     private BigDecimal price;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private Boolean isDeleted;
 }

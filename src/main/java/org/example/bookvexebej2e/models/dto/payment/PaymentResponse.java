@@ -18,4 +18,5 @@ public class PaymentResponse {
     private LocalDateTime paidAt;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private Boolean isDeleted;
 }

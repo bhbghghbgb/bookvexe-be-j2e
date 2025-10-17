@@ -22,4 +22,5 @@ public class BookingResponse {
     private BigDecimal totalPrice;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private Boolean isDeleted;
 }

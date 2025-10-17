@@ -15,4 +15,5 @@ public class RouteResponse {
     private Integer estimatedDuration;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private Boolean isDeleted;
 }

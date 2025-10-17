@@ -13,4 +13,5 @@ public class CarSeatResponse {
     private String seatPosition;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private Boolean isDeleted;
 }
