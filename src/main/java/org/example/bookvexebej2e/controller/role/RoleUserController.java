@@ -12,56 +12,59 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/admin/role-users")
 public class RoleUserController {
-    
+
     private final RoleUserService roleUserService;
-    
+
     public RoleUserController(RoleUserService roleUserService) {
         this.roleUserService = roleUserService;
     }
-    
+
     @GetMapping
     public ResponseEntity<List<RoleUserResponse>> findAll() {
         return ResponseEntity.ok(roleUserService.findAll());
     }
-    
+
     @GetMapping("/pagination")
     public ResponseEntity<Page<RoleUserResponse>> findAll(RoleUserQuery query) {
         return ResponseEntity.ok(roleUserService.findAll(query));
     }
-    
+
     @GetMapping("/{id}")
     public ResponseEntity<RoleUserResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(roleUserService.findById(id));
     }
-    
+
     @PostMapping
     public ResponseEntity<RoleUserResponse> create(@RequestBody RoleUserCreate createDto) {
         return ResponseEntity.ok(roleUserService.create(createDto));
     }
-    
+
     @PutMapping("/{id}")
     public ResponseEntity<RoleUserResponse> update(@PathVariable UUID id, @RequestBody RoleUserUpdate updateDto) {
         return ResponseEntity.ok(roleUserService.update(id, updateDto));
     }
-    
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         roleUserService.delete(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok()
+            .build();
     }
-    
+
     @PatchMapping("/{id}/activate")
     public ResponseEntity<Void> activate(@PathVariable UUID id) {
         roleUserService.activate(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok()
+            .build();
     }
-    
+
     @PatchMapping("/{id}/deactivate")
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         roleUserService.deactivate(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok()
+            .build();
     }
-    
+
     @GetMapping("/select")
     public ResponseEntity<List<RoleUserSelectResponse>> findAllForSelect() {
         return ResponseEntity.ok(roleUserService.findAllForSelect());

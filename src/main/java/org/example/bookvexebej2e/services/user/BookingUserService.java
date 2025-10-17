@@ -1,23 +1,13 @@
 package org.example.bookvexebej2e.services.user;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.example.bookvexebej2e.models.db.BookingDbModel;
-import org.example.bookvexebej2e.models.db.BookingSeatDbModel;
-import org.example.bookvexebej2e.models.db.CarSeatDbModel;
-import org.example.bookvexebej2e.models.db.TripDbModel;
-import org.example.bookvexebej2e.models.db.UserDbModel;
+import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.models.db.*;
 import org.example.bookvexebej2e.models.requests.BookingCreateRequest;
 import org.example.bookvexebej2e.models.requests.BookingQueryRequest;
 import org.example.bookvexebej2e.models.requests.BookingSeatCreateRequest;
 import org.example.bookvexebej2e.models.responses.BookingResponse;
 import org.example.bookvexebej2e.models.responses.BookingSeatResponse;
-import org.example.bookvexebej2e.repositories.BookingRepository;
-import org.example.bookvexebej2e.repositories.BookingSeatRepository;
-import org.example.bookvexebej2e.repositories.CarSeatRepository;
-import org.example.bookvexebej2e.repositories.TripRepository;
-import org.example.bookvexebej2e.repositories.UserRepository;
+import org.example.bookvexebej2e.repositories.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -26,7 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,14 +37,14 @@ public class BookingUserService {
         // Get user from JWT
         String userEmail = jwt.getClaimAsString("email");
         UserDbModel user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
+            .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
 
         // Override userId from request with actual user from JWT
         request.setUserId(user.getUserId());
 
         // Validate trip exists
         TripDbModel trip = tripRepository.findById(request.getTripId())
-                .orElseThrow(() -> new RuntimeException("Trip not found with id: " + request.getTripId()));
+            .orElseThrow(() -> new RuntimeException("Trip not found with id: " + request.getTripId()));
 
         // Check if trip has available seats
         if (trip.getAvailableSeats() <= 0) {
@@ -64,13 +55,16 @@ public class BookingUserService {
         if (!CollectionUtils.isEmpty(request.getBookingSeats())) {
             for (var seatRequest : request.getBookingSeats()) {
                 CarSeatDbModel seat = carSeatRepository.findById(seatRequest.getSeatId())
-                        .orElseThrow(() -> new RuntimeException("Seat not found with id: " + seatRequest.getSeatId()));
+                    .orElseThrow(() -> new RuntimeException("Seat not found with id: " + seatRequest.getSeatId()));
 
                 // Check if seat is already booked for this trip
-                boolean seatAlreadyBooked = bookingSeatRepository.findBySeat(seat).stream()
-                        .anyMatch(bs -> bs.getBooking().getTrip().getTripId().equals(request.getTripId())
-                                && bs.getIsReserved()
-                                && !"cancelled".equals(bs.getBooking().getBookingStatus()));
+                boolean seatAlreadyBooked = bookingSeatRepository.findBySeat(seat)
+                    .stream()
+                    .anyMatch(bs -> bs.getBooking()
+                        .getTrip()
+                        .getTripId()
+                        .equals(request.getTripId()) && bs.getIsReserved() && !"cancelled".equals(bs.getBooking()
+                        .getBookingStatus()));
 
                 if (seatAlreadyBooked) {
                     throw new RuntimeException("Seat " + seat.getSeatNumber() + " is already booked for this trip");
@@ -91,7 +85,8 @@ public class BookingUserService {
         // Create booking seats if provided
         if (!CollectionUtils.isEmpty(request.getBookingSeats())) {
             for (var seatRequest : request.getBookingSeats()) {
-                CarSeatDbModel seat = carSeatRepository.findById(seatRequest.getSeatId()).get();
+                CarSeatDbModel seat = carSeatRepository.findById(seatRequest.getSeatId())
+                    .get();
 
                 BookingSeatDbModel bookingSeat = new BookingSeatDbModel();
                 bookingSeat.setBooking(booking);
@@ -103,7 +98,8 @@ public class BookingUserService {
             }
 
             // Update available seats in trip
-            trip.setAvailableSeats(trip.getAvailableSeats() - request.getBookingSeats().size());
+            trip.setAvailableSeats(trip.getAvailableSeats() - request.getBookingSeats()
+                .size());
             tripRepository.save(trip);
         }
 
@@ -116,7 +112,7 @@ public class BookingUserService {
     public Page<BookingResponse> getMyBookings(BookingQueryRequest queryRequest, Jwt jwt) {
         String userEmail = jwt.getClaimAsString("email");
         UserDbModel user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
+            .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
 
         // Override userId in query to current user
         queryRequest.setUserId(user.getUserId());
@@ -134,13 +130,15 @@ public class BookingUserService {
     public BookingResponse getBookingById(Integer bookingId, Jwt jwt) {
         String userEmail = jwt.getClaimAsString("email");
         UserDbModel user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
+            .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
 
         BookingDbModel booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
+            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
 
         // Check if booking belongs to current user
-        if (!booking.getUser().getUserId().equals(user.getUserId())) {
+        if (!booking.getUser()
+            .getUserId()
+            .equals(user.getUserId())) {
             throw new RuntimeException("Access denied: Booking does not belong to current user");
         }
 
@@ -154,13 +152,15 @@ public class BookingUserService {
     public BookingResponse cancelBooking(Integer bookingId, Jwt jwt) {
         String userEmail = jwt.getClaimAsString("email");
         UserDbModel user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
+            .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
 
         BookingDbModel booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
+            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
 
         // Check if booking belongs to current user
-        if (!booking.getUser().getUserId().equals(user.getUserId())) {
+        if (!booking.getUser()
+            .getUserId()
+            .equals(user.getUserId())) {
             throw new RuntimeException("Access denied: Booking does not belong to current user");
         }
 
@@ -206,12 +206,14 @@ public class BookingUserService {
 
             // Filter by user ID
             if (request.getUserId() != null) {
-                predicates.add(cb.equal(root.get("user").get("userId"), request.getUserId()));
+                predicates.add(cb.equal(root.get("user")
+                    .get("userId"), request.getUserId()));
             }
 
             // Filter by trip ID
             if (request.getTripId() != null) {
-                predicates.add(cb.equal(root.get("trip").get("tripId"), request.getTripId()));
+                predicates.add(cb.equal(root.get("trip")
+                    .get("tripId"), request.getTripId()));
             }
 
             // Filter by single status
@@ -221,7 +223,8 @@ public class BookingUserService {
 
             // Filter by multiple statuses
             if (!CollectionUtils.isEmpty(request.getStatuses())) {
-                predicates.add(root.get("bookingStatus").in(request.getStatuses()));
+                predicates.add(root.get("bookingStatus")
+                    .in(request.getStatuses()));
             }
 
             // Filter by created date range
@@ -259,17 +262,27 @@ public class BookingUserService {
     private BookingResponse convertToBookingResponse(BookingDbModel booking) {
         BookingResponse response = new BookingResponse();
         response.setBookingId(booking.getBookingId());
-        response.setUserId(booking.getUser().getUserId());
-        response.setUserFullName(booking.getUser().getFullName());
-        response.setUserEmail(booking.getUser().getEmail());
-        response.setTripId(booking.getTrip().getTripId());
+        response.setUserId(booking.getUser()
+            .getUserId());
+        response.setUserFullName(booking.getUser()
+            .getFullName());
+        response.setUserEmail(booking.getUser()
+            .getEmail());
+        response.setTripId(booking.getTrip()
+            .getTripId());
 
-        if (booking.getTrip().getRoute() != null) {
-            response.setRouteStartLocation(booking.getTrip().getRoute().getStartLocation());
-            response.setRouteEndLocation(booking.getTrip().getRoute().getEndLocation());
+        if (booking.getTrip()
+            .getRoute() != null) {
+            response.setRouteStartLocation(booking.getTrip()
+                .getRoute()
+                .getStartLocation());
+            response.setRouteEndLocation(booking.getTrip()
+                .getRoute()
+                .getEndLocation());
         }
 
-        response.setDepartureTime(booking.getTrip().getDepartureTime());
+        response.setDepartureTime(booking.getTrip()
+            .getDepartureTime());
         response.setBookingStatus(booking.getBookingStatus());
         response.setTotalPrice(booking.getTotalPrice());
         response.setCreatedAt(booking.getCreatedAt());
@@ -278,8 +291,8 @@ public class BookingUserService {
         // Get booking seats
         List<BookingSeatDbModel> bookingSeats = bookingSeatRepository.findByBooking(booking);
         List<BookingSeatResponse> seatResponses = bookingSeats.stream()
-                .map(this::convertToBookingSeatResponse)
-                .collect(Collectors.toList());
+            .map(this::convertToBookingSeatResponse)
+            .collect(Collectors.toList());
         response.setBookingSeats(seatResponses);
 
         return response;
@@ -291,10 +304,14 @@ public class BookingUserService {
     private BookingSeatResponse convertToBookingSeatResponse(BookingSeatDbModel bookingSeat) {
         BookingSeatResponse response = new BookingSeatResponse();
         response.setBookingSeatId(bookingSeat.getBookingSeatId());
-        response.setBookingId(bookingSeat.getBooking().getBookingId());
-        response.setSeatId(bookingSeat.getSeat().getSeatId());
-        response.setSeatNumber(bookingSeat.getSeat().getSeatNumber());
-        response.setSeatPosition(bookingSeat.getSeat().getSeatPosition());
+        response.setBookingId(bookingSeat.getBooking()
+            .getBookingId());
+        response.setSeatId(bookingSeat.getSeat()
+            .getSeatId());
+        response.setSeatNumber(bookingSeat.getSeat()
+            .getSeatNumber());
+        response.setSeatPosition(bookingSeat.getSeat()
+            .getSeatPosition());
         response.setIsReserved(bookingSeat.getIsReserved());
         response.setPrice(bookingSeat.getPrice());
         return response;
@@ -307,13 +324,15 @@ public class BookingUserService {
     public BookingSeatResponse addSeatToMyBooking(Integer bookingId, BookingSeatCreateRequest request, Jwt jwt) {
         String userEmail = jwt.getClaimAsString("email");
         UserDbModel user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
+            .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
 
         BookingDbModel booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
+            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
 
         // Check if booking belongs to current user
-        if (!booking.getUser().getUserId().equals(user.getUserId())) {
+        if (!booking.getUser()
+            .getUserId()
+            .equals(user.getUserId())) {
             throw new RuntimeException("Access denied: Booking does not belong to current user");
         }
 
@@ -323,14 +342,19 @@ public class BookingUserService {
         }
 
         CarSeatDbModel seat = carSeatRepository.findById(request.getSeatId())
-                .orElseThrow(() -> new RuntimeException("Seat not found with id: " + request.getSeatId()));
+            .orElseThrow(() -> new RuntimeException("Seat not found with id: " + request.getSeatId()));
 
         // Check if seat is already booked for this trip
-        boolean seatAlreadyBooked = bookingSeatRepository.findBySeat(seat).stream()
-                .anyMatch(bs -> bs.getBooking().getTrip().getTripId().equals(booking.getTrip().getTripId())
-                        && bs.getIsReserved()
-                        && !"cancelled".equals(bs.getBooking().getBookingStatus())
-                        && !bs.getBooking().getBookingId().equals(bookingId));
+        boolean seatAlreadyBooked = bookingSeatRepository.findBySeat(seat)
+            .stream()
+            .anyMatch(bs -> bs.getBooking()
+                .getTrip()
+                .getTripId()
+                .equals(booking.getTrip()
+                    .getTripId()) && bs.getIsReserved() && !"cancelled".equals(bs.getBooking()
+                .getBookingStatus()) && !bs.getBooking()
+                .getBookingId()
+                .equals(bookingId));
 
         if (seatAlreadyBooked) {
             throw new RuntimeException("Seat " + seat.getSeatNumber() + " is already booked for this trip");
@@ -351,7 +375,8 @@ public class BookingUserService {
             tripRepository.save(trip);
 
             // Update booking total price
-            booking.setTotalPrice(booking.getTotalPrice().add(request.getPrice()));
+            booking.setTotalPrice(booking.getTotalPrice()
+                .add(request.getPrice()));
             bookingRepository.save(booking);
         }
 
@@ -365,13 +390,15 @@ public class BookingUserService {
     public void removeSeatFromMyBooking(Integer bookingId, Integer seatId, Jwt jwt) {
         String userEmail = jwt.getClaimAsString("email");
         UserDbModel user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
+            .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
 
         BookingDbModel booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
+            .orElseThrow(() -> new RuntimeException("Booking not found with id: " + bookingId));
 
         // Check if booking belongs to current user
-        if (!booking.getUser().getUserId().equals(user.getUserId())) {
+        if (!booking.getUser()
+            .getUserId()
+            .equals(user.getUserId())) {
             throw new RuntimeException("Access denied: Booking does not belong to current user");
         }
 
@@ -380,10 +407,13 @@ public class BookingUserService {
             throw new RuntimeException("Cannot modify booking in current status: " + booking.getBookingStatus());
         }
 
-        BookingSeatDbModel bookingSeat = bookingSeatRepository.findByBooking(booking).stream()
-                .filter(bs -> bs.getSeat().getSeatId().equals(seatId))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Seat not found in this booking"));
+        BookingSeatDbModel bookingSeat = bookingSeatRepository.findByBooking(booking)
+            .stream()
+            .filter(bs -> bs.getSeat()
+                .getSeatId()
+                .equals(seatId))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Seat not found in this booking"));
 
         // Update trip available seats if seat was reserved
         if (bookingSeat.getIsReserved()) {
@@ -392,7 +422,8 @@ public class BookingUserService {
             tripRepository.save(trip);
 
             // Update booking total price
-            booking.setTotalPrice(booking.getTotalPrice().subtract(bookingSeat.getPrice()));
+            booking.setTotalPrice(booking.getTotalPrice()
+                .subtract(bookingSeat.getPrice()));
             bookingRepository.save(booking);
         }
 

@@ -28,12 +28,14 @@ public class PaymentAdminService extends BaseAdminService<PaymentDbModel, Intege
 
             // Filter by booking ID
             if (request.getBookingId() != null) {
-                predicates.add(cb.equal(root.get("booking").get("bookingId"), request.getBookingId()));
+                predicates.add(cb.equal(root.get("booking")
+                    .get("bookingId"), request.getBookingId()));
             }
 
             // Filter by payment method ID
             if (request.getMethodId() != null) {
-                predicates.add(cb.equal(root.get("method").get("methodId"), request.getMethodId()));
+                predicates.add(cb.equal(root.get("method")
+                    .get("methodId"), request.getMethodId()));
             }
 
             // Filter by single status
@@ -43,7 +45,8 @@ public class PaymentAdminService extends BaseAdminService<PaymentDbModel, Intege
 
             // Filter by multiple statuses
             if (!CollectionUtils.isEmpty(request.getStatuses())) {
-                predicates.add(root.get("status").in(request.getStatuses()));
+                predicates.add(root.get("status")
+                    .in(request.getStatuses()));
             }
 
             // Filter by amount range

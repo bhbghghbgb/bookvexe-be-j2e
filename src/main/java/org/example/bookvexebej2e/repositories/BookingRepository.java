@@ -16,8 +16,7 @@ import java.util.List;
 
 @Repository
 public interface BookingRepository extends JpaRepository<BookingDbModel, Integer>,
-    JpaSpecificationExecutor<BookingDbModel>,
-    QuerydslPredicateExecutor<BookingDbModel> {
+    JpaSpecificationExecutor<BookingDbModel>, QuerydslPredicateExecutor<BookingDbModel> {
 
     // User-based queries with pagination
     Page<BookingDbModel> findByUser(UserDbModel user, Pageable pageable);

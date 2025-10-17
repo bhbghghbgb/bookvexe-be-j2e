@@ -1,7 +1,8 @@
 package org.example.bookvexebej2e.controllers.admin;
 
-import java.util.List;
-
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.example.bookvexebej2e.controllers.admin.base.BaseAdminController;
 import org.example.bookvexebej2e.models.db.BookingDbModel;
 import org.example.bookvexebej2e.models.db.BookingSeatDbModel;
@@ -14,20 +15,9 @@ import org.example.bookvexebej2e.models.responses.BookingSeatResponse;
 import org.example.bookvexebej2e.services.admin.BookingAdminService;
 import org.example.bookvexebej2e.services.admin.base.BaseAdminService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/admin/bookings")
@@ -70,9 +60,8 @@ public class BookingAdminController extends BaseAdminController<BookingDbModel, 
      */
     @PutMapping("/{bookingId}")
     @Operation(summary = "Update booking")
-    public ResponseEntity<BookingResponse> updateBooking(
-            @PathVariable Integer bookingId,
-            @Valid @RequestBody BookingUpdateRequest request) {
+    public ResponseEntity<BookingResponse> updateBooking(@PathVariable Integer bookingId,
+        @Valid @RequestBody BookingUpdateRequest request) {
         BookingResponse booking = bookingService.updateBooking(bookingId, request);
         return ResponseEntity.ok(booking);
     }
@@ -82,9 +71,8 @@ public class BookingAdminController extends BaseAdminController<BookingDbModel, 
      */
     @PatchMapping("/{bookingId}/status")
     @Operation(summary = "Update booking status")
-    public ResponseEntity<BookingResponse> updateBookingStatus(
-            @PathVariable Integer bookingId,
-            @RequestParam String status) {
+    public ResponseEntity<BookingResponse> updateBookingStatus(@PathVariable Integer bookingId,
+        @RequestParam String status) {
         BookingResponse booking = bookingService.updateBookingStatus(bookingId, status);
         return ResponseEntity.ok(booking);
     }
@@ -94,9 +82,8 @@ public class BookingAdminController extends BaseAdminController<BookingDbModel, 
      */
     @PostMapping("/{bookingId}/seats")
     @Operation(summary = "Add seat to booking")
-    public ResponseEntity<BookingSeatResponse> addSeatToBooking(
-            @PathVariable Integer bookingId,
-            @Valid @RequestBody BookingSeatCreateRequest request) {
+    public ResponseEntity<BookingSeatResponse> addSeatToBooking(@PathVariable Integer bookingId,
+        @Valid @RequestBody BookingSeatCreateRequest request) {
         BookingSeatResponse bookingSeat = bookingService.addSeatToBooking(bookingId, request);
         return ResponseEntity.ok(bookingSeat);
     }
@@ -106,11 +93,10 @@ public class BookingAdminController extends BaseAdminController<BookingDbModel, 
      */
     @DeleteMapping("/{bookingId}/seats/{seatId}")
     @Operation(summary = "Remove seat from booking")
-    public ResponseEntity<Void> removeSeatFromBooking(
-            @PathVariable Integer bookingId,
-            @PathVariable Integer seatId) {
+    public ResponseEntity<Void> removeSeatFromBooking(@PathVariable Integer bookingId, @PathVariable Integer seatId) {
         bookingService.removeSeatFromBooking(bookingId, seatId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.noContent()
+            .build();
     }
 
     /**
@@ -118,10 +104,8 @@ public class BookingAdminController extends BaseAdminController<BookingDbModel, 
      */
     @PutMapping("/{bookingId}/seats/{bookingSeatId}")
     @Operation(summary = "Update booking seat")
-    public ResponseEntity<BookingSeatResponse> updateBookingSeat(
-            @PathVariable Integer bookingId,
-            @PathVariable Integer bookingSeatId,
-            @Valid @RequestBody BookingSeatCreateRequest request) {
+    public ResponseEntity<BookingSeatResponse> updateBookingSeat(@PathVariable Integer bookingId,
+        @PathVariable Integer bookingSeatId, @Valid @RequestBody BookingSeatCreateRequest request) {
         BookingSeatResponse bookingSeat = bookingService.updateBookingSeat(bookingId, bookingSeatId, request);
         return ResponseEntity.ok(bookingSeat);
     }

@@ -28,10 +28,8 @@ public class CarTypeAdminService extends BaseAdminService<CarTypeDbModel, Intege
 
             // Filter by type name (partial match, case insensitive)
             if (StringUtils.hasText(request.getTypeName())) {
-                predicates.add(cb.like(
-                    cb.lower(root.get("typeName")),
-                    "%" + request.getTypeName().toLowerCase() + "%"
-                ));
+                predicates.add(cb.like(cb.lower(root.get("typeName")), "%" + request.getTypeName()
+                    .toLowerCase() + "%"));
             }
 
             return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));

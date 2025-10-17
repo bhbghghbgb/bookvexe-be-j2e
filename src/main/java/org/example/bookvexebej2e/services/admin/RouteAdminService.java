@@ -28,18 +28,14 @@ public class RouteAdminService extends BaseAdminService<RouteDbModel, Integer, R
 
             // Filter by start location (partial match, case insensitive)
             if (StringUtils.hasText(request.getStartLocation())) {
-                predicates.add(cb.like(
-                    cb.lower(root.get("startLocation")),
-                    "%" + request.getStartLocation().toLowerCase() + "%"
-                ));
+                predicates.add(cb.like(cb.lower(root.get("startLocation")), "%" + request.getStartLocation()
+                    .toLowerCase() + "%"));
             }
 
             // Filter by end location (partial match, case insensitive)
             if (StringUtils.hasText(request.getEndLocation())) {
-                predicates.add(cb.like(
-                    cb.lower(root.get("endLocation")),
-                    "%" + request.getEndLocation().toLowerCase() + "%"
-                ));
+                predicates.add(cb.like(cb.lower(root.get("endLocation")), "%" + request.getEndLocation()
+                    .toLowerCase() + "%"));
             }
 
             // Filter by distance range

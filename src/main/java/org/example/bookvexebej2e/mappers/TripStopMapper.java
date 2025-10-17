@@ -1,0 +1,38 @@
+package org.example.bookvexebej2e.mappers;
+
+import org.example.bookvexebej2e.dto.trip.TripStopCreate;
+import org.example.bookvexebej2e.dto.trip.TripStopResponse;
+import org.example.bookvexebej2e.dto.trip.TripStopSelectResponse;
+import org.example.bookvexebej2e.dto.trip.TripStopUpdate;
+import org.example.bookvexebej2e.models.db.TripStopDbModel;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+
+@Mapper(componentModel = "spring")
+public interface TripStopMapper {
+
+    TripStopResponse toResponse(TripStopDbModel entity);
+
+    TripStopSelectResponse toSelectResponse(TripStopDbModel entity);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "isDeleted", ignore = true)
+    @Mapping(target = "createdDate", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedDate", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
+    @Mapping(target = "pickupBookings", ignore = true)
+    @Mapping(target = "dropoffBookings", ignore = true)
+    TripStopDbModel toEntity(TripStopCreate createDto);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "isDeleted", ignore = true)
+    @Mapping(target = "createdDate", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedDate", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
+    @Mapping(target = "pickupBookings", ignore = true)
+    @Mapping(target = "dropoffBookings", ignore = true)
+    void updateEntity(TripStopUpdate updateDto, @MappingTarget TripStopDbModel entity);
+}

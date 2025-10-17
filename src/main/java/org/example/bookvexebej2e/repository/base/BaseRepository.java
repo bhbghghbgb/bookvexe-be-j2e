@@ -13,20 +13,20 @@ import java.util.UUID;
 
 @NoRepositoryBean
 public interface BaseRepository<T> extends JpaRepository<T, UUID>, JpaSpecificationExecutor<T> {
-    
+
     Optional<T> findByIdAndIsDeletedFalse(UUID id);
-    
+
     List<T> findAllByIsDeletedFalse();
-    
+
     Page<T> findAllByIsDeletedFalse(Pageable pageable);
-    
+
     default void softDelete(T entity) {
         if (entity instanceof BaseModel) {
             ((BaseModel) entity).setIsDeleted(true);
             save(entity);
         }
     }
-    
+
     default void softDeleteById(UUID id) {
         findById(id).ifPresent(this::softDelete);
     }

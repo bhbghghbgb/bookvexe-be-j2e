@@ -7,7 +7,10 @@ import org.example.bookvexebej2e.models.requests.TripQueryRequest;
 import org.example.bookvexebej2e.services.admin.TripAdminService;
 import org.example.bookvexebej2e.services.admin.base.BaseAdminService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -31,8 +34,7 @@ public class TripAdminController extends BaseAdminController<TripDbModel, Intege
      * Lấy các chuyến đi trong tương lai có ghế trống
      */
     @GetMapping("/future/available")
-    public ResponseEntity<List<TripDbModel>> getFutureTripsWithAvailableSeats(
-        @RequestParam(defaultValue = "1") Integer minSeats) {
+    public ResponseEntity<List<TripDbModel>> getFutureTripsWithAvailableSeats(@RequestParam(defaultValue = "1") Integer minSeats) {
         List<TripDbModel> trips = tripService.findFutureTripsWithAvailableSeats(minSeats);
         return ResponseEntity.ok(trips);
     }

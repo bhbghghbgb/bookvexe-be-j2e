@@ -12,56 +12,59 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/admin/car-seats")
 public class CarSeatController {
-    
+
     private final CarSeatService carSeatService;
-    
+
     public CarSeatController(CarSeatService carSeatService) {
         this.carSeatService = carSeatService;
     }
-    
+
     @GetMapping
     public ResponseEntity<List<CarSeatResponse>> findAll() {
         return ResponseEntity.ok(carSeatService.findAll());
     }
-    
+
     @GetMapping("/pagination")
     public ResponseEntity<Page<CarSeatResponse>> findAll(CarSeatQuery query) {
         return ResponseEntity.ok(carSeatService.findAll(query));
     }
-    
+
     @GetMapping("/{id}")
     public ResponseEntity<CarSeatResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(carSeatService.findById(id));
     }
-    
+
     @PostMapping
     public ResponseEntity<CarSeatResponse> create(@RequestBody CarSeatCreate createDto) {
         return ResponseEntity.ok(carSeatService.create(createDto));
     }
-    
+
     @PutMapping("/{id}")
     public ResponseEntity<CarSeatResponse> update(@PathVariable UUID id, @RequestBody CarSeatUpdate updateDto) {
         return ResponseEntity.ok(carSeatService.update(id, updateDto));
     }
-    
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         carSeatService.delete(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok()
+            .build();
     }
-    
+
     @PatchMapping("/{id}/activate")
     public ResponseEntity<Void> activate(@PathVariable UUID id) {
         carSeatService.activate(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok()
+            .build();
     }
-    
+
     @PatchMapping("/{id}/deactivate")
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         carSeatService.deactivate(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok()
+            .build();
     }
-    
+
     @GetMapping("/select")
     public ResponseEntity<List<CarSeatSelectResponse>> findAllForSelect() {
         return ResponseEntity.ok(carSeatService.findAllForSelect());

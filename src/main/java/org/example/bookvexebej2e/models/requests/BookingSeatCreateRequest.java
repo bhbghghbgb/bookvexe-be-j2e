@@ -14,14 +14,14 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookingSeatCreateRequest {
-    
+
     @NotNull(message = "Seat ID is required")
     @Positive(message = "Seat ID must be positive")
     private Integer seatId;
-    
+
     @NotNull(message = "Price is required")
     @Positive(message = "Price must be positive")
     private BigDecimal price;
-    
+
     private Boolean isReserved = true;
 }

@@ -34,8 +34,8 @@ public abstract class BaseAdminService<T, ID, Q extends BasePageableQueryRequest
         Specification<T> spec = buildSpecification(queryRequest);
 
         if (getRepository() instanceof JpaSpecificationExecutor) {
-            @SuppressWarnings("unchecked")
-            JpaSpecificationExecutor<T> specExecutor = (JpaSpecificationExecutor<T>) getRepository();
+            @SuppressWarnings("unchecked") JpaSpecificationExecutor<T> specExecutor =
+                (JpaSpecificationExecutor<T>) getRepository();
             return specExecutor.findAll(spec, pageable);
         }
 

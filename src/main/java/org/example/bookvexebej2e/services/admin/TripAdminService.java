@@ -31,28 +31,28 @@ public class TripAdminService extends BaseAdminService<TripDbModel, Integer, Tri
 
             // Filter by route ID
             if (request.getRouteId() != null) {
-                predicates.add(cb.equal(root.get("route").get("routeId"), request.getRouteId()));
+                predicates.add(cb.equal(root.get("route")
+                    .get("routeId"), request.getRouteId()));
             }
 
             // Filter by bus/car ID
             if (request.getBusId() != null) {
-                predicates.add(cb.equal(root.get("bus").get("carId"), request.getBusId()));
+                predicates.add(cb.equal(root.get("bus")
+                    .get("carId"), request.getBusId()));
             }
 
             // Filter by route start location (partial, case-insensitive)
             if (StringUtils.hasText(request.getStartLocation())) {
-                predicates.add(cb.like(
-                    cb.lower(root.get("route").get("startLocation")),
-                    "%" + request.getStartLocation().toLowerCase() + "%"
-                ));
+                predicates.add(cb.like(cb.lower(root.get("route")
+                    .get("startLocation")), "%" + request.getStartLocation()
+                    .toLowerCase() + "%"));
             }
 
             // Filter by route end location (partial, case-insensitive)
             if (StringUtils.hasText(request.getEndLocation())) {
-                predicates.add(cb.like(
-                    cb.lower(root.get("route").get("endLocation")),
-                    "%" + request.getEndLocation().toLowerCase() + "%"
-                ));
+                predicates.add(cb.like(cb.lower(root.get("route")
+                    .get("endLocation")), "%" + request.getEndLocation()
+                    .toLowerCase() + "%"));
             }
 
             // Filter by departure time range
@@ -88,8 +88,7 @@ public class TripAdminService extends BaseAdminService<TripDbModel, Integer, Tri
     public List<TripDbModel> findFutureTripsWithAvailableSeats(Integer minSeats) {
         Specification<TripDbModel> spec = (root, query, cb) -> cb.and(
             cb.greaterThan(root.get("departureTime"), LocalDateTime.now()),
-            cb.greaterThanOrEqualTo(root.get("availableSeats"), minSeats)
-        );
+            cb.greaterThanOrEqualTo(root.get("availableSeats"), minSeats));
 
         return tripRepository.findAll(spec);
     }
