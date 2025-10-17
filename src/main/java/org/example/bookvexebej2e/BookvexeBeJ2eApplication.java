@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-@EnableJpaRepositories(basePackages = "org.example.bookvexebej2e.repositories")
+@EnableJpaRepositories(basePackages = "org.example.bookvexebej2e.repository")
 @SpringBootApplication
 public class BookvexeBeJ2eApplication {
 

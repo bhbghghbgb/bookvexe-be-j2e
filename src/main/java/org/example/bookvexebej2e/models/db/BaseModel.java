@@ -3,6 +3,8 @@ package org.example.bookvexebej2e.models.db;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -28,24 +30,27 @@ import lombok.ToString;
 @EntityListeners(AuditingEntityListener.class)
 public class BaseModel {
     @Id
-    @Column(length = 255, name = "uuid")
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(length = 36, name = "id")
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "idDeleted")
-    private Boolean isDeleted;
+    @Column(name = "isDeleted")
+    private Boolean isDeleted = false;
 
     @CreatedDate
     @Column(updatable = false, name = "createdDate")
     private LocalDateTime createdDate;
 
-    @Column(length = 255, name = "createdBy")
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(length = 36, name = "createdBy")
     private UUID createdBy;
 
     @LastModifiedDate
     @Column(name = "updatedDate")
     private LocalDateTime updatedDate;
 
-    @Column(length = 255, name = "updatedBy")
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(length = 36, name = "updatedBy")
     private UUID updatedBy;
 }
