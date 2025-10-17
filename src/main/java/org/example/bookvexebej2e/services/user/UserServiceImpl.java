@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserResponse> findAll() {
-        List<UserDbModel> entities = userRepository.findAllByIsDeletedFalse();
+        List<UserDbModel> entities = userRepository.findAllNotDeleted();
         return entities.stream()
             .map(userMapper::toResponse)
             .toList();
@@ -127,7 +127,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserSelectResponse> findAllForSelect() {
-        List<UserDbModel> entities = userRepository.findAllByIsDeletedFalse();
+        List<UserDbModel> entities = userRepository.findAllNotDeleted();
         return entities.stream()
             .map(userMapper::toSelectResponse)
             .toList();

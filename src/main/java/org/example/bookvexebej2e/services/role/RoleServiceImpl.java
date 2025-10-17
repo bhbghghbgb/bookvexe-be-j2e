@@ -26,7 +26,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleResponse> findAll() {
-        List<RoleDbModel> entities = roleRepository.findAllByIsDeletedFalse();
+        List<RoleDbModel> entities = roleRepository.findAllNotDeleted();
         return entities.stream()
             .map(roleMapper::toResponse)
             .toList();
@@ -91,7 +91,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleSelectResponse> findAllForSelect() {
-        List<RoleDbModel> entities = roleRepository.findAllByIsDeletedFalse();
+        List<RoleDbModel> entities = roleRepository.findAllNotDeleted();
         return entities.stream()
             .map(roleMapper::toSelectResponse)
             .toList();
