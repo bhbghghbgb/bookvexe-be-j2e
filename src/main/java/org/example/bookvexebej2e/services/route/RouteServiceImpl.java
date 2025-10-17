@@ -42,7 +42,7 @@ public class RouteServiceImpl implements RouteService {
 
     @Override
     public RouteResponse findById(UUID id) {
-        RouteDbModel entity = routeRepository.findByIdAndIsDeletedFalse(id)
+        RouteDbModel entity = routeRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("Route not found with id: " + id));
         return routeMapper.toResponse(entity);
     }
@@ -61,7 +61,7 @@ public class RouteServiceImpl implements RouteService {
 
     @Override
     public RouteResponse update(UUID id, RouteUpdate updateDto) {
-        RouteDbModel entity = routeRepository.findByIdAndIsDeletedFalse(id)
+        RouteDbModel entity = routeRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("Route not found with id: " + id));
 
         entity.setStartLocation(updateDto.getStartLocation());

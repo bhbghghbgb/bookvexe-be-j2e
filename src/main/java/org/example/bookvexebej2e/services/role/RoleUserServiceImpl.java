@@ -48,7 +48,7 @@ public class RoleUserServiceImpl implements RoleUserService {
 
     @Override
     public RoleUserResponse findById(UUID id) {
-        RoleUserDbModel entity = roleUserRepository.findByIdAndIsDeletedFalse(id)
+        RoleUserDbModel entity = roleUserRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("RoleUser not found with id: " + id));
         return roleUserMapper.toResponse(entity);
     }
@@ -71,7 +71,7 @@ public class RoleUserServiceImpl implements RoleUserService {
 
     @Override
     public RoleUserResponse update(UUID id, RoleUserUpdate updateDto) {
-        RoleUserDbModel entity = roleUserRepository.findByIdAndIsDeletedFalse(id)
+        RoleUserDbModel entity = roleUserRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("RoleUser not found with id: " + id));
 
         if (updateDto.getRoleId() != null) {

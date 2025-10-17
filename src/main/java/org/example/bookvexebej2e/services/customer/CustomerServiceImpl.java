@@ -49,7 +49,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public CustomerResponse findById(UUID id) {
-        CustomerDbModel entity = customerRepository.findByIdAndIsDeletedFalse(id)
+        CustomerDbModel entity = customerRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("Customer not found with id: " + id));
         return customerMapper.toResponse(entity);
     }
@@ -85,7 +85,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public CustomerResponse update(UUID id, CustomerUpdate updateDto) {
-        CustomerDbModel entity = customerRepository.findByIdAndIsDeletedFalse(id)
+        CustomerDbModel entity = customerRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("Customer not found with id: " + id));
 
         entity.setCode(updateDto.getCode());

@@ -48,7 +48,7 @@ public class TripCarServiceImpl implements TripCarService {
 
     @Override
     public TripCarResponse findById(UUID id) {
-        TripCarDbModel entity = tripCarRepository.findByIdAndIsDeletedFalse(id)
+        TripCarDbModel entity = tripCarRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("TripCar not found with id: " + id));
         return tripCarMapper.toResponse(entity);
     }
@@ -73,7 +73,7 @@ public class TripCarServiceImpl implements TripCarService {
 
     @Override
     public TripCarResponse update(UUID id, TripCarUpdate updateDto) {
-        TripCarDbModel entity = tripCarRepository.findByIdAndIsDeletedFalse(id)
+        TripCarDbModel entity = tripCarRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("TripCar not found with id: " + id));
 
         entity.setPrice(updateDto.getPrice());

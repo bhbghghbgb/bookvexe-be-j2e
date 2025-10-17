@@ -48,7 +48,7 @@ public class BookingSeatServiceImpl implements BookingSeatService {
 
     @Override
     public BookingSeatResponse findById(UUID id) {
-        BookingSeatDbModel entity = bookingSeatRepository.findByIdAndIsDeletedFalse(id)
+        BookingSeatDbModel entity = bookingSeatRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("BookingSeat not found with id: " + id));
         return bookingSeatMapper.toResponse(entity);
     }
@@ -75,7 +75,7 @@ public class BookingSeatServiceImpl implements BookingSeatService {
 
     @Override
     public BookingSeatResponse update(UUID id, BookingSeatUpdate updateDto) {
-        BookingSeatDbModel entity = bookingSeatRepository.findByIdAndIsDeletedFalse(id)
+        BookingSeatDbModel entity = bookingSeatRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("BookingSeat not found with id: " + id));
 
         entity.setStatus(updateDto.getStatus());

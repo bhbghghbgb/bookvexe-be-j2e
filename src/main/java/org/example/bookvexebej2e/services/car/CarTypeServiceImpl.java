@@ -42,7 +42,7 @@ public class CarTypeServiceImpl implements CarTypeService {
 
     @Override
     public CarTypeResponse findById(UUID id) {
-        CarTypeDbModel entity = carTypeRepository.findByIdAndIsDeletedFalse(id)
+        CarTypeDbModel entity = carTypeRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("CarType not found with id: " + id));
         return carTypeMapper.toResponse(entity);
     }
@@ -61,7 +61,7 @@ public class CarTypeServiceImpl implements CarTypeService {
 
     @Override
     public CarTypeResponse update(UUID id, CarTypeUpdate updateDto) {
-        CarTypeDbModel entity = carTypeRepository.findByIdAndIsDeletedFalse(id)
+        CarTypeDbModel entity = carTypeRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("CarType not found with id: " + id));
 
         entity.setCode(updateDto.getCode());

@@ -42,7 +42,7 @@ public class CustomerTypeServiceImpl implements CustomerTypeService {
 
     @Override
     public CustomerTypeResponse findById(UUID id) {
-        CustomerTypeDbModel entity = customerTypeRepository.findByIdAndIsDeletedFalse(id)
+        CustomerTypeDbModel entity = customerTypeRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("CustomerType not found with id: " + id));
         return customerTypeMapper.toResponse(entity);
     }
@@ -60,7 +60,7 @@ public class CustomerTypeServiceImpl implements CustomerTypeService {
 
     @Override
     public CustomerTypeResponse update(UUID id, CustomerTypeUpdate updateDto) {
-        CustomerTypeDbModel entity = customerTypeRepository.findByIdAndIsDeletedFalse(id)
+        CustomerTypeDbModel entity = customerTypeRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("CustomerType not found with id: " + id));
 
         entity.setCode(updateDto.getCode());

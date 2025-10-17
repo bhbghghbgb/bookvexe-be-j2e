@@ -45,7 +45,7 @@ public class TripServiceImpl implements TripService {
 
     @Override
     public TripResponse findById(UUID id) {
-        TripDbModel entity = tripRepository.findByIdAndIsDeletedFalse(id)
+        TripDbModel entity = tripRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("Trip not found with id: " + id));
         return tripMapper.toResponse(entity);
     }
@@ -67,7 +67,7 @@ public class TripServiceImpl implements TripService {
 
     @Override
     public TripResponse update(UUID id, TripUpdate updateDto) {
-        TripDbModel entity = tripRepository.findByIdAndIsDeletedFalse(id)
+        TripDbModel entity = tripRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("Trip not found with id: " + id));
 
         entity.setDepartureTime(updateDto.getDepartureTime());

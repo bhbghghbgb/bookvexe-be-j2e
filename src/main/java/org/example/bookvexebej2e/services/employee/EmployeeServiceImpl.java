@@ -46,7 +46,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public EmployeeResponse findById(UUID id) {
-        EmployeeDbModel entity = employeeRepository.findByIdAndIsDeletedFalse(id)
+        EmployeeDbModel entity = employeeRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id));
         return employeeMapper.toResponse(entity);
     }
@@ -76,7 +76,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public EmployeeResponse update(UUID id, EmployeeUpdate updateDto) {
-        EmployeeDbModel entity = employeeRepository.findByIdAndIsDeletedFalse(id)
+        EmployeeDbModel entity = employeeRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id));
 
         entity.setCode(updateDto.getCode());
