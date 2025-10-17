@@ -56,14 +56,14 @@ public class PaymentController {
             .build();
     }
 
-    @PatchMapping("/{id}/activate")
+    @PatchMapping("/activate/{id}")
     public ResponseEntity<Void> activate(@PathVariable UUID id) {
         paymentService.activate(id);
         return ResponseEntity.ok()
             .build();
     }
 
-    @PatchMapping("/{id}/deactivate")
+    @PatchMapping("/deactivate/{id}")
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         paymentService.deactivate(id);
         return ResponseEntity.ok()

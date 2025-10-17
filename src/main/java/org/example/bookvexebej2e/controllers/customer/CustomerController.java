@@ -56,14 +56,14 @@ public class CustomerController {
             .build();
     }
 
-    @PatchMapping("/{id}/activate")
+    @PatchMapping("/activate/{id}")
     public ResponseEntity<Void> activate(@PathVariable UUID id) {
         customerService.activate(id);
         return ResponseEntity.ok()
             .build();
     }
 
-    @PatchMapping("/{id}/deactivate")
+    @PatchMapping("/deactivate/{id}")
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         customerService.deactivate(id);
         return ResponseEntity.ok()

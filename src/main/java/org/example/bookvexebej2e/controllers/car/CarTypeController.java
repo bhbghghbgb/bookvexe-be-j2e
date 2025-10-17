@@ -56,14 +56,14 @@ public class CarTypeController {
             .build();
     }
 
-    @PatchMapping("/{id}/activate")
+    @PatchMapping("/activate/{id}")
     public ResponseEntity<Void> activate(@PathVariable UUID id) {
         carTypeService.activate(id);
         return ResponseEntity.ok()
             .build();
     }
 
-    @PatchMapping("/{id}/deactivate")
+    @PatchMapping("/deactivate/{id}")
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         carTypeService.deactivate(id);
         return ResponseEntity.ok()

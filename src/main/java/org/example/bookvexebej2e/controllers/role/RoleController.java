@@ -56,14 +56,14 @@ public class RoleController {
             .build();
     }
 
-    @PatchMapping("/{id}/activate")
+    @PatchMapping("/activate/{id}")
     public ResponseEntity<Void> activate(@PathVariable UUID id) {
         roleService.activate(id);
         return ResponseEntity.ok()
             .build();
     }
 
-    @PatchMapping("/{id}/deactivate")
+    @PatchMapping("/deactivate/{id}")
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         roleService.deactivate(id);
         return ResponseEntity.ok()

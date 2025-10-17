@@ -56,14 +56,14 @@ public class UserSessionController {
             .build();
     }
 
-    @PatchMapping("/{id}/activate")
+    @PatchMapping("/activate/{id}")
     public ResponseEntity<Void> activate(@PathVariable UUID id) {
         userSessionService.activate(id);
         return ResponseEntity.ok()
             .build();
     }
 
-    @PatchMapping("/{id}/deactivate")
+    @PatchMapping("/deactivate/{id}")
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         userSessionService.deactivate(id);
         return ResponseEntity.ok()
