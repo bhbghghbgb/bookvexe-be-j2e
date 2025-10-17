@@ -1,6 +1,7 @@
 package org.example.bookvexebej2e.models.db;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -10,6 +11,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.PrePersist;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -42,4 +44,14 @@ public abstract class BaseModel {
 
     @Column(length = 255)
     private String updatedBy;
+
+    @PrePersist
+    protected void prePersist() {
+        if (this.id == null || this.id.isBlank()) {
+            this.id = UUID.randomUUID().toString();
+        }
+        if (this.isDeleted == null) {
+            this.isDeleted = Boolean.FALSE;
+        }
+    }
 }

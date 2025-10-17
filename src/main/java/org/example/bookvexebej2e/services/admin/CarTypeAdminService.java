@@ -12,12 +12,12 @@ import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
-public class CarTypeAdminService extends BaseAdminService<CarTypeDbModel, Integer, CarTypeQueryRequest> {
+public class CarTypeAdminService extends BaseAdminService<CarTypeDbModel, String, CarTypeQueryRequest> {
 
     private final CarTypeRepository carTypeRepository;
 
     @Override
-    protected JpaRepository<CarTypeDbModel, Integer> getRepository() {
+    protected JpaRepository<CarTypeDbModel, String> getRepository() {
         return carTypeRepository;
     }
 

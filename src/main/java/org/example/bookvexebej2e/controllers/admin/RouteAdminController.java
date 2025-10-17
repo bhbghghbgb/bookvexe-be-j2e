@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/admin/routes")
 @Tag(name = "Route Admin", description = "Route management APIs for administrators")
-public class RouteAdminController extends BaseAdminController<RouteDbModel, Integer, RouteQueryRequest> {
+public class RouteAdminController extends BaseAdminController<RouteDbModel, String, RouteQueryRequest> {
 
     private final RouteAdminService routeService;
 
@@ -23,7 +23,7 @@ public class RouteAdminController extends BaseAdminController<RouteDbModel, Inte
     }
 
     @Override
-    protected BaseAdminService<RouteDbModel, Integer, RouteQueryRequest> getService() {
+    protected BaseAdminService<RouteDbModel, String, RouteQueryRequest> getService() {
         return routeService;
     }
 
@@ -54,7 +54,7 @@ public class RouteAdminController extends BaseAdminController<RouteDbModel, Inte
      * Update an existing route
      */
     @PutMapping("/{id}")
-    public ResponseEntity<RouteDbModel> update(@PathVariable Integer id, @RequestBody RouteCreateUpdateRequest body) {
+    public ResponseEntity<RouteDbModel> update(@PathVariable String id, @RequestBody RouteCreateUpdateRequest body) {
         return routeService.findById(id)
             .map(existing -> {
                 existing.setStartLocation(body.getStartLocation());

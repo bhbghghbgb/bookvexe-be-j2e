@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface CarTypeRepository extends JpaRepository<CarTypeDbModel, Integer> {
+public interface CarTypeRepository extends JpaRepository<CarTypeDbModel, String> {
     Optional<CarTypeDbModel> findByTypeName(String typeName);
 
     List<CarTypeDbModel> findByTypeNameContainingIgnoreCase(String typeName);

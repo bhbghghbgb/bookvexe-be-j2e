@@ -16,13 +16,13 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class CarAdminService extends BaseAdminService<CarDbModel, Integer, CarQueryRequest> {
+public class CarAdminService extends BaseAdminService<CarDbModel, String, CarQueryRequest> {
 
     private final CarRepository carRepository;
     private final CarSeatRepository carSeatRepository;
 
     @Override
-    protected JpaRepository<CarDbModel, Integer> getRepository() {
+    protected JpaRepository<CarDbModel, String> getRepository() {
         return carRepository;
     }
 
@@ -39,24 +39,19 @@ public class CarAdminService extends BaseAdminService<CarDbModel, Integer, CarQu
                 ));
             }
 
-            // Filter by owner ID
-            if (request.getOwnerId() != null) {
-                predicates.add(cb.equal(root.get("owner").get("userId"), request.getOwnerId()));
-            }
-
             // Filter by car type ID
             if (request.getCarTypeId() != null) {
-                predicates.add(cb.equal(root.get("carType").get("carTypeId"), request.getCarTypeId()));
+                predicates.add(cb.equal(root.get("carType").get("id"), request.getCarTypeId()));
             }
 
             // Filter by minimum seat count
             if (request.getMinSeatCount() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("seatCount"), request.getMinSeatCount()));
+                predicates.add(cb.greaterThanOrEqualTo(root.get("carType").get("seatCount"), request.getMinSeatCount()));
             }
 
             // Filter by maximum seat count
             if (request.getMaxSeatCount() != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("seatCount"), request.getMaxSeatCount()));
+                predicates.add(cb.lessThanOrEqualTo(root.get("carType").get("seatCount"), request.getMaxSeatCount()));
             }
 
             return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
@@ -66,7 +61,7 @@ public class CarAdminService extends BaseAdminService<CarDbModel, Integer, CarQu
     /**
      * Get car seats by car ID
      */
-    public List<CarSeatDbModel> getCarSeats(Integer carId) {
-        return carSeatRepository.findByCarCarId(carId);
+    public List<CarSeatDbModel> getCarSeats(String carId) {
+        return carSeatRepository.findByCar_Id(carId);
     }
 }

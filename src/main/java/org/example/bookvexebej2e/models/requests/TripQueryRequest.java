@@ -14,8 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TripQueryRequest extends BasePageableQueryRequest {
-    private Integer routeId;
-    private Integer busId;
+    private String routeId;
     private String startLocation;
     private String endLocation;
     private LocalDateTime departureAfter;

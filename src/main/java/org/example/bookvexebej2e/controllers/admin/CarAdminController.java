@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin/cars")
 @Tag(name = "Car Admin", description = "Car management APIs for administrators")
-public class CarAdminController extends BaseAdminController<CarDbModel, Integer, CarQueryRequest> {
+public class CarAdminController extends BaseAdminController<CarDbModel, String, CarQueryRequest> {
 
     private final CarAdminService carService;
     private final CarTypeRepository carTypeRepository;
@@ -30,7 +30,7 @@ public class CarAdminController extends BaseAdminController<CarDbModel, Integer,
     }
 
     @Override
-    protected BaseAdminService<CarDbModel, Integer, CarQueryRequest> getService() {
+    protected BaseAdminService<CarDbModel, String, CarQueryRequest> getService() {
         return carService;
     }
 
@@ -47,7 +47,7 @@ public class CarAdminController extends BaseAdminController<CarDbModel, Integer,
      * Lấy danh sách ghế của xe
      */
     @GetMapping("/{carId}/seats")
-    public ResponseEntity<List<CarSeatDbModel>> getCarSeats(@PathVariable Integer carId) {
+    public ResponseEntity<List<CarSeatDbModel>> getCarSeats(@PathVariable String carId) {
         List<CarSeatDbModel> seats = carService.getCarSeats(carId);
         return ResponseEntity.ok(seats);
     }
@@ -62,8 +62,6 @@ public class CarAdminController extends BaseAdminController<CarDbModel, Integer,
             carTypeRepository.findById(body.getCarTypeId()).ifPresent(car::setCarType);
         }
         car.setLicensePlate(body.getLicensePlate());
-        car.setSeatCount(body.getSeatCount());
-        car.setIsActive(Boolean.TRUE);
         CarDbModel saved = carService.save(car);
         return ResponseEntity.ok(saved);
     }
@@ -72,14 +70,13 @@ public class CarAdminController extends BaseAdminController<CarDbModel, Integer,
      * Update an existing car
      */
     @PutMapping("/{id}")
-    public ResponseEntity<CarDbModel> update(@PathVariable Integer id, @RequestBody CarCreateUpdateRequest body) {
+    public ResponseEntity<CarDbModel> update(@PathVariable String id, @RequestBody CarCreateUpdateRequest body) {
         return carService.findById(id)
             .map(existing -> {
                 if (body.getCarTypeId() != null) {
                     carTypeRepository.findById(body.getCarTypeId()).ifPresent(existing::setCarType);
                 }
                 existing.setLicensePlate(body.getLicensePlate());
-                existing.setSeatCount(body.getSeatCount());
                 CarDbModel updated = carService.save(existing);
                 return ResponseEntity.ok(updated);
             })

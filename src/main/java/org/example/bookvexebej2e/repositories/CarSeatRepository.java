@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface CarSeatRepository extends JpaRepository<CarSeatDbModel, Integer> {
+public interface CarSeatRepository extends JpaRepository<CarSeatDbModel, String> {
     List<CarSeatDbModel> findByCar(CarDbModel car);
 
-    List<CarSeatDbModel> findByCarCarId(Integer carId);
+    List<CarSeatDbModel> findByCar_Id(String carId);
 
     Optional<CarSeatDbModel> findByCarAndSeatNumber(CarDbModel car, String seatNumber);
 }

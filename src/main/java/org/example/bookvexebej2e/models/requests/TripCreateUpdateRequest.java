@@ -13,8 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TripCreateUpdateRequest {
-    private Integer routeId;
-    private Integer busId; // carId
+    private String routeId;
     private LocalDateTime departureTime;
     private BigDecimal price;
     private Integer availableSeats;

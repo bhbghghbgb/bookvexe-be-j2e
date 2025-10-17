@@ -12,12 +12,12 @@ import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
-public class RouteAdminService extends BaseAdminService<RouteDbModel, Integer, RouteQueryRequest> {
+public class RouteAdminService extends BaseAdminService<RouteDbModel, String, RouteQueryRequest> {
 
     private final RouteRepository routeRepository;
 
     @Override
-    protected JpaRepository<RouteDbModel, Integer> getRepository() {
+    protected JpaRepository<RouteDbModel, String> getRepository() {
         return routeRepository;
     }
 

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/admin/car-seats")
 @Tag(name = "Car Seat Admin", description = "Car seat management APIs for administrators")
-public class CarSeatAdminController extends BaseAdminController<CarSeatDbModel, Integer, CarSeatQueryRequest> {
+public class CarSeatAdminController extends BaseAdminController<CarSeatDbModel, String, CarSeatQueryRequest> {
 
     private final CarSeatAdminService carSeatService;
 
@@ -21,7 +21,7 @@ public class CarSeatAdminController extends BaseAdminController<CarSeatDbModel, 
     }
 
     @Override
-    protected BaseAdminService<CarSeatDbModel, Integer, CarSeatQueryRequest> getService() {
+    protected BaseAdminService<CarSeatDbModel, String, CarSeatQueryRequest> getService() {
         return carSeatService;
     }
 }

@@ -27,10 +27,7 @@ public class TripUserService {
             var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
 
             if (request.getRouteId() != null) {
-                predicates.add(cb.equal(root.get("route").get("routeId"), request.getRouteId()));
-            }
-            if (request.getBusId() != null) {
-                predicates.add(cb.equal(root.get("bus").get("carId"), request.getBusId()));
+                predicates.add(cb.equal(root.get("route").get("id"), request.getRouteId()));
             }
             if (StringUtils.hasText(request.getStartLocation())) {
                 predicates.add(cb.like(

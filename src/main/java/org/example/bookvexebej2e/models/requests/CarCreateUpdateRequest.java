@@ -10,8 +10,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CarCreateUpdateRequest {
-    private Integer ownerId; // optional
-    private Integer carTypeId;
+    private String carTypeId;
     private String licensePlate;
-    private Integer seatCount;
 }
