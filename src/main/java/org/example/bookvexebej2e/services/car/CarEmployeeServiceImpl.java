@@ -32,7 +32,7 @@ public class CarEmployeeServiceImpl implements CarEmployeeService {
 
     @Override
     public List<CarEmployeeResponse> findAll() {
-        List<CarEmployeeDbModel> entities = carEmployeeRepository.findAllNotDeleted();
+        List<CarEmployeeDbModel> entities = carEmployeeRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(carEmployeeMapper::toResponse)
             .toList();
@@ -110,7 +110,7 @@ public class CarEmployeeServiceImpl implements CarEmployeeService {
 
     @Override
     public List<CarEmployeeSelectResponse> findAllForSelect() {
-        List<CarEmployeeDbModel> entities = carEmployeeRepository.findAllNotDeleted();
+        List<CarEmployeeDbModel> entities = carEmployeeRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(carEmployeeMapper::toSelectResponse)
             .toList();

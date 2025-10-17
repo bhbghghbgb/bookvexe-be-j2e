@@ -34,7 +34,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public List<NotificationResponse> findAll() {
-        List<NotificationDbModel> entities = notificationRepository.findAllNotDeleted();
+        List<NotificationDbModel> entities = notificationRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(notificationMapper::toResponse)
             .toList();
@@ -148,7 +148,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public List<NotificationSelectResponse> findAllForSelect() {
-        List<NotificationDbModel> entities = notificationRepository.findAllNotDeleted();
+        List<NotificationDbModel> entities = notificationRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(notificationMapper::toSelectResponse)
             .toList();

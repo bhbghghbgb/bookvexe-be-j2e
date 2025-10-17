@@ -26,7 +26,7 @@ public class CustomerTypeServiceImpl implements CustomerTypeService {
 
     @Override
     public List<CustomerTypeResponse> findAll() {
-        List<CustomerTypeDbModel> entities = customerTypeRepository.findAllNotDeleted();
+        List<CustomerTypeDbModel> entities = customerTypeRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(customerTypeMapper::toResponse)
             .toList();
@@ -91,7 +91,7 @@ public class CustomerTypeServiceImpl implements CustomerTypeService {
 
     @Override
     public List<CustomerTypeSelectResponse> findAllForSelect() {
-        List<CustomerTypeDbModel> entities = customerTypeRepository.findAllNotDeleted();
+        List<CustomerTypeDbModel> entities = customerTypeRepository.findAllByIsDeletedFalse();
         return entities.stream()
             .map(customerTypeMapper::toSelectResponse)
             .toList();
