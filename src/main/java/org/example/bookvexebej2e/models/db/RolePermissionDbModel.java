@@ -1,46 +1,34 @@
+
 package org.example.bookvexebej2e.models.db;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
-@Table(name = "role_permission")
+@Table(name = "rolePermission")
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class RolePermissionDbModel {
-    @Id
-    @Column(name = "role_id")
-    private Integer roleId;
-
-    @OneToOne
-    @MapsId
-    @JoinColumn(name = "role_id")
+@ToString
+public class RolePermissionDbModel extends BaseModel {
+    @ManyToOne
+    @JoinColumn(name = "roleId")
     private RoleDbModel role;
 
-    @Column(name = "canRead")
-    private Boolean canRead;
-
-    @Column(name = "canCreate")
-    private Boolean canCreate;
-
-    @Column(name = "canUpdate")
-    private Boolean canUpdate;
-
-    @Column(name = "canDelete")
-    private Boolean canDelete;
-
-    @Column(name = "canActivate")
-    private Boolean canActivate;
-
-    @Column(name = "canDeactivate")
-    private Boolean canDeactivate;
-
-    @Column(name = "canImport")
-    private Boolean canImport;
-
-    @Column(name = "canExport")
-    private Boolean canExport;
+    private Boolean isCanRead;
+    private Boolean isCanCreate;
+    private Boolean isCanUpdate;
+    private Boolean isCanDelete;
+    private Boolean isCanActivate;
+    private Boolean isCanDeactivate;
+    private Boolean isCanImport;
+    private Boolean isCanExport;
 }

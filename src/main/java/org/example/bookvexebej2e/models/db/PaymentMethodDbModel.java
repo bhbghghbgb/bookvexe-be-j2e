@@ -1,27 +1,37 @@
+
 package org.example.bookvexebej2e.models.db;
 
-import jakarta.persistence.*;
-import lombok.*;
+import java.util.List;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
-@Table(name = "payment_methods")
+@Table(name = "paymentMethods")
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentMethodDbModel {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "method_id")
-    private Integer methodId;
+@ToString
+public class PaymentMethodDbModel extends BaseModel {
+    @Column(length = 255, unique = true)
+    private String code;
 
-    @Column(name = "method_name", unique = true, nullable = false, length = 50)
-    private String methodName;
+    @Column(length = 50, unique = true)
+    private String name;
 
-    @Column(name = "description", length = 255)
+    @Column(length = 255)
     private String description;
 
-    @Column(name = "is_active")
-    private Boolean isActive = true;
+    private Boolean isActive;
+
+    @OneToMany(mappedBy = "method")
+    private List<PaymentDbModel> payments;
 }
