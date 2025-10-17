@@ -35,7 +35,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingResponse> findAll() {
-        List<BookingDbModel> entities = bookingRepository.findAllByIsDeletedFalse();
+        List<BookingDbModel> entities = bookingRepository.findAllNotDeleted();
         return entities.stream()
             .map(bookingMapper::toResponse)
             .toList();
@@ -145,7 +145,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingSelectResponse> findAllForSelect() {
-        List<BookingDbModel> entities = bookingRepository.findAllByIsDeletedFalse();
+        List<BookingDbModel> entities = bookingRepository.findAllNotDeleted();
         return entities.stream()
             .map(bookingMapper::toSelectResponse)
             .toList();

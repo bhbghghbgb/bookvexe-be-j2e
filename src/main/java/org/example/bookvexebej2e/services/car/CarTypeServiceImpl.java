@@ -26,7 +26,7 @@ public class CarTypeServiceImpl implements CarTypeService {
 
     @Override
     public List<CarTypeResponse> findAll() {
-        List<CarTypeDbModel> entities = carTypeRepository.findAllByIsDeletedFalse();
+        List<CarTypeDbModel> entities = carTypeRepository.findAllNotDeleted();
         return entities.stream()
             .map(carTypeMapper::toResponse)
             .toList();
@@ -93,7 +93,7 @@ public class CarTypeServiceImpl implements CarTypeService {
 
     @Override
     public List<CarTypeSelectResponse> findAllForSelect() {
-        List<CarTypeDbModel> entities = carTypeRepository.findAllByIsDeletedFalse();
+        List<CarTypeDbModel> entities = carTypeRepository.findAllNotDeleted();
         return entities.stream()
             .map(carTypeMapper::toSelectResponse)
             .toList();
