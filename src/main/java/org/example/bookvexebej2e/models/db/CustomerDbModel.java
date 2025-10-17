@@ -21,16 +21,16 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class CustomerDbModel extends BaseModel {
-    @Column(length = 255)
+    @Column(length = 255, name = "Mã khách hàng")
     private String code;
 
-    @Column(length = 255)
+    @Column(length = 255, name = "Tên khách hàng")
     private String name;
 
-    @Column(length = 100)
+    @Column(length = 100, name = "Email")
     private String email;
 
-    @Column(length = 15)
+    @Column(length = 15, name = "Số điện thoại")
     private String phone;
 
     @ManyToOne

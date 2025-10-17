@@ -22,19 +22,19 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class EmployeeDbModel extends BaseModel {
-    @Column(length = 255)
+    @Column(length = 255, name = "Mã nhân viên")
     private String code;
 
-    @Column(length = 255)
+    @Column(length = 255, name = "Tên nhân viên")
     private String name;
 
-    @Column(length = 100)
+    @Column(length = 100, name = "Email")
     private String email;
 
-    @Column(length = 15)
+    @Column(length = 15, name = "Số điện thoại")
     private String phone;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", name = "Mô tả")
     private String description;
 
     @OneToOne(mappedBy = "employee")

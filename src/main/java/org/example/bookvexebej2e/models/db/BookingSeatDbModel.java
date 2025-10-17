@@ -30,9 +30,9 @@ public class BookingSeatDbModel extends BaseModel {
     @JoinColumn(name = "seatId")
     private CarSeatDbModel seat;
 
-    @Column(length = 20)
+    @Column(length = 20, name = "Trạng thái")
     private String status;
 
-    @Column(precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2, name = "Giá")
     private BigDecimal price;
 }

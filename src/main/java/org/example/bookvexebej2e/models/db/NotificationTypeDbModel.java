@@ -21,13 +21,13 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class NotificationTypeDbModel extends BaseModel {
-    @Column(length = 255, unique = true)
+    @Column(length = 255, unique = true, name = "Mã loại thông báo")
     private String code;
 
-    @Column(length = 50, unique = true)
+    @Column(length = 50, unique = true, name = "Tên loại thông báo")
     private String name;
 
-    @Column(length = 255)
+    @Column(length = 255, name = "Mô tả")
     private String description;
 
     @OneToMany(mappedBy = "type")

@@ -24,10 +24,10 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class BookingDbModel extends BaseModel {
-    @Column(length = 255)
+    @Column(length = 255, name = "Mã đặt chỗ")
     private String code;
 
-    @Column(length = 255)
+    @Column(length = 255, name = "Loại đặt chỗ")
     private String type;
 
     @ManyToOne
@@ -46,10 +46,10 @@ public class BookingDbModel extends BaseModel {
     @JoinColumn(name = "dropoffStopId")
     private TripStopDbModel dropoffStop;
 
-    @Column(length = 20)
+    @Column(length = 20, name = "Trạng thái đặt chỗ")
     private String bookingStatus;
 
-    @Column(precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2, name = "Tổng giá")
     private BigDecimal totalPrice;
 
     @OneToMany(mappedBy = "booking")

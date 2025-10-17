@@ -22,15 +22,16 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class RouteDbModel extends BaseModel {
-    @Column(length = 100)
+    @Column(length = 100, name = "Điểm bắt đầu")
     private String startLocation;
 
-    @Column(length = 100)
+    @Column(length = 100, name = "Điểm kết thúc")
     private String endLocation;
 
-    @Column(precision = 6, scale = 2)
+    @Column(precision = 6, scale = 2, name = "Khoảng cách (km)")
     private BigDecimal distanceKm;
 
+    @Column(name = "Thời gian ước tính (phút)")
     private Integer estimatedDuration;
 
     @OneToMany(mappedBy = "route")

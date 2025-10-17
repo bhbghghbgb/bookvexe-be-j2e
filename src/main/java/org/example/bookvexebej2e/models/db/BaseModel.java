@@ -25,21 +25,23 @@ import lombok.ToString;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseModel {
     @Id
-    @Column(length = 255)
+    @Column(length = 255, name = "uuid")
     private String id;
 
+    @Column(name = "xóa mềm")
     private Boolean isDeleted;
 
     @CreatedDate
-    @Column(updatable = false)
+    @Column(updatable = false, name = "Ngày tạo")
     private LocalDateTime createdDate;
 
-    @Column(length = 255)
+    @Column(length = 255, name = "Người tạo")
     private String createdBy;
 
     @LastModifiedDate
+    @Column(name = "Ngày cập nhật")
     private LocalDateTime updatedDate;
 
-    @Column(length = 255)
+    @Column(length = 255, name = "Người cập nhật")
     private String updatedBy;
 }

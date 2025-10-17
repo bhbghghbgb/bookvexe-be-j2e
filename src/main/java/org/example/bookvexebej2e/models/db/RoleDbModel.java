@@ -20,13 +20,13 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class RoleDbModel extends BaseModel {
-    @Column(length = 100, unique = true)
+    @Column(length = 100, unique = true, name = "Mã vai trò")
     private String code;
 
-    @Column(length = 100)
+    @Column(length = 100, name = "Tên vai trò")
     private String name;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", name = "Mô tả")
     private String description;
 
     @OneToMany(mappedBy = "role")

@@ -21,15 +21,16 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class CarTypeDbModel extends BaseModel {
-    @Column(length = 255)
+    @Column(length = 255, name = "Mã loại xe")
     private String code;
 
-    @Column(length = 255)
+    @Column(length = 255, name = "Tên loại xe")
     private String name;
 
-    @Column(length = 255)
+    @Column(length = 255, name = "Mô tả")
     private String description;
 
+    @Column(name = "Số ghế")
     private Integer seatCount;
 
     @OneToMany(mappedBy = "carType")
