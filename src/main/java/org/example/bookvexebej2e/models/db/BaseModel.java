@@ -23,7 +23,7 @@ public class BaseModel {
     private UUID id;
 
     @Column(name = "idDeleted")
-    private Boolean isDeleted;
+    private Boolean isDeleted = false;
 
     @CreatedDate
     @Column(updatable = false, name = "createdDate")
