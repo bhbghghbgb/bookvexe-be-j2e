@@ -1,10 +1,11 @@
 package org.example.bookvexebej2e.models.dto.booking;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.models.dto.base.BasePageableQuery;
 
-import java.util.UUID;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -12,6 +13,6 @@ public class BookingQuery extends BasePageableQuery {
     private String code;
     private String type;
     private String bookingStatus;
-    private UUID userId;
+    private UUID customerId;
     private UUID tripId;
 }

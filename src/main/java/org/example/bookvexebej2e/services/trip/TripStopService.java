@@ -1,10 +1,14 @@
 package org.example.bookvexebej2e.services.trip;
 
-import org.example.bookvexebej2e.models.dto.trip.*;
-import org.springframework.data.domain.Page;
-
 import java.util.List;
 import java.util.UUID;
+
+import org.example.bookvexebej2e.models.dto.trip.TripStopCreate;
+import org.example.bookvexebej2e.models.dto.trip.TripStopQuery;
+import org.example.bookvexebej2e.models.dto.trip.TripStopResponse;
+import org.example.bookvexebej2e.models.dto.trip.TripStopSelectResponse;
+import org.example.bookvexebej2e.models.dto.trip.TripStopUpdate;
+import org.springframework.data.domain.Page;
 
 public interface TripStopService {
     List<TripStopResponse> findAll();
@@ -24,4 +28,6 @@ public interface TripStopService {
     void deactivate(UUID id);
 
     List<TripStopSelectResponse> findAllForSelect();
+
+    List<TripStopSelectResponse> findAllForSelectByTrip(UUID tripId);
 }
