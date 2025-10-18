@@ -1,12 +1,18 @@
 package org.example.bookvexebej2e.services.invoice;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.InvoiceMapper;
 import org.example.bookvexebej2e.models.db.InvoiceDbModel;
 import org.example.bookvexebej2e.models.db.PaymentDbModel;
-import org.example.bookvexebej2e.models.dto.invoice.*;
+import org.example.bookvexebej2e.models.dto.invoice.InvoiceCreate;
+import org.example.bookvexebej2e.models.dto.invoice.InvoiceQuery;
+import org.example.bookvexebej2e.models.dto.invoice.InvoiceResponse;
+import org.example.bookvexebej2e.models.dto.invoice.InvoiceSelectResponse;
+import org.example.bookvexebej2e.models.dto.invoice.InvoiceUpdate;
 import org.example.bookvexebej2e.repositories.invoice.InvoiceRepository;
 import org.example.bookvexebej2e.repositories.payment.PaymentRepository;
 import org.springframework.data.domain.Page;
@@ -16,9 +22,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -32,8 +37,8 @@ public class InvoiceServiceImpl implements InvoiceService {
     public List<InvoiceResponse> findAll() {
         List<InvoiceDbModel> entities = invoiceRepository.findAllNotDeleted();
         return entities.stream()
-            .map(invoiceMapper::toResponse)
-            .toList();
+                .map(invoiceMapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -47,7 +52,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public InvoiceResponse findById(UUID id) {
         InvoiceDbModel entity = invoiceRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(InvoiceDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(InvoiceDbModel.class, id));
         return invoiceMapper.toResponse(entity);
     }
 
@@ -59,7 +64,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         entity.setIssuedAt(createDto.getIssuedAt());
 
         PaymentDbModel payment = paymentRepository.findById(createDto.getPaymentId())
-            .orElseThrow(() -> new ResourceNotFoundException(PaymentDbModel.class, createDto.getPaymentId()));
+                .orElseThrow(() -> new ResourceNotFoundException(PaymentDbModel.class, createDto.getPaymentId()));
         entity.setPayment(payment);
 
         InvoiceDbModel savedEntity = invoiceRepository.save(entity);
@@ -69,7 +74,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public InvoiceResponse update(UUID id, InvoiceUpdate updateDto) {
         InvoiceDbModel entity = invoiceRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(InvoiceDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(InvoiceDbModel.class, id));
 
         entity.setInvoiceNumber(updateDto.getInvoiceNumber());
         entity.setFileUrl(updateDto.getFileUrl());
@@ -77,7 +82,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         if (updateDto.getPaymentId() != null) {
             PaymentDbModel payment = paymentRepository.findById(updateDto.getPaymentId())
-                .orElseThrow(() -> new ResourceNotFoundException(PaymentDbModel.class, updateDto.getPaymentId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(PaymentDbModel.class, updateDto.getPaymentId()));
             entity.setPayment(payment);
         }
 
@@ -93,7 +98,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public void activate(UUID id) {
         InvoiceDbModel entity = invoiceRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(InvoiceDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(InvoiceDbModel.class, id));
         entity.setIsDeleted(false);
         invoiceRepository.save(entity);
     }
@@ -107,8 +112,8 @@ public class InvoiceServiceImpl implements InvoiceService {
     public List<InvoiceSelectResponse> findAllForSelect() {
         List<InvoiceDbModel> entities = invoiceRepository.findAllNotDeleted();
         return entities.stream()
-            .map(invoiceMapper::toSelectResponse)
-            .toList();
+                .map(invoiceMapper::toSelectResponse)
+                .toList();
     }
 
     @Override
@@ -119,7 +124,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         return entities.map(invoiceMapper::toSelectResponse);
     }
 
-
     private Specification<InvoiceDbModel> buildSpecification(InvoiceQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -127,12 +131,12 @@ public class InvoiceServiceImpl implements InvoiceService {
 
             if (query.getPaymentId() != null) {
                 predicates.add(cb.equal(root.get("payment")
-                    .get("id"), query.getPaymentId()));
+                        .get("id"), query.getPaymentId()));
             }
             if (query.getInvoiceNumber() != null && !query.getInvoiceNumber()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("invoiceNumber")), "%" + query.getInvoiceNumber()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

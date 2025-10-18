@@ -1,9 +1,17 @@
 package org.example.bookvexebej2e.models.db;
 
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.math.BigDecimal;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "bookingSeats")
@@ -13,6 +21,10 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @ToString
 public class BookingSeatDbModel extends BaseModel {
+
+    @Column(length = 255, unique = true, name = "code")
+    private String code;
+
     @ManyToOne
     @JoinColumn(name = "bookingId")
     private BookingDbModel booking;

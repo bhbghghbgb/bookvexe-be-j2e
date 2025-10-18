@@ -1,13 +1,19 @@
 package org.example.bookvexebej2e.services.trip;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.TripCarMapper;
 import org.example.bookvexebej2e.models.db.CarDbModel;
 import org.example.bookvexebej2e.models.db.TripCarDbModel;
 import org.example.bookvexebej2e.models.db.TripDbModel;
-import org.example.bookvexebej2e.models.dto.trip.*;
+import org.example.bookvexebej2e.models.dto.trip.TripCarCreate;
+import org.example.bookvexebej2e.models.dto.trip.TripCarQuery;
+import org.example.bookvexebej2e.models.dto.trip.TripCarResponse;
+import org.example.bookvexebej2e.models.dto.trip.TripCarSelectResponse;
+import org.example.bookvexebej2e.models.dto.trip.TripCarUpdate;
 import org.example.bookvexebej2e.repositories.car.CarRepository;
 import org.example.bookvexebej2e.repositories.trip.TripCarRepository;
 import org.example.bookvexebej2e.repositories.trip.TripRepository;
@@ -18,9 +24,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -35,8 +40,8 @@ public class TripCarServiceImpl implements TripCarService {
     public List<TripCarResponse> findAll() {
         List<TripCarDbModel> entities = tripCarRepository.findAllNotDeleted();
         return entities.stream()
-            .map(tripCarMapper::toResponse)
-            .toList();
+                .map(tripCarMapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -50,7 +55,7 @@ public class TripCarServiceImpl implements TripCarService {
     @Override
     public TripCarResponse findById(UUID id) {
         TripCarDbModel entity = tripCarRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(TripCarDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(TripCarDbModel.class, id));
         return tripCarMapper.toResponse(entity);
     }
 
@@ -61,11 +66,11 @@ public class TripCarServiceImpl implements TripCarService {
         entity.setAvailableSeats(createDto.getAvailableSeats());
 
         TripDbModel trip = tripRepository.findById(createDto.getTripId())
-            .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, createDto.getTripId()));
+                .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, createDto.getTripId()));
         entity.setTrip(trip);
 
         CarDbModel car = carRepository.findById(createDto.getCarId())
-            .orElseThrow(() -> new ResourceNotFoundException(CarDbModel.class, createDto.getCarId()));
+                .orElseThrow(() -> new ResourceNotFoundException(CarDbModel.class, createDto.getCarId()));
         entity.setCar(car);
 
         TripCarDbModel savedEntity = tripCarRepository.save(entity);
@@ -75,20 +80,20 @@ public class TripCarServiceImpl implements TripCarService {
     @Override
     public TripCarResponse update(UUID id, TripCarUpdate updateDto) {
         TripCarDbModel entity = tripCarRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(TripCarDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(TripCarDbModel.class, id));
 
         entity.setPrice(updateDto.getPrice());
         entity.setAvailableSeats(updateDto.getAvailableSeats());
 
         if (updateDto.getTripId() != null) {
             TripDbModel trip = tripRepository.findById(updateDto.getTripId())
-                .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, updateDto.getTripId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, updateDto.getTripId()));
             entity.setTrip(trip);
         }
 
         if (updateDto.getCarId() != null) {
             CarDbModel car = carRepository.findById(updateDto.getCarId())
-                .orElseThrow(() -> new ResourceNotFoundException(CarDbModel.class, updateDto.getCarId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(CarDbModel.class, updateDto.getCarId()));
             entity.setCar(car);
         }
 
@@ -104,7 +109,7 @@ public class TripCarServiceImpl implements TripCarService {
     @Override
     public void activate(UUID id) {
         TripCarDbModel entity = tripCarRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(TripCarDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(TripCarDbModel.class, id));
         entity.setIsDeleted(false);
         tripCarRepository.save(entity);
     }
@@ -118,8 +123,8 @@ public class TripCarServiceImpl implements TripCarService {
     public List<TripCarSelectResponse> findAllForSelect() {
         List<TripCarDbModel> entities = tripCarRepository.findAllNotDeleted();
         return entities.stream()
-            .map(tripCarMapper::toSelectResponse)
-            .toList();
+                .map(tripCarMapper::toSelectResponse)
+                .toList();
     }
 
     @Override
@@ -130,6 +135,13 @@ public class TripCarServiceImpl implements TripCarService {
         return entities.map(tripCarMapper::toSelectResponse);
     }
 
+    @Override
+    public List<TripCarResponse> findByTripId(UUID tripId) {
+        List<TripCarDbModel> entities = tripCarRepository.findByTripIdAndNotDeleted(tripId);
+        return entities.stream()
+                .map(tripCarMapper::toResponse)
+                .toList();
+    }
 
     private Specification<TripCarDbModel> buildSpecification(TripCarQuery query) {
         return (root, cq, cb) -> {
@@ -138,11 +150,11 @@ public class TripCarServiceImpl implements TripCarService {
 
             if (query.getTripId() != null) {
                 predicates.add(cb.equal(root.get("trip")
-                    .get("id"), query.getTripId()));
+                        .get("id"), query.getTripId()));
             }
             if (query.getCarId() != null) {
                 predicates.add(cb.equal(root.get("car")
-                    .get("id"), query.getCarId()));
+                        .get("id"), query.getCarId()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

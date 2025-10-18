@@ -1,13 +1,15 @@
 package org.example.bookvexebej2e.models.dto.trip;
 
-import lombok.Data;
+import java.math.BigDecimal;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.models.dto.car.CarSelectResponse;
 
-import java.util.UUID;
+import lombok.Data;
 
 @Data
 public class TripCarSelectResponse {
     private UUID id;
-    //    private TripResponse trip;
     private CarSelectResponse car;
+    private BigDecimal price;
 }

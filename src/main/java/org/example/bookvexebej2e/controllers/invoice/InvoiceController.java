@@ -1,13 +1,25 @@
 package org.example.bookvexebej2e.controllers.invoice;
 
-import org.example.bookvexebej2e.models.dto.invoice.*;
+import java.util.List;
+import java.util.UUID;
+
+import org.example.bookvexebej2e.models.dto.invoice.InvoiceCreate;
+import org.example.bookvexebej2e.models.dto.invoice.InvoiceQuery;
+import org.example.bookvexebej2e.models.dto.invoice.InvoiceResponse;
+import org.example.bookvexebej2e.models.dto.invoice.InvoiceSelectResponse;
+import org.example.bookvexebej2e.models.dto.invoice.InvoiceUpdate;
 import org.example.bookvexebej2e.services.invoice.InvoiceService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.UUID;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/admin/invoices")
@@ -53,21 +65,21 @@ public class InvoiceController {
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         invoiceService.delete(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
     @PatchMapping("/activate/{id}")
     public ResponseEntity<Void> activate(@PathVariable UUID id) {
         invoiceService.activate(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
     @PatchMapping("/deactivate/{id}")
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         invoiceService.deactivate(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
     @GetMapping("/select")

@@ -1,11 +1,12 @@
 CREATE TABLE booking_seats
 (
     uuid         BINARY(16)     NOT NULL,
-    id_deleted   BIT(1)         NULL,
+    is_deleted   BIT(1)         NULL,
     created_date datetime       NULL,
     created_by   BINARY(16)     NULL,
     updated_date datetime       NULL,
     updated_by   BINARY(16)     NULL,
+    code            VARCHAR(255)   NULL,
     booking_id   BINARY(16)     NULL,
     seat_id      BINARY(16)     NULL,
     status       VARCHAR(20)    NULL,
@@ -16,7 +17,7 @@ CREATE TABLE booking_seats
 CREATE TABLE bookings
 (
     uuid            BINARY(16)     NOT NULL,
-    id_deleted      BIT(1)         NULL,
+    is_deleted      BIT(1)         NULL,
     created_date    datetime       NULL,
     created_by      BINARY(16)     NULL,
     updated_date    datetime       NULL,
@@ -35,7 +36,7 @@ CREATE TABLE bookings
 CREATE TABLE car_employees
 (
     uuid         BINARY(16)  NOT NULL,
-    id_deleted   BIT(1)      NULL,
+    is_deleted   BIT(1)      NULL,
     created_date datetime    NULL,
     created_by   BINARY(16)  NULL,
     updated_date datetime    NULL,
@@ -49,7 +50,7 @@ CREATE TABLE car_employees
 CREATE TABLE car_seats
 (
     uuid          BINARY(16)  NOT NULL,
-    id_deleted    BIT(1)      NULL,
+    is_deleted    BIT(1)      NULL,
     created_date  datetime    NULL,
     created_by    BINARY(16)  NULL,
     updated_date  datetime    NULL,
@@ -63,7 +64,7 @@ CREATE TABLE car_seats
 CREATE TABLE car_types
 (
     uuid          BINARY(16)   NOT NULL,
-    id_deleted    BIT(1)       NULL,
+    is_deleted    BIT(1)       NULL,
     created_date  datetime     NULL,
     created_by    BINARY(16)   NULL,
     updated_date  datetime     NULL,
@@ -77,21 +78,22 @@ CREATE TABLE car_types
 
 CREATE TABLE cars
 (
-    uuid          BINARY(16)  NOT NULL,
-    id_deleted    BIT(1)      NULL,
-    created_date  datetime    NULL,
-    created_by    BINARY(16)  NULL,
-    updated_date  datetime    NULL,
-    updated_by    BINARY(16)  NULL,
-    car_type_id   BINARY(16)  NULL,
-    license_plate VARCHAR(20) NULL,
+    uuid          BINARY(16)   NOT NULL,
+    is_deleted    BIT(1)       NULL,
+    created_date  datetime     NULL,
+    created_by    BINARY(16)   NULL,
+    updated_date  datetime     NULL,
+    updated_by    BINARY(16)   NULL,
+    code          VARCHAR(255) NULL,
+    car_type_id   BINARY(16)   NULL,
+    license_plate VARCHAR(20)  NULL,
     CONSTRAINT pk_cars PRIMARY KEY (uuid)
 );
 
 CREATE TABLE customer
 (
     uuid             BINARY(16)   NOT NULL,
-    id_deleted       BIT(1)       NULL,
+    is_deleted       BIT(1)       NULL,
     created_date     datetime     NULL,
     created_by       BINARY(16)   NULL,
     updated_date     datetime     NULL,
@@ -108,7 +110,7 @@ CREATE TABLE customer
 CREATE TABLE customer_type
 (
     uuid          BINARY(16)   NOT NULL,
-    id_deleted    BIT(1)       NULL,
+    is_deleted    BIT(1)       NULL,
     created_date  datetime     NULL,
     created_by    BINARY(16)   NULL,
     updated_date  datetime     NULL,
@@ -122,7 +124,7 @@ CREATE TABLE customer_type
 CREATE TABLE employee
 (
     uuid          BINARY(16)   NOT NULL,
-    id_deleted    BIT(1)       NULL,
+    is_deleted    BIT(1)       NULL,
     created_date  datetime     NULL,
     created_by    BINARY(16)   NULL,
     updated_date  datetime     NULL,
@@ -138,7 +140,7 @@ CREATE TABLE employee
 CREATE TABLE invoices
 (
     uuid           BINARY(16)   NOT NULL,
-    id_deleted     BIT(1)       NULL,
+    is_deleted     BIT(1)       NULL,
     created_date   datetime     NULL,
     created_by     BINARY(16)   NULL,
     updated_date   datetime     NULL,
@@ -153,7 +155,7 @@ CREATE TABLE invoices
 CREATE TABLE notification_types
 (
     uuid          BINARY(16)   NOT NULL,
-    id_deleted    BIT(1)       NULL,
+    is_deleted    BIT(1)       NULL,
     created_date  datetime     NULL,
     created_by    BINARY(16)   NULL,
     updated_date  datetime     NULL,
@@ -167,7 +169,7 @@ CREATE TABLE notification_types
 CREATE TABLE notifications
 (
     uuid         BINARY(16)   NOT NULL,
-    id_deleted   BIT(1)       NULL,
+    is_deleted   BIT(1)       NULL,
     created_date datetime     NULL,
     created_by   BINARY(16)   NULL,
     updated_date datetime     NULL,
@@ -187,7 +189,7 @@ CREATE TABLE notifications
 CREATE TABLE password_reset_tokens
 (
     uuid         BINARY(16)   NOT NULL,
-    id_deleted   BIT(1)       NULL,
+    is_deleted   BIT(1)       NULL,
     created_date datetime     NULL,
     created_by   BINARY(16)   NULL,
     updated_date datetime     NULL,
@@ -201,7 +203,7 @@ CREATE TABLE password_reset_tokens
 CREATE TABLE payment_methods
 (
     uuid          BINARY(16)   NOT NULL,
-    id_deleted    BIT(1)       NULL,
+    is_deleted    BIT(1)       NULL,
     created_date  datetime     NULL,
     created_by    BINARY(16)   NULL,
     updated_date  datetime     NULL,
@@ -216,7 +218,7 @@ CREATE TABLE payment_methods
 CREATE TABLE payments
 (
     uuid             BINARY(16)     NOT NULL,
-    id_deleted       BIT(1)         NULL,
+    is_deleted       BIT(1)         NULL,
     created_date     datetime       NULL,
     created_by       BINARY(16)     NULL,
     updated_date     datetime       NULL,
@@ -233,7 +235,7 @@ CREATE TABLE payments
 CREATE TABLE `role`
 (
     uuid          BINARY(16)   NOT NULL,
-    id_deleted    BIT(1)       NULL,
+    is_deleted    BIT(1)       NULL,
     created_date  datetime     NULL,
     created_by    BINARY(16)   NULL,
     updated_date  datetime     NULL,
@@ -247,7 +249,7 @@ CREATE TABLE `role`
 CREATE TABLE role_permission
 (
     uuid              BINARY(16) NOT NULL,
-    id_deleted        BIT(1)     NULL,
+    is_deleted        BIT(1)     NULL,
     created_date      datetime   NULL,
     created_by        BINARY(16) NULL,
     updated_date      datetime   NULL,
@@ -267,7 +269,7 @@ CREATE TABLE role_permission
 CREATE TABLE role_user
 (
     uuid         BINARY(16) NOT NULL,
-    id_deleted   BIT(1)     NULL,
+    is_deleted   BIT(1)     NULL,
     created_date datetime   NULL,
     created_by   BINARY(16) NULL,
     updated_date datetime   NULL,
@@ -280,7 +282,7 @@ CREATE TABLE role_user
 CREATE TABLE routes
 (
     uuid               BINARY(16)    NOT NULL,
-    id_deleted         BIT(1)        NULL,
+    is_deleted         BIT(1)        NULL,
     created_date       datetime      NULL,
     created_by         BINARY(16)    NULL,
     updated_date       datetime      NULL,
@@ -295,7 +297,7 @@ CREATE TABLE routes
 CREATE TABLE trip_cars
 (
     uuid            BINARY(16)     NOT NULL,
-    id_deleted      BIT(1)         NULL,
+    is_deleted      BIT(1)         NULL,
     created_date    datetime       NULL,
     created_by      BINARY(16)     NULL,
     updated_date    datetime       NULL,
@@ -310,7 +312,7 @@ CREATE TABLE trip_cars
 CREATE TABLE trip_stops
 (
     uuid         BINARY(16)   NOT NULL,
-    id_deleted   BIT(1)       NULL,
+    is_deleted   BIT(1)       NULL,
     created_date datetime     NULL,
     created_by   BINARY(16)   NULL,
     updated_date datetime     NULL,
@@ -325,7 +327,7 @@ CREATE TABLE trip_stops
 CREATE TABLE trips
 (
     uuid            BINARY(16)     NOT NULL,
-    id_deleted      BIT(1)         NULL,
+    is_deleted      BIT(1)         NULL,
     created_date    datetime       NULL,
     created_by      BINARY(16)     NULL,
     updated_date    datetime       NULL,
@@ -340,7 +342,7 @@ CREATE TABLE trips
 CREATE TABLE user_sessions
 (
     uuid         BINARY(16)   NOT NULL,
-    id_deleted   BIT(1)       NULL,
+    is_deleted   BIT(1)       NULL,
     created_date datetime     NULL,
     created_by   BINARY(16)   NULL,
     updated_date datetime     NULL,
@@ -355,7 +357,7 @@ CREATE TABLE user_sessions
 CREATE TABLE users
 (
     uuid           BINARY(16)   NOT NULL,
-    id_deleted     BIT(1)       NULL,
+    is_deleted     BIT(1)       NULL,
     created_date   datetime     NULL,
     created_by     BINARY(16)   NULL,
     updated_date   datetime     NULL,
@@ -369,8 +371,28 @@ CREATE TABLE users
     CONSTRAINT pk_users PRIMARY KEY (uuid)
 );
 
+-- UNIQUE CONSTRAINTS
+ALTER TABLE bookings
+    ADD CONSTRAINT uc_bookings_code UNIQUE (code);
+ALTER TABLE booking_seats
+    ADD CONSTRAINT uc_bookingseats_code UNIQUE (code);
+ALTER TABLE car_types
+    ADD CONSTRAINT uc_cartypes_code UNIQUE (code);
+
+ALTER TABLE cars
+    ADD CONSTRAINT uc_cars_code UNIQUE (code);
+
 ALTER TABLE cars
     ADD CONSTRAINT uc_cars_licenseplate UNIQUE (license_plate);
+
+ALTER TABLE customer
+    ADD CONSTRAINT uc_customer_code UNIQUE (code);
+
+ALTER TABLE customer_type
+    ADD CONSTRAINT uc_customertype_code UNIQUE (code);
+
+ALTER TABLE employee
+    ADD CONSTRAINT uc_employee_code UNIQUE (code);
 
 ALTER TABLE invoices
     ADD CONSTRAINT uc_invoices_invoicenumber UNIQUE (invoice_number);
@@ -411,6 +433,7 @@ ALTER TABLE users
 ALTER TABLE users
     ADD CONSTRAINT uc_users_username UNIQUE (username);
 
+-- FOREIGN KEY CONSTRAINTS
 ALTER TABLE booking_seats
     ADD CONSTRAINT FK_BOOKINGSEATS_ON_BOOKINGID FOREIGN KEY (booking_id) REFERENCES bookings (uuid);
 

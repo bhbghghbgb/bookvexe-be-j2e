@@ -1,12 +1,18 @@
 package org.example.bookvexebej2e.services.car;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.CarMapper;
 import org.example.bookvexebej2e.models.db.CarDbModel;
 import org.example.bookvexebej2e.models.db.CarTypeDbModel;
-import org.example.bookvexebej2e.models.dto.car.*;
+import org.example.bookvexebej2e.models.dto.car.CarCreate;
+import org.example.bookvexebej2e.models.dto.car.CarQuery;
+import org.example.bookvexebej2e.models.dto.car.CarResponse;
+import org.example.bookvexebej2e.models.dto.car.CarSelectResponse;
+import org.example.bookvexebej2e.models.dto.car.CarUpdate;
 import org.example.bookvexebej2e.repositories.car.CarRepository;
 import org.example.bookvexebej2e.repositories.car.CarTypeRepository;
 import org.springframework.data.domain.Page;
@@ -16,9 +22,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -27,13 +32,14 @@ public class CarServiceImpl implements CarService {
     private final CarRepository carRepository;
     private final CarTypeRepository carTypeRepository;
     private final CarMapper carMapper;
+    private final CarSeatService carSeatService;
 
     @Override
     public List<CarResponse> findAll() {
         List<CarDbModel> entities = carRepository.findAllNotDeleted();
         return entities.stream()
-            .map(carMapper::toResponse)
-            .toList();
+                .map(carMapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -47,7 +53,7 @@ public class CarServiceImpl implements CarService {
     @Override
     public CarResponse findById(UUID id) {
         CarDbModel entity = carRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(CarDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(CarDbModel.class, id));
         return carMapper.toResponse(entity);
     }
 
@@ -55,29 +61,57 @@ public class CarServiceImpl implements CarService {
     public CarResponse create(CarCreate createDto) {
         CarDbModel entity = new CarDbModel();
         entity.setLicensePlate(createDto.getLicensePlate());
+        entity.setCode(createDto.getCode());
 
         CarTypeDbModel carType = carTypeRepository.findById(createDto.getCarTypeId())
-            .orElseThrow(() -> new ResourceNotFoundException(CarTypeDbModel.class, createDto.getCarTypeId()));
+                .orElseThrow(() -> new ResourceNotFoundException(CarTypeDbModel.class, createDto.getCarTypeId()));
         entity.setCarType(carType);
 
         CarDbModel savedEntity = carRepository.save(entity);
+
+        // Automatically create car seats based on car type seat count
+        if (carType.getSeatCount() != null && carType.getSeatCount() > 0) {
+            carSeatService.createSeatsForCar(savedEntity.getId(), carType.getSeatCount());
+        }
+
         return carMapper.toResponse(savedEntity);
     }
 
     @Override
     public CarResponse update(UUID id, CarUpdate updateDto) {
         CarDbModel entity = carRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(CarDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(CarDbModel.class, id));
 
         entity.setLicensePlate(updateDto.getLicensePlate());
+        entity.setCode(updateDto.getCode());
+
+        boolean carTypeChanged = false;
+        CarTypeDbModel newCarType = null;
 
         if (updateDto.getCarTypeId() != null) {
-            CarTypeDbModel carType = carTypeRepository.findById(updateDto.getCarTypeId())
-                .orElseThrow(() -> new ResourceNotFoundException(CarTypeDbModel.class, updateDto.getCarTypeId()));
-            entity.setCarType(carType);
+            newCarType = carTypeRepository.findById(updateDto.getCarTypeId())
+                    .orElseThrow(() -> new ResourceNotFoundException(CarTypeDbModel.class, updateDto.getCarTypeId()));
+
+            // Check if car type is actually changing
+            if (entity.getCarType() == null || !entity.getCarType().getId().equals(updateDto.getCarTypeId())) {
+                carTypeChanged = true;
+                entity.setCarType(newCarType);
+            }
         }
 
         CarDbModel updatedEntity = carRepository.save(entity);
+
+        // If car type changed, update car seats
+        if (carTypeChanged && newCarType != null) {
+            // Delete all existing car seats
+            carSeatService.deleteAllSeatsByCar(updatedEntity.getId());
+
+            // Create new car seats based on new car type seat count
+            if (newCarType.getSeatCount() != null && newCarType.getSeatCount() > 0) {
+                carSeatService.createSeatsForCar(updatedEntity.getId(), newCarType.getSeatCount());
+            }
+        }
+
         return carMapper.toResponse(updatedEntity);
     }
 
@@ -89,7 +123,7 @@ public class CarServiceImpl implements CarService {
     @Override
     public void activate(UUID id) {
         CarDbModel entity = carRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(CarDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(CarDbModel.class, id));
         entity.setIsDeleted(false);
         carRepository.save(entity);
     }
@@ -103,8 +137,8 @@ public class CarServiceImpl implements CarService {
     public List<CarSelectResponse> findAllForSelect() {
         List<CarDbModel> entities = carRepository.findAllNotDeleted();
         return entities.stream()
-            .map(carMapper::toSelectResponse)
-            .toList();
+                .map(carMapper::toSelectResponse)
+                .toList();
     }
 
     @Override
@@ -115,7 +149,6 @@ public class CarServiceImpl implements CarService {
         return entities.map(carMapper::toSelectResponse);
     }
 
-
     private Specification<CarDbModel> buildSpecification(CarQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -123,12 +156,16 @@ public class CarServiceImpl implements CarService {
 
             if (query.getCarTypeId() != null) {
                 predicates.add(cb.equal(root.get("carType")
-                    .get("id"), query.getCarTypeId()));
+                        .get("id"), query.getCarTypeId()));
             }
             if (query.getLicensePlate() != null && !query.getLicensePlate()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("licensePlate")), "%" + query.getLicensePlate()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
+            }
+            if (query.getCode() != null && !query.getCode().isEmpty()) {
+                predicates.add(cb.like(cb.lower(root.get("code")), "%" + query.getCode()
+                        .toLowerCase() + "%"));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
