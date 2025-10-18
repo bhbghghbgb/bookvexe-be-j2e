@@ -34,14 +34,15 @@ CREATE TABLE bookings
 
 CREATE TABLE car_employees
 (
-    uuid         BINARY(16) NOT NULL,
-    id_deleted   BIT(1)     NULL,
-    created_date datetime   NULL,
-    created_by   BINARY(16) NULL,
-    updated_date datetime   NULL,
-    updated_by   BINARY(16) NULL,
-    car_id       BINARY(16) NULL,
-    employee_id  BINARY(16) NULL,
+    uuid         BINARY(16)  NOT NULL,
+    id_deleted   BIT(1)      NULL,
+    created_date datetime    NULL,
+    created_by   BINARY(16)  NULL,
+    updated_date datetime    NULL,
+    updated_by   BINARY(16)  NULL,
+    car_id       BINARY(16)  NULL,
+    employee_id  BINARY(16)  NULL,
+    `role`       VARCHAR(20) NULL,
     CONSTRAINT pk_caremployees PRIMARY KEY (uuid)
 );
 
