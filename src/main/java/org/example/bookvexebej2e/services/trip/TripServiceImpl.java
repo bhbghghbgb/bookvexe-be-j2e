@@ -1,12 +1,18 @@
 package org.example.bookvexebej2e.services.trip;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.TripMapper;
 import org.example.bookvexebej2e.models.db.RouteDbModel;
 import org.example.bookvexebej2e.models.db.TripDbModel;
-import org.example.bookvexebej2e.models.dto.trip.*;
+import org.example.bookvexebej2e.models.dto.trip.TripCreate;
+import org.example.bookvexebej2e.models.dto.trip.TripQuery;
+import org.example.bookvexebej2e.models.dto.trip.TripResponse;
+import org.example.bookvexebej2e.models.dto.trip.TripSelectResponse;
+import org.example.bookvexebej2e.models.dto.trip.TripUpdate;
 import org.example.bookvexebej2e.repositories.route.RouteRepository;
 import org.example.bookvexebej2e.repositories.trip.TripRepository;
 import org.springframework.data.domain.Page;
@@ -16,9 +22,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -32,8 +37,8 @@ public class TripServiceImpl implements TripService {
     public List<TripResponse> findAll() {
         List<TripDbModel> entities = tripRepository.findAllNotDeleted();
         return entities.stream()
-            .map(tripMapper::toResponse)
-            .toList();
+                .map(tripMapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -47,7 +52,7 @@ public class TripServiceImpl implements TripService {
     @Override
     public TripResponse findById(UUID id) {
         TripDbModel entity = tripRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, id));
         return tripMapper.toResponse(entity);
     }
 
@@ -59,7 +64,7 @@ public class TripServiceImpl implements TripService {
         entity.setAvailableSeats(createDto.getAvailableSeats());
 
         RouteDbModel route = routeRepository.findById(createDto.getRouteId())
-            .orElseThrow(() -> new ResourceNotFoundException(RouteDbModel.class, createDto.getRouteId()));
+                .orElseThrow(() -> new ResourceNotFoundException(RouteDbModel.class, createDto.getRouteId()));
         entity.setRoute(route);
 
         TripDbModel savedEntity = tripRepository.save(entity);
@@ -69,7 +74,7 @@ public class TripServiceImpl implements TripService {
     @Override
     public TripResponse update(UUID id, TripUpdate updateDto) {
         TripDbModel entity = tripRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, id));
 
         entity.setDepartureTime(updateDto.getDepartureTime());
         entity.setPrice(updateDto.getPrice());
@@ -77,7 +82,7 @@ public class TripServiceImpl implements TripService {
 
         if (updateDto.getRouteId() != null) {
             RouteDbModel route = routeRepository.findById(updateDto.getRouteId())
-                .orElseThrow(() -> new ResourceNotFoundException(RouteDbModel.class, updateDto.getRouteId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(RouteDbModel.class, updateDto.getRouteId()));
             entity.setRoute(route);
         }
 
@@ -93,7 +98,7 @@ public class TripServiceImpl implements TripService {
     @Override
     public void activate(UUID id) {
         TripDbModel entity = tripRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, id));
         entity.setIsDeleted(false);
         tripRepository.save(entity);
     }
@@ -107,8 +112,8 @@ public class TripServiceImpl implements TripService {
     public List<TripSelectResponse> findAllForSelect() {
         List<TripDbModel> entities = tripRepository.findAllNotDeleted();
         return entities.stream()
-            .map(tripMapper::toSelectResponse)
-            .toList();
+                .map(tripMapper::toSelectResponse)
+                .toList();
     }
 
     private Specification<TripDbModel> buildSpecification(TripQuery query) {
@@ -118,7 +123,7 @@ public class TripServiceImpl implements TripService {
 
             if (query.getRouteId() != null) {
                 predicates.add(cb.equal(root.get("route")
-                    .get("id"), query.getRouteId()));
+                        .get("id"), query.getRouteId()));
             }
             if (query.getDepartureTimeFrom() != null) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("departureTime"), query.getDepartureTimeFrom()));

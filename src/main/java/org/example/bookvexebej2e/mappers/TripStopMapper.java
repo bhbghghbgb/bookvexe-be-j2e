@@ -12,5 +12,4 @@ public interface TripStopMapper {
 
     TripStopSelectResponse toSelectResponse(TripStopDbModel entity);
 
-
 }

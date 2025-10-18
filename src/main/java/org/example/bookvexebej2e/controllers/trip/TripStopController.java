@@ -1,13 +1,25 @@
 package org.example.bookvexebej2e.controllers.trip;
 
-import org.example.bookvexebej2e.models.dto.trip.*;
+import java.util.List;
+import java.util.UUID;
+
+import org.example.bookvexebej2e.models.dto.trip.TripStopCreate;
+import org.example.bookvexebej2e.models.dto.trip.TripStopQuery;
+import org.example.bookvexebej2e.models.dto.trip.TripStopResponse;
+import org.example.bookvexebej2e.models.dto.trip.TripStopSelectResponse;
+import org.example.bookvexebej2e.models.dto.trip.TripStopUpdate;
 import org.example.bookvexebej2e.services.trip.TripStopService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.UUID;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/admin/trip-stops")
@@ -53,25 +65,32 @@ public class TripStopController {
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         tripStopService.delete(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
     @PatchMapping("/activate/{id}")
     public ResponseEntity<Void> activate(@PathVariable UUID id) {
         tripStopService.activate(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
     @PatchMapping("/deactivate/{id}")
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         tripStopService.deactivate(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
     @GetMapping("/select")
     public ResponseEntity<List<TripStopSelectResponse>> findAllForSelect() {
         return ResponseEntity.ok(tripStopService.findAllForSelect());
     }
+
+    @GetMapping("/select/{tripId}")
+    public ResponseEntity<List<TripStopSelectResponse>> getTripStopsForSelect(@PathVariable UUID tripId) {
+        List<TripStopSelectResponse> result = tripStopService.findAllForSelectByTrip(tripId);
+        return ResponseEntity.ok(result);
+    }
+
 }
