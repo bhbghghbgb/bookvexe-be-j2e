@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Column;
 import lombok.*;
 
 @Entity
@@ -21,4 +22,7 @@ public class CarEmployeeDbModel extends BaseModel {
     @ManyToOne
     @JoinColumn(name = "employeeId")
     private EmployeeDbModel employee;
+
+    @Column(length = 20, name = "role")
+    private String role;
 }

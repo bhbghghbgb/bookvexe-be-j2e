@@ -66,6 +66,8 @@ public class CarEmployeeServiceImpl implements CarEmployeeService {
             .orElseThrow(() -> new ResourceNotFoundException(EmployeeDbModel.class, createDto.getEmployeeId()));
         entity.setEmployee(employee);
 
+        entity.setRole(createDto.getRole());
+
         CarEmployeeDbModel savedEntity = carEmployeeRepository.save(entity);
         return carEmployeeMapper.toResponse(savedEntity);
     }
@@ -85,6 +87,10 @@ public class CarEmployeeServiceImpl implements CarEmployeeService {
             EmployeeDbModel employee = employeeRepository.findById(updateDto.getEmployeeId())
                 .orElseThrow(() -> new ResourceNotFoundException(EmployeeDbModel.class, updateDto.getEmployeeId()));
             entity.setEmployee(employee);
+        }
+
+        if (updateDto.getRole() != null) {
+            entity.setRole(updateDto.getRole());
         }
 
         CarEmployeeDbModel updatedEntity = carEmployeeRepository.save(entity);
