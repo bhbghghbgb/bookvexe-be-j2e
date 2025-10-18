@@ -8,7 +8,7 @@ import java.util.UUID;
 @Data
 public class TripStopResponse {
     private UUID id;
-    private TripResponse trip;
+//    private TripResponse trip;
     private String stopType;
     private String location;
     private Integer orderIndex;
