@@ -7,9 +7,12 @@ import java.util.UUID;
 import org.example.bookvexebej2e.models.dto.car.CarSeatResponse;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.example.bookvexebej2e.models.dto.base.BasePermissionResponse;
 
 @Data
-public class BookingSeatResponse {
+@EqualsAndHashCode(callSuper = true)
+public class BookingSeatResponse extends BasePermissionResponse {
     private UUID id;
     private CarSeatResponse seat;
     private String status;
@@ -18,4 +21,13 @@ public class BookingSeatResponse {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private Boolean isDeleted;
+
+    public BookingSeatResponse() {
+        super();
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+        setPermissionsByDeletedStatus(isDeleted);
+    }
 }

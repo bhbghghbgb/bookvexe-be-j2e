@@ -1,11 +1,17 @@
 package org.example.bookvexebej2e.services.role;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.RoleMapper;
 import org.example.bookvexebej2e.models.db.RoleDbModel;
-import org.example.bookvexebej2e.models.dto.role.*;
+import org.example.bookvexebej2e.models.dto.role.RoleCreate;
+import org.example.bookvexebej2e.models.dto.role.RoleQuery;
+import org.example.bookvexebej2e.models.dto.role.RoleResponse;
+import org.example.bookvexebej2e.models.dto.role.RoleSelectResponse;
+import org.example.bookvexebej2e.models.dto.role.RoleUpdate;
 import org.example.bookvexebej2e.repositories.role.RoleRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,9 +20,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +34,8 @@ public class RoleServiceImpl implements RoleService {
     public List<RoleResponse> findAll() {
         List<RoleDbModel> entities = roleRepository.findAllNotDeleted();
         return entities.stream()
-            .map(roleMapper::toResponse)
-            .toList();
+                .map(roleMapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -44,7 +49,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public RoleResponse findById(UUID id) {
         RoleDbModel entity = roleRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, id));
         return roleMapper.toResponse(entity);
     }
 
@@ -62,7 +67,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public RoleResponse update(UUID id, RoleUpdate updateDto) {
         RoleDbModel entity = roleRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, id));
 
         entity.setCode(updateDto.getCode());
         entity.setName(updateDto.getName());
@@ -80,22 +85,25 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public void activate(UUID id) {
         RoleDbModel entity = roleRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, id));
         entity.setIsDeleted(false);
         roleRepository.save(entity);
     }
 
     @Override
     public void deactivate(UUID id) {
-        delete(id);
+        RoleDbModel entity = roleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, id));
+        entity.setIsDeleted(true);
+        roleRepository.save(entity);
     }
 
     @Override
     public List<RoleSelectResponse> findAllForSelect() {
         List<RoleDbModel> entities = roleRepository.findAllNotDeleted();
         return entities.stream()
-            .map(roleMapper::toSelectResponse)
-            .toList();
+                .map(roleMapper::toSelectResponse)
+                .toList();
     }
 
     @Override
@@ -106,21 +114,20 @@ public class RoleServiceImpl implements RoleService {
         return entities.map(roleMapper::toSelectResponse);
     }
 
-
     private Specification<RoleDbModel> buildSpecification(RoleQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
+            // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getCode() != null && !query.getCode()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("code")), "%" + query.getCode()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
             if (query.getName() != null && !query.getName()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("name")), "%" + query.getName()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

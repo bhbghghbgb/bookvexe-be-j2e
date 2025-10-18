@@ -155,7 +155,10 @@ public class TripServiceImpl implements TripService {
 
     @Override
     public void deactivate(UUID id) {
-        delete(id);
+        TripDbModel entity = tripRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, id));
+        entity.setIsDeleted(true);
+        tripRepository.save(entity);
     }
 
     @Override
@@ -177,7 +180,7 @@ public class TripServiceImpl implements TripService {
     private Specification<TripDbModel> buildSpecification(TripQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
+            // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getRouteId() != null) {
                 predicates.add(cb.equal(root.get("route")

@@ -1,13 +1,24 @@
 package org.example.bookvexebej2e.controllers.notification;
 
-import org.example.bookvexebej2e.models.dto.notification.*;
+import java.util.List;
+import java.util.UUID;
+
+import org.example.bookvexebej2e.models.dto.notification.NotificationCreate;
+import org.example.bookvexebej2e.models.dto.notification.NotificationQuery;
+import org.example.bookvexebej2e.models.dto.notification.NotificationResponse;
+import org.example.bookvexebej2e.models.dto.notification.NotificationSelectResponse;
+import org.example.bookvexebej2e.models.dto.notification.NotificationUpdate;
 import org.example.bookvexebej2e.services.notification.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.UUID;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/admin/notifications")
@@ -46,7 +57,7 @@ public class NotificationController {
 
     @PutMapping("/{id}")
     public ResponseEntity<NotificationResponse> update(@PathVariable UUID id,
-        @RequestBody NotificationUpdate updateDto) {
+            @RequestBody NotificationUpdate updateDto) {
         return ResponseEntity.ok(notificationService.update(id, updateDto));
     }
 
@@ -54,21 +65,21 @@ public class NotificationController {
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         notificationService.delete(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
-    @PatchMapping("/activate/{id}")
+    @PostMapping("/activate/{id}")
     public ResponseEntity<Void> activate(@PathVariable UUID id) {
         notificationService.activate(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
-    @PatchMapping("/deactivate/{id}")
+    @PostMapping("/deactivate/{id}")
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         notificationService.deactivate(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
     @GetMapping("/select")

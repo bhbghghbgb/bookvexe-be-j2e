@@ -1,14 +1,19 @@
 package org.example.bookvexebej2e.services.customer;
 
-import jakarta.persistence.criteria.Predicate;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.CustomerMapper;
 import org.example.bookvexebej2e.models.db.CustomerDbModel;
 import org.example.bookvexebej2e.models.db.CustomerTypeDbModel;
 import org.example.bookvexebej2e.models.db.UserDbModel;
-import org.example.bookvexebej2e.models.dto.customer.*;
+import org.example.bookvexebej2e.models.dto.customer.CustomerCreate;
+import org.example.bookvexebej2e.models.dto.customer.CustomerQuery;
+import org.example.bookvexebej2e.models.dto.customer.CustomerResponse;
+import org.example.bookvexebej2e.models.dto.customer.CustomerSelectResponse;
+import org.example.bookvexebej2e.models.dto.customer.CustomerUpdate;
 import org.example.bookvexebej2e.repositories.customer.CustomerRepository;
 import org.example.bookvexebej2e.repositories.customer.CustomerTypeRepository;
 import org.example.bookvexebej2e.repositories.user.UserRepository;
@@ -19,9 +24,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -36,8 +41,8 @@ public class CustomerServiceImpl implements CustomerService {
     public List<CustomerResponse> findAll() {
         List<CustomerDbModel> entities = customerRepository.findAllNotDeleted();
         return entities.stream()
-            .map(customerMapper::toResponse)
-            .toList();
+                .map(customerMapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -51,7 +56,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerResponse findById(UUID id) {
         CustomerDbModel entity = customerRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(CustomerDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(CustomerDbModel.class, id));
         return customerMapper.toResponse(entity);
     }
 
@@ -66,11 +71,11 @@ public class CustomerServiceImpl implements CustomerService {
         entity.setDescription(createDto.getDescription());
 
         CustomerTypeDbModel customerType = customerTypeRepository.findById(createDto.getCustomerTypeId())
-            .orElseThrow(() -> new ResourceNotFoundException(CustomerTypeDbModel.class, createDto.getCustomerTypeId()));
+                .orElseThrow(
+                        () -> new ResourceNotFoundException(CustomerTypeDbModel.class, createDto.getCustomerTypeId()));
         entity.setCustomerType(customerType);
 
         CustomerDbModel savedEntity = customerRepository.save(entity);
-
 
         UserDbModel userEntity = new UserDbModel();
         userEntity.setUsername(entity.getPhone());
@@ -86,7 +91,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerResponse update(UUID id, CustomerUpdate updateDto) {
         CustomerDbModel entity = customerRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(CustomerDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(CustomerDbModel.class, id));
 
         entity.setCode(updateDto.getCode());
         entity.setName(updateDto.getName());
@@ -96,8 +101,9 @@ public class CustomerServiceImpl implements CustomerService {
 
         if (updateDto.getCustomerTypeId() != null) {
             CustomerTypeDbModel customerType = customerTypeRepository.findById(updateDto.getCustomerTypeId())
-                .orElseThrow(
-                    () -> new ResourceNotFoundException(CustomerTypeDbModel.class, updateDto.getCustomerTypeId()));
+                    .orElseThrow(
+                            () -> new ResourceNotFoundException(CustomerTypeDbModel.class,
+                                    updateDto.getCustomerTypeId()));
             entity.setCustomerType(customerType);
         }
 
@@ -113,22 +119,25 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public void activate(UUID id) {
         CustomerDbModel entity = customerRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(CustomerDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(CustomerDbModel.class, id));
         entity.setIsDeleted(false);
         customerRepository.save(entity);
     }
 
     @Override
     public void deactivate(UUID id) {
-        delete(id);
+        CustomerDbModel entity = customerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(CustomerDbModel.class, id));
+        entity.setIsDeleted(true);
+        customerRepository.save(entity);
     }
 
     @Override
     public List<CustomerSelectResponse> findAllForSelect() {
         List<CustomerDbModel> entities = customerRepository.findAllNotDeleted();
         return entities.stream()
-            .map(customerMapper::toSelectResponse)
-            .toList();
+                .map(customerMapper::toSelectResponse)
+                .toList();
     }
 
     @Override
@@ -139,35 +148,34 @@ public class CustomerServiceImpl implements CustomerService {
         return entities.map(customerMapper::toSelectResponse);
     }
 
-
     private Specification<CustomerDbModel> buildSpecification(CustomerQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
+            // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getCode() != null && !query.getCode()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("code")), "%" + query.getCode()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
             if (query.getName() != null && !query.getName()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("name")), "%" + query.getName()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
             if (query.getEmail() != null && !query.getEmail()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("email")), "%" + query.getEmail()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
             if (query.getPhone() != null && !query.getPhone()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("phone")), "%" + query.getPhone()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
             if (query.getCustomerTypeId() != null) {
                 predicates.add(cb.equal(root.get("customerType")
-                    .get("id"), query.getCustomerTypeId()));
+                        .get("id"), query.getCustomerTypeId()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

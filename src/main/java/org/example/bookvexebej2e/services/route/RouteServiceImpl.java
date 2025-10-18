@@ -1,11 +1,17 @@
 package org.example.bookvexebej2e.services.route;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.RouteMapper;
 import org.example.bookvexebej2e.models.db.RouteDbModel;
-import org.example.bookvexebej2e.models.dto.route.*;
+import org.example.bookvexebej2e.models.dto.route.RouteCreate;
+import org.example.bookvexebej2e.models.dto.route.RouteQuery;
+import org.example.bookvexebej2e.models.dto.route.RouteResponse;
+import org.example.bookvexebej2e.models.dto.route.RouteSelectResponse;
+import org.example.bookvexebej2e.models.dto.route.RouteUpdate;
 import org.example.bookvexebej2e.repositories.route.RouteRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,9 +20,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +34,8 @@ public class RouteServiceImpl implements RouteService {
     public List<RouteResponse> findAll() {
         List<RouteDbModel> entities = routeRepository.findAllNotDeleted();
         return entities.stream()
-            .map(routeMapper::toResponse)
-            .toList();
+                .map(routeMapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -44,7 +49,7 @@ public class RouteServiceImpl implements RouteService {
     @Override
     public RouteResponse findById(UUID id) {
         RouteDbModel entity = routeRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(RouteDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(RouteDbModel.class, id));
         return routeMapper.toResponse(entity);
     }
 
@@ -63,7 +68,7 @@ public class RouteServiceImpl implements RouteService {
     @Override
     public RouteResponse update(UUID id, RouteUpdate updateDto) {
         RouteDbModel entity = routeRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(RouteDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(RouteDbModel.class, id));
 
         entity.setStartLocation(updateDto.getStartLocation());
         entity.setEndLocation(updateDto.getEndLocation());
@@ -82,22 +87,25 @@ public class RouteServiceImpl implements RouteService {
     @Override
     public void activate(UUID id) {
         RouteDbModel entity = routeRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(RouteDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(RouteDbModel.class, id));
         entity.setIsDeleted(false);
         routeRepository.save(entity);
     }
 
     @Override
     public void deactivate(UUID id) {
-        delete(id);
+        RouteDbModel entity = routeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(RouteDbModel.class, id));
+        entity.setIsDeleted(true);
+        routeRepository.save(entity);
     }
 
     @Override
     public List<RouteSelectResponse> findAllForSelect() {
         List<RouteDbModel> entities = routeRepository.findAllNotDeleted();
         return entities.stream()
-            .map(routeMapper::toSelectResponse)
-            .toList();
+                .map(routeMapper::toSelectResponse)
+                .toList();
     }
 
     @Override
@@ -108,21 +116,20 @@ public class RouteServiceImpl implements RouteService {
         return entities.map(routeMapper::toSelectResponse);
     }
 
-
     private Specification<RouteDbModel> buildSpecification(RouteQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
+            // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getStartLocation() != null && !query.getStartLocation()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("startLocation")), "%" + query.getStartLocation()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
             if (query.getEndLocation() != null && !query.getEndLocation()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("endLocation")), "%" + query.getEndLocation()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

@@ -130,7 +130,10 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public void deactivate(UUID id) {
-        delete(id);
+        CarDbModel entity = carRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(CarDbModel.class, id));
+        entity.setIsDeleted(true);
+        carRepository.save(entity);
     }
 
     @Override
@@ -152,7 +155,7 @@ public class CarServiceImpl implements CarService {
     private Specification<CarDbModel> buildSpecification(CarQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
+            // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getCarTypeId() != null) {
                 predicates.add(cb.equal(root.get("carType")

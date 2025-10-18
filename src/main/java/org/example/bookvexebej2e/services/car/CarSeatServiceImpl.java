@@ -103,7 +103,10 @@ public class CarSeatServiceImpl implements CarSeatService {
 
     @Override
     public void deactivate(UUID id) {
-        delete(id);
+        CarSeatDbModel entity = carSeatRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(CarSeatDbModel.class, id));
+        entity.setIsDeleted(true);
+        carSeatRepository.save(entity);
     }
 
     @Override
@@ -125,7 +128,7 @@ public class CarSeatServiceImpl implements CarSeatService {
     private Specification<CarSeatDbModel> buildSpecification(CarSeatQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
+            // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getCarId() != null) {
                 predicates.add(cb.equal(root.get("car")

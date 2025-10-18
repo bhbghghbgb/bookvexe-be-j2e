@@ -1,12 +1,18 @@
 package org.example.bookvexebej2e.services.role;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.RolePermissionMapper;
 import org.example.bookvexebej2e.models.db.RoleDbModel;
 import org.example.bookvexebej2e.models.db.RolePermissionDbModel;
-import org.example.bookvexebej2e.models.dto.role.*;
+import org.example.bookvexebej2e.models.dto.role.RolePermissionCreate;
+import org.example.bookvexebej2e.models.dto.role.RolePermissionQuery;
+import org.example.bookvexebej2e.models.dto.role.RolePermissionResponse;
+import org.example.bookvexebej2e.models.dto.role.RolePermissionSelectResponse;
+import org.example.bookvexebej2e.models.dto.role.RolePermissionUpdate;
 import org.example.bookvexebej2e.repositories.role.RolePermissionRepository;
 import org.example.bookvexebej2e.repositories.role.RoleRepository;
 import org.springframework.data.domain.Page;
@@ -16,9 +22,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -32,8 +37,8 @@ public class RolePermissionServiceImpl implements RolePermissionService {
     public List<RolePermissionResponse> findAll() {
         List<RolePermissionDbModel> entities = rolePermissionRepository.findAllNotDeleted();
         return entities.stream()
-            .map(rolePermissionMapper::toResponse)
-            .toList();
+                .map(rolePermissionMapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -47,7 +52,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
     @Override
     public RolePermissionResponse findById(UUID id) {
         RolePermissionDbModel entity = rolePermissionRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(RolePermissionDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(RolePermissionDbModel.class, id));
         return rolePermissionMapper.toResponse(entity);
     }
 
@@ -64,7 +69,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
         entity.setIsCanExport(createDto.getIsCanExport());
 
         RoleDbModel role = roleRepository.findById(createDto.getRoleId())
-            .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, createDto.getRoleId()));
+                .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, createDto.getRoleId()));
         entity.setRole(role);
 
         RolePermissionDbModel savedEntity = rolePermissionRepository.save(entity);
@@ -74,7 +79,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
     @Override
     public RolePermissionResponse update(UUID id, RolePermissionUpdate updateDto) {
         RolePermissionDbModel entity = rolePermissionRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(RolePermissionDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(RolePermissionDbModel.class, id));
 
         entity.setIsCanRead(updateDto.getIsCanRead());
         entity.setIsCanCreate(updateDto.getIsCanCreate());
@@ -87,7 +92,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 
         if (updateDto.getRoleId() != null) {
             RoleDbModel role = roleRepository.findById(updateDto.getRoleId())
-                .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, updateDto.getRoleId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, updateDto.getRoleId()));
             entity.setRole(role);
         }
 
@@ -103,22 +108,25 @@ public class RolePermissionServiceImpl implements RolePermissionService {
     @Override
     public void activate(UUID id) {
         RolePermissionDbModel entity = rolePermissionRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(RolePermissionDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(RolePermissionDbModel.class, id));
         entity.setIsDeleted(false);
         rolePermissionRepository.save(entity);
     }
 
     @Override
     public void deactivate(UUID id) {
-        delete(id);
+        RolePermissionDbModel entity = rolePermissionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(RolePermissionDbModel.class, id));
+        entity.setIsDeleted(true);
+        rolePermissionRepository.save(entity);
     }
 
     @Override
     public List<RolePermissionSelectResponse> findAllForSelect() {
         List<RolePermissionDbModel> entities = rolePermissionRepository.findAllNotDeleted();
         return entities.stream()
-            .map(rolePermissionMapper::toSelectResponse)
-            .toList();
+                .map(rolePermissionMapper::toSelectResponse)
+                .toList();
     }
 
     @Override
@@ -129,15 +137,14 @@ public class RolePermissionServiceImpl implements RolePermissionService {
         return entities.map(rolePermissionMapper::toSelectResponse);
     }
 
-
     private Specification<RolePermissionDbModel> buildSpecification(RolePermissionQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
+            // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getRoleId() != null) {
                 predicates.add(cb.equal(root.get("role")
-                    .get("id"), query.getRoleId()));
+                        .get("id"), query.getRoleId()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

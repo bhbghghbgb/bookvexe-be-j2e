@@ -1,13 +1,24 @@
 package org.example.bookvexebej2e.controllers.employee;
 
-import org.example.bookvexebej2e.models.dto.employee.*;
+import java.util.List;
+import java.util.UUID;
+
+import org.example.bookvexebej2e.models.dto.employee.EmployeeCreate;
+import org.example.bookvexebej2e.models.dto.employee.EmployeeQuery;
+import org.example.bookvexebej2e.models.dto.employee.EmployeeResponse;
+import org.example.bookvexebej2e.models.dto.employee.EmployeeSelectResponse;
+import org.example.bookvexebej2e.models.dto.employee.EmployeeUpdate;
 import org.example.bookvexebej2e.services.employee.EmployeeService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.UUID;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/admin/employees")
@@ -53,21 +64,21 @@ public class EmployeeController {
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         employeeService.delete(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
-    @PatchMapping("/activate/{id}")
+    @PostMapping("/activate/{id}")
     public ResponseEntity<Void> activate(@PathVariable UUID id) {
         employeeService.activate(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
-    @PatchMapping("/deactivate/{id}")
+    @PostMapping("/deactivate/{id}")
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         employeeService.deactivate(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
     @GetMapping("/select")

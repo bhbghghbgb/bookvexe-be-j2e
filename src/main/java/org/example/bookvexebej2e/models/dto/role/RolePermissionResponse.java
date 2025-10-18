@@ -1,12 +1,15 @@
 package org.example.bookvexebej2e.models.dto.role;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.example.bookvexebej2e.models.dto.base.BasePermissionResponse;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-public class RolePermissionResponse {
+@EqualsAndHashCode(callSuper = true)
+public class RolePermissionResponse extends BasePermissionResponse {
     private UUID id;
     private RoleResponse role;
     private Boolean isCanRead;
@@ -20,4 +23,13 @@ public class RolePermissionResponse {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private Boolean isDeleted;
+
+    public RolePermissionResponse() {
+        super();
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+        setPermissionsByDeletedStatus(isDeleted);
+    }
 }

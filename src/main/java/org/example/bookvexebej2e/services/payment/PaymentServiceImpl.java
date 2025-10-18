@@ -1,13 +1,19 @@
 package org.example.bookvexebej2e.services.payment;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.PaymentMapper;
 import org.example.bookvexebej2e.models.db.BookingDbModel;
 import org.example.bookvexebej2e.models.db.PaymentDbModel;
 import org.example.bookvexebej2e.models.db.PaymentMethodDbModel;
-import org.example.bookvexebej2e.models.dto.payment.*;
+import org.example.bookvexebej2e.models.dto.payment.PaymentCreate;
+import org.example.bookvexebej2e.models.dto.payment.PaymentQuery;
+import org.example.bookvexebej2e.models.dto.payment.PaymentResponse;
+import org.example.bookvexebej2e.models.dto.payment.PaymentSelectResponse;
+import org.example.bookvexebej2e.models.dto.payment.PaymentUpdate;
 import org.example.bookvexebej2e.repositories.booking.BookingRepository;
 import org.example.bookvexebej2e.repositories.payment.PaymentMethodRepository;
 import org.example.bookvexebej2e.repositories.payment.PaymentRepository;
@@ -18,9 +24,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -35,8 +40,8 @@ public class PaymentServiceImpl implements PaymentService {
     public List<PaymentResponse> findAll() {
         List<PaymentDbModel> entities = paymentRepository.findAllNotDeleted();
         return entities.stream()
-            .map(paymentMapper::toResponse)
-            .toList();
+                .map(paymentMapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -50,7 +55,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public PaymentResponse findById(UUID id) {
         PaymentDbModel entity = paymentRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(PaymentDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(PaymentDbModel.class, id));
         return paymentMapper.toResponse(entity);
     }
 
@@ -63,11 +68,11 @@ public class PaymentServiceImpl implements PaymentService {
         entity.setPaidAt(createDto.getPaidAt());
 
         BookingDbModel booking = bookingRepository.findById(createDto.getBookingId())
-            .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, createDto.getBookingId()));
+                .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, createDto.getBookingId()));
         entity.setBooking(booking);
 
         PaymentMethodDbModel method = paymentMethodRepository.findById(createDto.getMethodId())
-            .orElseThrow(() -> new ResourceNotFoundException(PaymentMethodDbModel.class, createDto.getMethodId()));
+                .orElseThrow(() -> new ResourceNotFoundException(PaymentMethodDbModel.class, createDto.getMethodId()));
         entity.setMethod(method);
 
         PaymentDbModel savedEntity = paymentRepository.save(entity);
@@ -77,7 +82,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public PaymentResponse update(UUID id, PaymentUpdate updateDto) {
         PaymentDbModel entity = paymentRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(PaymentDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(PaymentDbModel.class, id));
 
         entity.setAmount(updateDto.getAmount());
         entity.setStatus(updateDto.getStatus());
@@ -86,13 +91,14 @@ public class PaymentServiceImpl implements PaymentService {
 
         if (updateDto.getBookingId() != null) {
             BookingDbModel booking = bookingRepository.findById(updateDto.getBookingId())
-                .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, updateDto.getBookingId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, updateDto.getBookingId()));
             entity.setBooking(booking);
         }
 
         if (updateDto.getMethodId() != null) {
             PaymentMethodDbModel method = paymentMethodRepository.findById(updateDto.getMethodId())
-                .orElseThrow(() -> new ResourceNotFoundException(PaymentMethodDbModel.class, updateDto.getMethodId()));
+                    .orElseThrow(
+                            () -> new ResourceNotFoundException(PaymentMethodDbModel.class, updateDto.getMethodId()));
             entity.setMethod(method);
         }
 
@@ -108,22 +114,25 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public void activate(UUID id) {
         PaymentDbModel entity = paymentRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(PaymentDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(PaymentDbModel.class, id));
         entity.setIsDeleted(false);
         paymentRepository.save(entity);
     }
 
     @Override
     public void deactivate(UUID id) {
-        delete(id);
+        PaymentDbModel entity = paymentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(PaymentDbModel.class, id));
+        entity.setIsDeleted(true);
+        paymentRepository.save(entity);
     }
 
     @Override
     public List<PaymentSelectResponse> findAllForSelect() {
         List<PaymentDbModel> entities = paymentRepository.findAllNotDeleted();
         return entities.stream()
-            .map(paymentMapper::toSelectResponse)
-            .toList();
+                .map(paymentMapper::toSelectResponse)
+                .toList();
     }
 
     @Override
@@ -134,28 +143,27 @@ public class PaymentServiceImpl implements PaymentService {
         return entities.map(paymentMapper::toSelectResponse);
     }
 
-
     private Specification<PaymentDbModel> buildSpecification(PaymentQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
+            // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getBookingId() != null) {
                 predicates.add(cb.equal(root.get("booking")
-                    .get("id"), query.getBookingId()));
+                        .get("id"), query.getBookingId()));
             }
             if (query.getMethodId() != null) {
                 predicates.add(cb.equal(root.get("method")
-                    .get("id"), query.getMethodId()));
+                        .get("id"), query.getMethodId()));
             }
             if (query.getStatus() != null && !query.getStatus()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.equal(root.get("status"), query.getStatus()));
             }
             if (query.getTransactionCode() != null && !query.getTransactionCode()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("transactionCode")), "%" + query.getTransactionCode()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

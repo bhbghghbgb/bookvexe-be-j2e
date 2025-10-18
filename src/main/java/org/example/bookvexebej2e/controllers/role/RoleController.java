@@ -53,21 +53,21 @@ public class RoleController {
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         roleService.delete(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
-    @PatchMapping("/activate/{id}")
+    @PostMapping("/activate/{id}")
     public ResponseEntity<Void> activate(@PathVariable UUID id) {
         roleService.activate(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
-    @PatchMapping("/deactivate/{id}")
+    @PostMapping("/deactivate/{id}")
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         roleService.deactivate(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
     @GetMapping("/select")

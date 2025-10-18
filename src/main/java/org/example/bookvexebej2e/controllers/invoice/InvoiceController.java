@@ -13,7 +13,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -68,14 +67,14 @@ public class InvoiceController {
                 .build();
     }
 
-    @PatchMapping("/activate/{id}")
+    @PostMapping("/activate/{id}")
     public ResponseEntity<Void> activate(@PathVariable UUID id) {
         invoiceService.activate(id);
         return ResponseEntity.ok()
                 .build();
     }
 
-    @PatchMapping("/deactivate/{id}")
+    @PostMapping("/deactivate/{id}")
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         invoiceService.deactivate(id);
         return ResponseEntity.ok()

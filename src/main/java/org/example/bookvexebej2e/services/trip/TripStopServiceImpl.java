@@ -32,8 +32,8 @@ public class TripStopServiceImpl implements TripStopService {
     public List<TripStopResponse> findAll() {
         List<TripStopDbModel> entities = tripStopRepository.findAllNotDeleted();
         return entities.stream()
-            .map(tripStopMapper::toResponse)
-            .toList();
+                .map(tripStopMapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -47,7 +47,7 @@ public class TripStopServiceImpl implements TripStopService {
     @Override
     public TripStopResponse findById(UUID id) {
         TripStopDbModel entity = tripStopRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(TripStopDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(TripStopDbModel.class, id));
         return tripStopMapper.toResponse(entity);
     }
 
@@ -59,7 +59,7 @@ public class TripStopServiceImpl implements TripStopService {
         entity.setOrderIndex(createDto.getOrderIndex());
 
         TripDbModel trip = tripRepository.findById(createDto.getTripId())
-            .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, createDto.getTripId()));
+                .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, createDto.getTripId()));
         entity.setTrip(trip);
 
         TripStopDbModel savedEntity = tripStopRepository.save(entity);
@@ -69,7 +69,7 @@ public class TripStopServiceImpl implements TripStopService {
     @Override
     public TripStopResponse update(UUID id, TripStopUpdate updateDto) {
         TripStopDbModel entity = tripStopRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(TripStopDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(TripStopDbModel.class, id));
 
         entity.setStopType(updateDto.getStopType());
         entity.setLocation(updateDto.getLocation());
@@ -77,7 +77,7 @@ public class TripStopServiceImpl implements TripStopService {
 
         if (updateDto.getTripId() != null) {
             TripDbModel trip = tripRepository.findById(updateDto.getTripId())
-                .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, updateDto.getTripId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, updateDto.getTripId()));
             entity.setTrip(trip);
         }
 
@@ -93,22 +93,25 @@ public class TripStopServiceImpl implements TripStopService {
     @Override
     public void activate(UUID id) {
         TripStopDbModel entity = tripStopRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(TripStopDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(TripStopDbModel.class, id));
         entity.setIsDeleted(false);
         tripStopRepository.save(entity);
     }
 
     @Override
     public void deactivate(UUID id) {
-        delete(id);
+        TripStopDbModel entity = tripStopRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(TripStopDbModel.class, id));
+        entity.setIsDeleted(true);
+        tripStopRepository.save(entity);
     }
 
     @Override
     public List<TripStopSelectResponse> findAllForSelect() {
         List<TripStopDbModel> entities = tripStopRepository.findAllNotDeleted();
         return entities.stream()
-            .map(tripStopMapper::toSelectResponse)
-            .toList();
+                .map(tripStopMapper::toSelectResponse)
+                .toList();
     }
 
     @Override
@@ -119,36 +122,36 @@ public class TripStopServiceImpl implements TripStopService {
         return entities.map(tripStopMapper::toSelectResponse);
     }
 
-
     @Override
     public List<TripStopSelectResponse> findAllForSelectByTrip(UUID tripId) {
         List<TripStopDbModel> entities = tripStopRepository.findAll(
-            (root, cq, cb) -> cb.and(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))),
-                cb.equal(root.get("trip")
-                    .get("id"), tripId)));
+                (root, cq, cb) -> cb.and(
+                        cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))),
+                        cb.equal(root.get("trip")
+                                .get("id"), tripId)));
 
         return entities.stream()
-            .map(tripStopMapper::toSelectResponse)
-            .toList();
+                .map(tripStopMapper::toSelectResponse)
+                .toList();
     }
 
     private Specification<TripStopDbModel> buildSpecification(TripStopQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
+            // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getTripId() != null) {
                 predicates.add(cb.equal(root.get("trip")
-                    .get("id"), query.getTripId()));
+                        .get("id"), query.getTripId()));
             }
             if (query.getStopType() != null && !query.getStopType()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.equal(root.get("stopType"), query.getStopType()));
             }
             if (query.getLocation() != null && !query.getLocation()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("location")), "%" + query.getLocation()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

@@ -110,7 +110,10 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public void deactivate(UUID id) {
-        delete(id);
+        EmployeeDbModel entity = employeeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(EmployeeDbModel.class, id));
+        entity.setIsDeleted(true);
+        employeeRepository.save(entity);
     }
 
     @Override
@@ -132,7 +135,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private Specification<EmployeeDbModel> buildSpecification(EmployeeQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
+            // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getCode() != null && !query.getCode()
                     .isEmpty()) {

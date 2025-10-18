@@ -53,21 +53,21 @@ public class UserController {
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         userService.delete(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
-    @PatchMapping("/activate/{id}")
+    @PostMapping("/activate/{id}")
     public ResponseEntity<Void> activate(@PathVariable UUID id) {
         userService.activate(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
-    @PatchMapping("/deactivate/{id}")
+    @PostMapping("/deactivate/{id}")
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         userService.deactivate(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
     @GetMapping("/select")

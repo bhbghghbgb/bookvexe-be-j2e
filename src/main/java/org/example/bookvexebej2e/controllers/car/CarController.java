@@ -1,13 +1,24 @@
 package org.example.bookvexebej2e.controllers.car;
 
-import org.example.bookvexebej2e.models.dto.car.*;
+import java.util.List;
+import java.util.UUID;
+
+import org.example.bookvexebej2e.models.dto.car.CarCreate;
+import org.example.bookvexebej2e.models.dto.car.CarQuery;
+import org.example.bookvexebej2e.models.dto.car.CarResponse;
+import org.example.bookvexebej2e.models.dto.car.CarSelectResponse;
+import org.example.bookvexebej2e.models.dto.car.CarUpdate;
 import org.example.bookvexebej2e.services.car.CarService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.UUID;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/admin/cars")
@@ -53,21 +64,21 @@ public class CarController {
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         carService.delete(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
-    @PatchMapping("/activate/{id}")
+    @PostMapping("/activate/{id}")
     public ResponseEntity<Void> activate(@PathVariable UUID id) {
         carService.activate(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
-    @PatchMapping("/deactivate/{id}")
+    @PostMapping("/deactivate/{id}")
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         carService.deactivate(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
     @GetMapping("/select")

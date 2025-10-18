@@ -1,6 +1,8 @@
 package org.example.bookvexebej2e.models.dto.payment;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.example.bookvexebej2e.models.dto.base.BasePermissionResponse;
 import org.example.bookvexebej2e.models.dto.booking.BookingResponse;
 
 import java.math.BigDecimal;
@@ -8,7 +10,8 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-public class PaymentResponse {
+@EqualsAndHashCode(callSuper = true)
+public class PaymentResponse extends BasePermissionResponse {
     private UUID id;
     private BookingResponse booking;
     private PaymentMethodResponse method;
@@ -19,4 +22,13 @@ public class PaymentResponse {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private Boolean isDeleted;
+
+    public PaymentResponse() {
+        super();
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+        setPermissionsByDeletedStatus(isDeleted);
+    }
 }
