@@ -1,9 +1,9 @@
 package org.example.bookvexebej2e.models.dto.booking;
 
+import lombok.Data;
+
 import java.math.BigDecimal;
 import java.util.UUID;
-
-import lombok.Data;
 
 @Data
 public class BookingUpdate {

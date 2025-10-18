@@ -24,4 +24,6 @@ public interface TripCarService {
     void deactivate(UUID id);
 
     List<TripCarSelectResponse> findAllForSelect();
+
+    Page<TripCarSelectResponse> findAllForSelect(TripCarQuery query);
 }

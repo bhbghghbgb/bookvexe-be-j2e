@@ -74,4 +74,15 @@ public class TripCarController {
     public ResponseEntity<List<TripCarSelectResponse>> findAllForSelect() {
         return ResponseEntity.ok(tripCarService.findAllForSelect());
     }
+
+    @GetMapping("/select/pagination")
+    public ResponseEntity<Page<TripCarSelectResponse>> findAllForSelect(TripCarQuery query) {
+        return ResponseEntity.ok(tripCarService.findAllForSelect(query));
+    }
+
+    @PostMapping("/select/pagination")
+    public ResponseEntity<Page<TripCarSelectResponse>> findAllForSelect2(@RequestBody TripCarQuery query) {
+        return ResponseEntity.ok(tripCarService.findAllForSelect(query));
+    }
+
 }

@@ -111,6 +111,15 @@ public class InvoiceServiceImpl implements InvoiceService {
             .toList();
     }
 
+    @Override
+    public Page<InvoiceSelectResponse> findAllForSelect(InvoiceQuery query) {
+        Specification<InvoiceDbModel> spec = buildSpecification(query);
+        Pageable pageable = buildPageable(query);
+        Page<InvoiceDbModel> entities = invoiceRepository.findAll(spec, pageable);
+        return entities.map(invoiceMapper::toSelectResponse);
+    }
+
+
     private Specification<InvoiceDbModel> buildSpecification(InvoiceQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();

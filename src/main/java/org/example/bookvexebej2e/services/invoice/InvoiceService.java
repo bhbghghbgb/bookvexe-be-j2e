@@ -24,4 +24,6 @@ public interface InvoiceService {
     void deactivate(UUID id);
 
     List<InvoiceSelectResponse> findAllForSelect();
+
+    Page<InvoiceSelectResponse> findAllForSelect(InvoiceQuery query);
 }

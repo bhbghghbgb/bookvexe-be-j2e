@@ -11,11 +11,11 @@ import java.util.UUID;
 public interface BaseRepository<T extends BaseModel> extends JpaRepository<T, UUID>, JpaSpecificationExecutor<T>,
     BaseRepositoryCustom<T> {
 
-//    Optional<T> findByIdAndIsDeletedFalse(UUID id);
+    //    Optional<T> findByIdAndIsDeletedFalse(UUID id);
 
-//        List<T> findAllIsDeletedFalse();
+    //        List<T> findAllIsDeletedFalse();
 
-//        Page<T> findAllIsDeletedFalse(Pageable pageable);
+    //        Page<T> findAllIsDeletedFalse(Pageable pageable);
 
     default void softDelete(T entity) {
         if (entity != null) {

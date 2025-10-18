@@ -100,6 +100,15 @@ public class RouteServiceImpl implements RouteService {
             .toList();
     }
 
+    @Override
+    public Page<RouteSelectResponse> findAllForSelect(RouteQuery query) {
+        Specification<RouteDbModel> spec = buildSpecification(query);
+        Pageable pageable = buildPageable(query);
+        Page<RouteDbModel> entities = routeRepository.findAll(spec, pageable);
+        return entities.map(routeMapper::toSelectResponse);
+    }
+
+
     private Specification<RouteDbModel> buildSpecification(RouteQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();

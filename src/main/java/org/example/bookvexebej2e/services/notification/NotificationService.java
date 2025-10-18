@@ -24,4 +24,6 @@ public interface NotificationService {
     void deactivate(UUID id);
 
     List<NotificationSelectResponse> findAllForSelect();
+
+    Page<NotificationSelectResponse> findAllForSelect(NotificationQuery query);
 }

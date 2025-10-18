@@ -24,4 +24,6 @@ public interface BookingService {
     void deactivate(UUID id);
 
     List<BookingSelectResponse> findAllForSelect();
+
+    Page<BookingSelectResponse> findAllForSelect(BookingQuery query);
 }

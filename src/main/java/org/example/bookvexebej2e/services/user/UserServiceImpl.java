@@ -134,6 +134,15 @@ public class UserServiceImpl implements UserService {
             .toList();
     }
 
+    @Override
+    public Page<UserSelectResponse> findAllForSelect(UserQuery query) {
+        Specification<UserDbModel> spec = buildSpecification(query);
+        Pageable pageable = buildPageable(query);
+        Page<UserDbModel> entities = userRepository.findAll(spec, pageable);
+        return entities.map(userMapper::toSelectResponse);
+    }
+
+
     private Specification<UserDbModel> buildSpecification(UserQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();

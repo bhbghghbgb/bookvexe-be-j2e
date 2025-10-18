@@ -75,4 +75,15 @@ public class NotificationController {
     public ResponseEntity<List<NotificationSelectResponse>> findAllForSelect() {
         return ResponseEntity.ok(notificationService.findAllForSelect());
     }
+
+    @GetMapping("/select/pagination")
+    public ResponseEntity<Page<NotificationSelectResponse>> findAllForSelect(NotificationQuery query) {
+        return ResponseEntity.ok(notificationService.findAllForSelect(query));
+    }
+
+    @PostMapping("/select/pagination")
+    public ResponseEntity<Page<NotificationSelectResponse>> findAllForSelect2(@RequestBody NotificationQuery query) {
+        return ResponseEntity.ok(notificationService.findAllForSelect(query));
+    }
+
 }

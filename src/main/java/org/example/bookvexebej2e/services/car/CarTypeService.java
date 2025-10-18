@@ -24,4 +24,6 @@ public interface CarTypeService {
     void deactivate(UUID id);
 
     List<CarTypeSelectResponse> findAllForSelect();
+
+    Page<CarTypeSelectResponse> findAllForSelect(CarTypeQuery query);
 }

@@ -24,4 +24,6 @@ public interface RoleUserService {
     void deactivate(UUID id);
 
     List<RoleUserSelectResponse> findAllForSelect();
+
+    Page<RoleUserSelectResponse> findAllForSelect(RoleUserQuery query);
 }

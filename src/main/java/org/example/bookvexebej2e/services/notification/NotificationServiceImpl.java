@@ -154,6 +154,15 @@ public class NotificationServiceImpl implements NotificationService {
             .toList();
     }
 
+    @Override
+    public Page<NotificationSelectResponse> findAllForSelect(NotificationQuery query) {
+        Specification<NotificationDbModel> spec = buildSpecification(query);
+        Pageable pageable = buildPageable(query);
+        Page<NotificationDbModel> entities = notificationRepository.findAll(spec, pageable);
+        return entities.map(notificationMapper::toSelectResponse);
+    }
+
+
     private Specification<NotificationDbModel> buildSpecification(NotificationQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();

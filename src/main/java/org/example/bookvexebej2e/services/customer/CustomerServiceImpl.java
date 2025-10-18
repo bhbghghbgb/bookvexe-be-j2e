@@ -131,6 +131,15 @@ public class CustomerServiceImpl implements CustomerService {
             .toList();
     }
 
+    @Override
+    public Page<CustomerSelectResponse> findAllForSelect(CustomerQuery query) {
+        Specification<CustomerDbModel> spec = buildSpecification(query);
+        Pageable pageable = buildPageable(query);
+        Page<CustomerDbModel> entities = customerRepository.findAll(spec, pageable);
+        return entities.map(customerMapper::toSelectResponse);
+    }
+
+
     private Specification<CustomerDbModel> buildSpecification(CustomerQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();

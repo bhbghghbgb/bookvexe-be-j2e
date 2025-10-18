@@ -24,4 +24,6 @@ public interface RolePermissionService {
     void deactivate(UUID id);
 
     List<RolePermissionSelectResponse> findAllForSelect();
+
+    Page<RolePermissionSelectResponse> findAllForSelect(RolePermissionQuery query);
 }

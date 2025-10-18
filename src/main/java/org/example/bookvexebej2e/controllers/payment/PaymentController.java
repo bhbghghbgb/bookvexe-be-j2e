@@ -74,4 +74,15 @@ public class PaymentController {
     public ResponseEntity<List<PaymentSelectResponse>> findAllForSelect() {
         return ResponseEntity.ok(paymentService.findAllForSelect());
     }
+
+    @GetMapping("/select/pagination")
+    public ResponseEntity<Page<PaymentSelectResponse>> findAllForSelect(PaymentQuery query) {
+        return ResponseEntity.ok(paymentService.findAllForSelect(query));
+    }
+
+    @PostMapping("/select/pagination")
+    public ResponseEntity<Page<PaymentSelectResponse>> findAllForSelect2(@RequestBody PaymentQuery query) {
+        return ResponseEntity.ok(paymentService.findAllForSelect(query));
+    }
+
 }

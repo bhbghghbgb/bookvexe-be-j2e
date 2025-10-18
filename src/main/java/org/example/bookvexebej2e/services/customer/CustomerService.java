@@ -24,4 +24,6 @@ public interface CustomerService {
     void deactivate(UUID id);
 
     List<CustomerSelectResponse> findAllForSelect();
+
+    Page<CustomerSelectResponse> findAllForSelect(CustomerQuery query);
 }

@@ -8,6 +8,6 @@ import java.util.UUID;
 @Data
 public class TripCarSelectResponse {
     private UUID id;
-//    private TripResponse trip;
+    //    private TripResponse trip;
     private CarSelectResponse car;
 }

@@ -111,6 +111,15 @@ public class UserSessionServiceImpl implements UserSessionService {
             .toList();
     }
 
+    @Override
+    public Page<UserSessionSelectResponse> findAllForSelect(UserSessionQuery query) {
+        Specification<UserSessionDbModel> spec = buildSpecification(query);
+        Pageable pageable = buildPageable(query);
+        Page<UserSessionDbModel> entities = userSessionRepository.findAll(spec, pageable);
+        return entities.map(userSessionMapper::toSelectResponse);
+    }
+
+
     private Specification<UserSessionDbModel> buildSpecification(UserSessionQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();

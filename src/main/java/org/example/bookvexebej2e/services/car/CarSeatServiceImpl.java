@@ -109,6 +109,15 @@ public class CarSeatServiceImpl implements CarSeatService {
             .toList();
     }
 
+    @Override
+    public Page<CarSeatSelectResponse> findAllForSelect(CarSeatQuery query) {
+        Specification<CarSeatDbModel> spec = buildSpecification(query);
+        Pageable pageable = buildPageable(query);
+        Page<CarSeatDbModel> entities = carSeatRepository.findAll(spec, pageable);
+        return entities.map(carSeatMapper::toSelectResponse);
+    }
+
+
     private Specification<CarSeatDbModel> buildSpecification(CarSeatQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();

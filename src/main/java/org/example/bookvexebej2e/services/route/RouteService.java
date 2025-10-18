@@ -24,4 +24,6 @@ public interface RouteService {
     void deactivate(UUID id);
 
     List<RouteSelectResponse> findAllForSelect();
+
+    Page<RouteSelectResponse> findAllForSelect(RouteQuery query);
 }

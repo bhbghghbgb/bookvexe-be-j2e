@@ -125,6 +125,15 @@ public class BookingSeatServiceImpl implements BookingSeatService {
             .toList();
     }
 
+    @Override
+    public Page<BookingSeatSelectResponse> findAllForSelect(BookingSeatQuery query) {
+        Specification<BookingSeatDbModel> spec = buildSpecification(query);
+        Pageable pageable = buildPageable(query);
+        Page<BookingSeatDbModel> entities = bookingSeatRepository.findAll(spec, pageable);
+        return entities.map(bookingSeatMapper::toSelectResponse);
+    }
+
+
     private Specification<BookingSeatDbModel> buildSpecification(BookingSeatQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();

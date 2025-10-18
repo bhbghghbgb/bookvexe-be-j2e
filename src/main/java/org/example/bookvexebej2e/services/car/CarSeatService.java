@@ -24,4 +24,6 @@ public interface CarSeatService {
     void deactivate(UUID id);
 
     List<CarSeatSelectResponse> findAllForSelect();
+
+    Page<CarSeatSelectResponse> findAllForSelect(CarSeatQuery query);
 }

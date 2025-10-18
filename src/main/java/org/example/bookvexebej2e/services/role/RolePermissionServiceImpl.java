@@ -121,6 +121,15 @@ public class RolePermissionServiceImpl implements RolePermissionService {
             .toList();
     }
 
+    @Override
+    public Page<RolePermissionSelectResponse> findAllForSelect(RolePermissionQuery query) {
+        Specification<RolePermissionDbModel> spec = buildSpecification(query);
+        Pageable pageable = buildPageable(query);
+        Page<RolePermissionDbModel> entities = rolePermissionRepository.findAll(spec, pageable);
+        return entities.map(rolePermissionMapper::toSelectResponse);
+    }
+
+
     private Specification<RolePermissionDbModel> buildSpecification(RolePermissionQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();

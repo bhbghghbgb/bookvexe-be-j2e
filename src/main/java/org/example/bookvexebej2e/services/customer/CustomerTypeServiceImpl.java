@@ -98,6 +98,15 @@ public class CustomerTypeServiceImpl implements CustomerTypeService {
             .toList();
     }
 
+    @Override
+    public Page<CustomerTypeSelectResponse> findAllForSelect(CustomerTypeQuery query) {
+        Specification<CustomerTypeDbModel> spec = buildSpecification(query);
+        Pageable pageable = buildPageable(query);
+        Page<CustomerTypeDbModel> entities = customerTypeRepository.findAll(spec, pageable);
+        return entities.map(customerTypeMapper::toSelectResponse);
+    }
+
+
     private Specification<CustomerTypeDbModel> buildSpecification(CustomerTypeQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();

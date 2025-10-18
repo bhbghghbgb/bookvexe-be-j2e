@@ -122,6 +122,15 @@ public class TripCarServiceImpl implements TripCarService {
             .toList();
     }
 
+    @Override
+    public Page<TripCarSelectResponse> findAllForSelect(TripCarQuery query) {
+        Specification<TripCarDbModel> spec = buildSpecification(query);
+        Pageable pageable = buildPageable(query);
+        Page<TripCarDbModel> entities = tripCarRepository.findAll(spec, pageable);
+        return entities.map(tripCarMapper::toSelectResponse);
+    }
+
+
     private Specification<TripCarDbModel> buildSpecification(TripCarQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
