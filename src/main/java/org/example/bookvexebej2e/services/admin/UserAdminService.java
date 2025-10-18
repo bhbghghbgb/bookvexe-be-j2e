@@ -3,6 +3,7 @@ package org.example.bookvexebej2e.services.admin;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.mappers.UserMapper;
 import org.example.bookvexebej2e.models.db.RoleDbModel;
@@ -142,7 +143,7 @@ public class UserAdminService {
 
         return userMapper.toDtoWithRoles(savedUser);
     }
-
+    @Transactional
     public UserDto update(Integer id, UserCreateUpdateDto updateDto) {
         UserDbModel user = userRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("User not found"));
