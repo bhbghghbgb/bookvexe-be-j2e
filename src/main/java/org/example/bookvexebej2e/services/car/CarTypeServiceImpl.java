@@ -1,11 +1,17 @@
 package org.example.bookvexebej2e.services.car;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.CarTypeMapper;
 import org.example.bookvexebej2e.models.db.CarTypeDbModel;
-import org.example.bookvexebej2e.models.dto.car.*;
+import org.example.bookvexebej2e.models.dto.car.CarTypeCreate;
+import org.example.bookvexebej2e.models.dto.car.CarTypeQuery;
+import org.example.bookvexebej2e.models.dto.car.CarTypeResponse;
+import org.example.bookvexebej2e.models.dto.car.CarTypeSelectResponse;
+import org.example.bookvexebej2e.models.dto.car.CarTypeUpdate;
 import org.example.bookvexebej2e.repositories.car.CarTypeRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,9 +20,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +34,8 @@ public class CarTypeServiceImpl implements CarTypeService {
     public List<CarTypeResponse> findAll() {
         List<CarTypeDbModel> entities = carTypeRepository.findAllNotDeleted();
         return entities.stream()
-            .map(carTypeMapper::toResponse)
-            .toList();
+                .map(carTypeMapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -44,7 +49,7 @@ public class CarTypeServiceImpl implements CarTypeService {
     @Override
     public CarTypeResponse findById(UUID id) {
         CarTypeDbModel entity = carTypeRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(CarTypeDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(CarTypeDbModel.class, id));
         return carTypeMapper.toResponse(entity);
     }
 
@@ -63,7 +68,7 @@ public class CarTypeServiceImpl implements CarTypeService {
     @Override
     public CarTypeResponse update(UUID id, CarTypeUpdate updateDto) {
         CarTypeDbModel entity = carTypeRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(CarTypeDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(CarTypeDbModel.class, id));
 
         entity.setCode(updateDto.getCode());
         entity.setName(updateDto.getName());
@@ -82,22 +87,25 @@ public class CarTypeServiceImpl implements CarTypeService {
     @Override
     public void activate(UUID id) {
         CarTypeDbModel entity = carTypeRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(CarTypeDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(CarTypeDbModel.class, id));
         entity.setIsDeleted(false);
         carTypeRepository.save(entity);
     }
 
     @Override
     public void deactivate(UUID id) {
-        delete(id);
+        CarTypeDbModel entity = carTypeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(CarTypeDbModel.class, id));
+        entity.setIsDeleted(true);
+        carTypeRepository.save(entity);
     }
 
     @Override
     public List<CarTypeSelectResponse> findAllForSelect() {
         List<CarTypeDbModel> entities = carTypeRepository.findAllNotDeleted();
         return entities.stream()
-            .map(carTypeMapper::toSelectResponse)
-            .toList();
+                .map(carTypeMapper::toSelectResponse)
+                .toList();
     }
 
     @Override
@@ -108,21 +116,20 @@ public class CarTypeServiceImpl implements CarTypeService {
         return entities.map(carTypeMapper::toSelectResponse);
     }
 
-
     private Specification<CarTypeDbModel> buildSpecification(CarTypeQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
+            // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getCode() != null && !query.getCode()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("code")), "%" + query.getCode()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
             if (query.getName() != null && !query.getName()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("name")), "%" + query.getName()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

@@ -1,13 +1,16 @@
 package org.example.bookvexebej2e.models.dto.route;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.example.bookvexebej2e.models.dto.base.BasePermissionResponse;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-public class RouteResponse {
+@EqualsAndHashCode(callSuper = true)
+public class RouteResponse extends BasePermissionResponse {
     private UUID id;
     private String startLocation;
     private String endLocation;
@@ -16,4 +19,13 @@ public class RouteResponse {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private Boolean isDeleted;
+
+    public RouteResponse() {
+        super();
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+        setPermissionsByDeletedStatus(isDeleted);
+    }
 }

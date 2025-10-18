@@ -116,7 +116,10 @@ public class TripCarServiceImpl implements TripCarService {
 
     @Override
     public void deactivate(UUID id) {
-        delete(id);
+        TripCarDbModel entity = tripCarRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(TripCarDbModel.class, id));
+        entity.setIsDeleted(true);
+        tripCarRepository.save(entity);
     }
 
     @Override
@@ -146,7 +149,7 @@ public class TripCarServiceImpl implements TripCarService {
     private Specification<TripCarDbModel> buildSpecification(TripCarQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
+            // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getTripId() != null) {
                 predicates.add(cb.equal(root.get("trip")

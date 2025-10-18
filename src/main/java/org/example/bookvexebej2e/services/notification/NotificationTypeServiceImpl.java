@@ -1,11 +1,17 @@
 package org.example.bookvexebej2e.services.notification;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.NotificationTypeMapper;
 import org.example.bookvexebej2e.models.db.NotificationTypeDbModel;
-import org.example.bookvexebej2e.models.dto.notification.*;
+import org.example.bookvexebej2e.models.dto.notification.NotificationTypeCreate;
+import org.example.bookvexebej2e.models.dto.notification.NotificationTypeQuery;
+import org.example.bookvexebej2e.models.dto.notification.NotificationTypeResponse;
+import org.example.bookvexebej2e.models.dto.notification.NotificationTypeSelectResponse;
+import org.example.bookvexebej2e.models.dto.notification.NotificationTypeUpdate;
 import org.example.bookvexebej2e.repositories.notification.NotificationTypeRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,9 +20,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +34,8 @@ public class NotificationTypeServiceImpl implements NotificationTypeService {
     public List<NotificationTypeResponse> findAll() {
         List<NotificationTypeDbModel> entities = notificationTypeRepository.findAllNotDeleted();
         return entities.stream()
-            .map(notificationTypeMapper::toResponse)
-            .toList();
+                .map(notificationTypeMapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -44,7 +49,7 @@ public class NotificationTypeServiceImpl implements NotificationTypeService {
     @Override
     public NotificationTypeResponse findById(UUID id) {
         NotificationTypeDbModel entity = notificationTypeRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(NotificationTypeDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(NotificationTypeDbModel.class, id));
         return notificationTypeMapper.toResponse(entity);
     }
 
@@ -62,7 +67,7 @@ public class NotificationTypeServiceImpl implements NotificationTypeService {
     @Override
     public NotificationTypeResponse update(UUID id, NotificationTypeUpdate updateDto) {
         NotificationTypeDbModel entity = notificationTypeRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(NotificationTypeDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(NotificationTypeDbModel.class, id));
 
         entity.setCode(updateDto.getCode());
         entity.setName(updateDto.getName());
@@ -80,22 +85,25 @@ public class NotificationTypeServiceImpl implements NotificationTypeService {
     @Override
     public void activate(UUID id) {
         NotificationTypeDbModel entity = notificationTypeRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(NotificationTypeDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(NotificationTypeDbModel.class, id));
         entity.setIsDeleted(false);
         notificationTypeRepository.save(entity);
     }
 
     @Override
     public void deactivate(UUID id) {
-        delete(id);
+        NotificationTypeDbModel entity = notificationTypeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(NotificationTypeDbModel.class, id));
+        entity.setIsDeleted(true);
+        notificationTypeRepository.save(entity);
     }
 
     @Override
     public List<NotificationTypeSelectResponse> findAllForSelect() {
         List<NotificationTypeDbModel> entities = notificationTypeRepository.findAllNotDeleted();
         return entities.stream()
-            .map(notificationTypeMapper::toSelectResponse)
-            .toList();
+                .map(notificationTypeMapper::toSelectResponse)
+                .toList();
     }
 
     @Override
@@ -106,21 +114,20 @@ public class NotificationTypeServiceImpl implements NotificationTypeService {
         return entities.map(notificationTypeMapper::toSelectResponse);
     }
 
-
     private Specification<NotificationTypeDbModel> buildSpecification(NotificationTypeQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
+            // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getCode() != null && !query.getCode()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("code")), "%" + query.getCode()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
             if (query.getName() != null && !query.getName()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("name")), "%" + query.getName()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

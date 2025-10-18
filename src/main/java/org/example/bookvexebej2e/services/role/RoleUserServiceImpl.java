@@ -1,13 +1,19 @@
 package org.example.bookvexebej2e.services.role;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.RoleUserMapper;
 import org.example.bookvexebej2e.models.db.RoleDbModel;
 import org.example.bookvexebej2e.models.db.RoleUserDbModel;
 import org.example.bookvexebej2e.models.db.UserDbModel;
-import org.example.bookvexebej2e.models.dto.role.*;
+import org.example.bookvexebej2e.models.dto.role.RoleUserCreate;
+import org.example.bookvexebej2e.models.dto.role.RoleUserQuery;
+import org.example.bookvexebej2e.models.dto.role.RoleUserResponse;
+import org.example.bookvexebej2e.models.dto.role.RoleUserSelectResponse;
+import org.example.bookvexebej2e.models.dto.role.RoleUserUpdate;
 import org.example.bookvexebej2e.repositories.role.RoleRepository;
 import org.example.bookvexebej2e.repositories.role.RoleUserRepository;
 import org.example.bookvexebej2e.repositories.user.UserRepository;
@@ -18,9 +24,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -35,8 +40,8 @@ public class RoleUserServiceImpl implements RoleUserService {
     public List<RoleUserResponse> findAll() {
         List<RoleUserDbModel> entities = roleUserRepository.findAllNotDeleted();
         return entities.stream()
-            .map(roleUserMapper::toResponse)
-            .toList();
+                .map(roleUserMapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -50,7 +55,7 @@ public class RoleUserServiceImpl implements RoleUserService {
     @Override
     public RoleUserResponse findById(UUID id) {
         RoleUserDbModel entity = roleUserRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(RoleUserDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(RoleUserDbModel.class, id));
         return roleUserMapper.toResponse(entity);
     }
 
@@ -59,11 +64,11 @@ public class RoleUserServiceImpl implements RoleUserService {
         RoleUserDbModel entity = new RoleUserDbModel();
 
         RoleDbModel role = roleRepository.findById(createDto.getRoleId())
-            .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, createDto.getRoleId()));
+                .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, createDto.getRoleId()));
         entity.setRole(role);
 
         UserDbModel user = userRepository.findById(createDto.getUserId())
-            .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, createDto.getUserId()));
+                .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, createDto.getUserId()));
         entity.setUser(user);
 
         RoleUserDbModel savedEntity = roleUserRepository.save(entity);
@@ -73,17 +78,17 @@ public class RoleUserServiceImpl implements RoleUserService {
     @Override
     public RoleUserResponse update(UUID id, RoleUserUpdate updateDto) {
         RoleUserDbModel entity = roleUserRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(RoleUserDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(RoleUserDbModel.class, id));
 
         if (updateDto.getRoleId() != null) {
             RoleDbModel role = roleRepository.findById(updateDto.getRoleId())
-                .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, updateDto.getRoleId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, updateDto.getRoleId()));
             entity.setRole(role);
         }
 
         if (updateDto.getUserId() != null) {
             UserDbModel user = userRepository.findById(updateDto.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, updateDto.getUserId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, updateDto.getUserId()));
             entity.setUser(user);
         }
 
@@ -99,22 +104,25 @@ public class RoleUserServiceImpl implements RoleUserService {
     @Override
     public void activate(UUID id) {
         RoleUserDbModel entity = roleUserRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(RoleUserDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(RoleUserDbModel.class, id));
         entity.setIsDeleted(false);
         roleUserRepository.save(entity);
     }
 
     @Override
     public void deactivate(UUID id) {
-        delete(id);
+        RoleUserDbModel entity = roleUserRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(RoleUserDbModel.class, id));
+        entity.setIsDeleted(true);
+        roleUserRepository.save(entity);
     }
 
     @Override
     public List<RoleUserSelectResponse> findAllForSelect() {
         List<RoleUserDbModel> entities = roleUserRepository.findAllNotDeleted();
         return entities.stream()
-            .map(roleUserMapper::toSelectResponse)
-            .toList();
+                .map(roleUserMapper::toSelectResponse)
+                .toList();
     }
 
     @Override
@@ -125,19 +133,18 @@ public class RoleUserServiceImpl implements RoleUserService {
         return entities.map(roleUserMapper::toSelectResponse);
     }
 
-
     private Specification<RoleUserDbModel> buildSpecification(RoleUserQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
+            // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getRoleId() != null) {
                 predicates.add(cb.equal(root.get("role")
-                    .get("id"), query.getRoleId()));
+                        .get("id"), query.getRoleId()));
             }
             if (query.getUserId() != null) {
                 predicates.add(cb.equal(root.get("user")
-                    .get("id"), query.getUserId()));
+                        .get("id"), query.getUserId()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

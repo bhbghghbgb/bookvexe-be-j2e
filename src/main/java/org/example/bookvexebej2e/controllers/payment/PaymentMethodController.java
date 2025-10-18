@@ -46,7 +46,7 @@ public class PaymentMethodController {
 
     @PutMapping("/{id}")
     public ResponseEntity<PaymentMethodResponse> update(@PathVariable UUID id,
-        @RequestBody PaymentMethodUpdate updateDto) {
+            @RequestBody PaymentMethodUpdate updateDto) {
         return ResponseEntity.ok(paymentMethodService.update(id, updateDto));
     }
 
@@ -54,21 +54,21 @@ public class PaymentMethodController {
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         paymentMethodService.delete(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
-    @PatchMapping("/activate/{id}")
+    @PostMapping("/activate/{id}")
     public ResponseEntity<Void> activate(@PathVariable UUID id) {
         paymentMethodService.activate(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
-    @PatchMapping("/deactivate/{id}")
+    @PostMapping("/deactivate/{id}")
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         paymentMethodService.deactivate(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
     @GetMapping("/select")

@@ -1,11 +1,17 @@
 package org.example.bookvexebej2e.services.customer;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.CustomerTypeMapper;
 import org.example.bookvexebej2e.models.db.CustomerTypeDbModel;
-import org.example.bookvexebej2e.models.dto.customer.*;
+import org.example.bookvexebej2e.models.dto.customer.CustomerTypeCreate;
+import org.example.bookvexebej2e.models.dto.customer.CustomerTypeQuery;
+import org.example.bookvexebej2e.models.dto.customer.CustomerTypeResponse;
+import org.example.bookvexebej2e.models.dto.customer.CustomerTypeSelectResponse;
+import org.example.bookvexebej2e.models.dto.customer.CustomerTypeUpdate;
 import org.example.bookvexebej2e.repositories.customer.CustomerTypeRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,9 +20,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +34,8 @@ public class CustomerTypeServiceImpl implements CustomerTypeService {
     public List<CustomerTypeResponse> findAll() {
         List<CustomerTypeDbModel> entities = customerTypeRepository.findAllNotDeleted();
         return entities.stream()
-            .map(customerTypeMapper::toResponse)
-            .toList();
+                .map(customerTypeMapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -44,7 +49,7 @@ public class CustomerTypeServiceImpl implements CustomerTypeService {
     @Override
     public CustomerTypeResponse findById(UUID id) {
         CustomerTypeDbModel entity = customerTypeRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(CustomerTypeDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(CustomerTypeDbModel.class, id));
         return customerTypeMapper.toResponse(entity);
     }
 
@@ -62,7 +67,7 @@ public class CustomerTypeServiceImpl implements CustomerTypeService {
     @Override
     public CustomerTypeResponse update(UUID id, CustomerTypeUpdate updateDto) {
         CustomerTypeDbModel entity = customerTypeRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(CustomerTypeDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(CustomerTypeDbModel.class, id));
 
         entity.setCode(updateDto.getCode());
         entity.setName(updateDto.getName());
@@ -80,22 +85,25 @@ public class CustomerTypeServiceImpl implements CustomerTypeService {
     @Override
     public void activate(UUID id) {
         CustomerTypeDbModel entity = customerTypeRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(CustomerTypeDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(CustomerTypeDbModel.class, id));
         entity.setIsDeleted(false);
         customerTypeRepository.save(entity);
     }
 
     @Override
     public void deactivate(UUID id) {
-        delete(id);
+        CustomerTypeDbModel entity = customerTypeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(CustomerTypeDbModel.class, id));
+        entity.setIsDeleted(true);
+        customerTypeRepository.save(entity);
     }
 
     @Override
     public List<CustomerTypeSelectResponse> findAllForSelect() {
         List<CustomerTypeDbModel> entities = customerTypeRepository.findAllNotDeleted();
         return entities.stream()
-            .map(customerTypeMapper::toSelectResponse)
-            .toList();
+                .map(customerTypeMapper::toSelectResponse)
+                .toList();
     }
 
     @Override
@@ -106,21 +114,20 @@ public class CustomerTypeServiceImpl implements CustomerTypeService {
         return entities.map(customerTypeMapper::toSelectResponse);
     }
 
-
     private Specification<CustomerTypeDbModel> buildSpecification(CustomerTypeQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
+            // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getCode() != null && !query.getCode()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("code")), "%" + query.getCode()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
             if (query.getName() != null && !query.getName()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("name")), "%" + query.getName()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

@@ -1,12 +1,18 @@
 package org.example.bookvexebej2e.services.user;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.UserSessionMapper;
 import org.example.bookvexebej2e.models.db.UserDbModel;
 import org.example.bookvexebej2e.models.db.UserSessionDbModel;
-import org.example.bookvexebej2e.models.dto.user.*;
+import org.example.bookvexebej2e.models.dto.user.UserSessionCreate;
+import org.example.bookvexebej2e.models.dto.user.UserSessionQuery;
+import org.example.bookvexebej2e.models.dto.user.UserSessionResponse;
+import org.example.bookvexebej2e.models.dto.user.UserSessionSelectResponse;
+import org.example.bookvexebej2e.models.dto.user.UserSessionUpdate;
 import org.example.bookvexebej2e.repositories.user.UserRepository;
 import org.example.bookvexebej2e.repositories.user.UserSessionRepository;
 import org.springframework.data.domain.Page;
@@ -16,9 +22,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -32,8 +37,8 @@ public class UserSessionServiceImpl implements UserSessionService {
     public List<UserSessionResponse> findAll() {
         List<UserSessionDbModel> entities = userSessionRepository.findAllNotDeleted();
         return entities.stream()
-            .map(userSessionMapper::toResponse)
-            .toList();
+                .map(userSessionMapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -47,7 +52,7 @@ public class UserSessionServiceImpl implements UserSessionService {
     @Override
     public UserSessionResponse findById(UUID id) {
         UserSessionDbModel entity = userSessionRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(UserSessionDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(UserSessionDbModel.class, id));
         return userSessionMapper.toResponse(entity);
     }
 
@@ -59,7 +64,7 @@ public class UserSessionServiceImpl implements UserSessionService {
         entity.setRevoked(createDto.getRevoked());
 
         UserDbModel user = userRepository.findById(createDto.getUserId())
-            .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, createDto.getUserId()));
+                .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, createDto.getUserId()));
         entity.setUser(user);
 
         UserSessionDbModel savedEntity = userSessionRepository.save(entity);
@@ -69,7 +74,7 @@ public class UserSessionServiceImpl implements UserSessionService {
     @Override
     public UserSessionResponse update(UUID id, UserSessionUpdate updateDto) {
         UserSessionDbModel entity = userSessionRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(UserSessionDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(UserSessionDbModel.class, id));
 
         entity.setAccessToken(updateDto.getAccessToken());
         entity.setExpiresAt(updateDto.getExpiresAt());
@@ -77,7 +82,7 @@ public class UserSessionServiceImpl implements UserSessionService {
 
         if (updateDto.getUserId() != null) {
             UserDbModel user = userRepository.findById(updateDto.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, updateDto.getUserId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, updateDto.getUserId()));
             entity.setUser(user);
         }
 
@@ -93,22 +98,25 @@ public class UserSessionServiceImpl implements UserSessionService {
     @Override
     public void activate(UUID id) {
         UserSessionDbModel entity = userSessionRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(UserSessionDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(UserSessionDbModel.class, id));
         entity.setIsDeleted(false);
         userSessionRepository.save(entity);
     }
 
     @Override
     public void deactivate(UUID id) {
-        delete(id);
+        UserSessionDbModel entity = userSessionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(UserSessionDbModel.class, id));
+        entity.setIsDeleted(true);
+        userSessionRepository.save(entity);
     }
 
     @Override
     public List<UserSessionSelectResponse> findAllForSelect() {
         List<UserSessionDbModel> entities = userSessionRepository.findAllNotDeleted();
         return entities.stream()
-            .map(userSessionMapper::toSelectResponse)
-            .toList();
+                .map(userSessionMapper::toSelectResponse)
+                .toList();
     }
 
     @Override
@@ -119,15 +127,14 @@ public class UserSessionServiceImpl implements UserSessionService {
         return entities.map(userSessionMapper::toSelectResponse);
     }
 
-
     private Specification<UserSessionDbModel> buildSpecification(UserSessionQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
+            // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getUserId() != null) {
                 predicates.add(cb.equal(root.get("user")
-                    .get("id"), query.getUserId()));
+                        .get("id"), query.getUserId()));
             }
             if (query.getRevoked() != null) {
                 predicates.add(cb.equal(root.get("revoked"), query.getRevoked()));

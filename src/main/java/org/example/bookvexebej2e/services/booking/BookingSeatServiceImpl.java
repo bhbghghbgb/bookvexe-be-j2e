@@ -151,7 +151,10 @@ public class BookingSeatServiceImpl implements BookingSeatService {
 
     @Override
     public void deactivate(UUID id) {
-        delete(id);
+        BookingSeatDbModel entity = bookingSeatRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(BookingSeatDbModel.class, id));
+        entity.setIsDeleted(true);
+        bookingSeatRepository.save(entity);
     }
 
     @Override
@@ -173,7 +176,7 @@ public class BookingSeatServiceImpl implements BookingSeatService {
     private Specification<BookingSeatDbModel> buildSpecification(BookingSeatQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
+            // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getBookingId() != null) {
                 predicates.add(cb.equal(root.get("booking")

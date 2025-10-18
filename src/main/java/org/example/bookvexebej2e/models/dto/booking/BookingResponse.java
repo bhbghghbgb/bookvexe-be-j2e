@@ -10,9 +10,12 @@ import org.example.bookvexebej2e.models.dto.trip.TripResponse;
 import org.example.bookvexebej2e.models.dto.trip.TripStopResponse;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.example.bookvexebej2e.models.dto.base.BasePermissionResponse;
 
 @Data
-public class BookingResponse {
+@EqualsAndHashCode(callSuper = true)
+public class BookingResponse extends BasePermissionResponse {
     private UUID id;
     private String code;
     private String type;
@@ -26,4 +29,13 @@ public class BookingResponse {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private Boolean isDeleted;
+
+    public BookingResponse() {
+        super();
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+        setPermissionsByDeletedStatus(isDeleted);
+    }
 }

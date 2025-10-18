@@ -1,13 +1,19 @@
 package org.example.bookvexebej2e.services.user;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.UserMapper;
 import org.example.bookvexebej2e.models.db.CustomerDbModel;
 import org.example.bookvexebej2e.models.db.EmployeeDbModel;
 import org.example.bookvexebej2e.models.db.UserDbModel;
-import org.example.bookvexebej2e.models.dto.user.*;
+import org.example.bookvexebej2e.models.dto.user.UserCreate;
+import org.example.bookvexebej2e.models.dto.user.UserQuery;
+import org.example.bookvexebej2e.models.dto.user.UserResponse;
+import org.example.bookvexebej2e.models.dto.user.UserSelectResponse;
+import org.example.bookvexebej2e.models.dto.user.UserUpdate;
 import org.example.bookvexebej2e.repositories.customer.CustomerRepository;
 import org.example.bookvexebej2e.repositories.employee.EmployeeRepository;
 import org.example.bookvexebej2e.repositories.user.UserRepository;
@@ -18,9 +24,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -35,8 +40,8 @@ public class UserServiceImpl implements UserService {
     public List<UserResponse> findAll() {
         List<UserDbModel> entities = userRepository.findAllNotDeleted();
         return entities.stream()
-            .map(userMapper::toResponse)
-            .toList();
+                .map(userMapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -50,7 +55,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse findById(UUID id) {
         UserDbModel entity = userRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, id));
         return userMapper.toResponse(entity);
     }
 
@@ -64,13 +69,13 @@ public class UserServiceImpl implements UserService {
 
         if (createDto.getEmployeeId() != null) {
             EmployeeDbModel employee = employeeRepository.findById(createDto.getEmployeeId())
-                .orElseThrow(() -> new ResourceNotFoundException(EmployeeDbModel.class, createDto.getEmployeeId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(EmployeeDbModel.class, createDto.getEmployeeId()));
             entity.setEmployee(employee);
         }
 
         if (createDto.getCustomerId() != null) {
             CustomerDbModel customer = customerRepository.findById(createDto.getCustomerId())
-                .orElseThrow(() -> new ResourceNotFoundException(CustomerDbModel.class, createDto.getCustomerId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(CustomerDbModel.class, createDto.getCustomerId()));
             entity.setCustomer(customer);
         }
 
@@ -81,7 +86,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse update(UUID id, UserUpdate updateDto) {
         UserDbModel entity = userRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, id));
 
         entity.setUsername(updateDto.getUsername());
         entity.setPassword(updateDto.getPassword());
@@ -90,7 +95,7 @@ public class UserServiceImpl implements UserService {
 
         if (updateDto.getEmployeeId() != null) {
             EmployeeDbModel employee = employeeRepository.findById(updateDto.getEmployeeId())
-                .orElseThrow(() -> new ResourceNotFoundException(EmployeeDbModel.class, updateDto.getEmployeeId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(EmployeeDbModel.class, updateDto.getEmployeeId()));
             entity.setEmployee(employee);
         } else {
             entity.setEmployee(null);
@@ -98,7 +103,7 @@ public class UserServiceImpl implements UserService {
 
         if (updateDto.getCustomerId() != null) {
             CustomerDbModel customer = customerRepository.findById(updateDto.getCustomerId())
-                .orElseThrow(() -> new ResourceNotFoundException(CustomerDbModel.class, updateDto.getCustomerId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(CustomerDbModel.class, updateDto.getCustomerId()));
             entity.setCustomer(customer);
         } else {
             entity.setCustomer(null);
@@ -116,22 +121,25 @@ public class UserServiceImpl implements UserService {
     @Override
     public void activate(UUID id) {
         UserDbModel entity = userRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, id));
         entity.setIsDeleted(false);
         userRepository.save(entity);
     }
 
     @Override
     public void deactivate(UUID id) {
-        delete(id);
+        UserDbModel entity = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, id));
+        entity.setIsDeleted(true);
+        userRepository.save(entity);
     }
 
     @Override
     public List<UserSelectResponse> findAllForSelect() {
         List<UserDbModel> entities = userRepository.findAllNotDeleted();
         return entities.stream()
-            .map(userMapper::toSelectResponse)
-            .toList();
+                .map(userMapper::toSelectResponse)
+                .toList();
     }
 
     @Override
@@ -142,26 +150,29 @@ public class UserServiceImpl implements UserService {
         return entities.map(userMapper::toSelectResponse);
     }
 
-
     private Specification<UserDbModel> buildSpecification(UserQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
+            // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getUsername() != null && !query.getUsername()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("username")), "%" + query.getUsername()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
             if (query.getEmail() != null && !query.getEmail()
-                .isEmpty()) {
+                    .isEmpty()) {
                 // Search in related customer or employee email
                 Predicate customerEmailPredicate = cb.like(cb.lower(root.get("customer")
-                    .get("email")), "%" + query.getEmail()
-                    .toLowerCase() + "%");
+                        .get("email")), "%"
+                                + query.getEmail()
+                                        .toLowerCase()
+                                + "%");
                 Predicate employeeEmailPredicate = cb.like(cb.lower(root.get("employee")
-                    .get("email")), "%" + query.getEmail()
-                    .toLowerCase() + "%");
+                        .get("email")), "%"
+                                + query.getEmail()
+                                        .toLowerCase()
+                                + "%");
                 predicates.add(cb.or(customerEmailPredicate, employeeEmailPredicate));
             }
             if (query.getIsGoogle() != null) {

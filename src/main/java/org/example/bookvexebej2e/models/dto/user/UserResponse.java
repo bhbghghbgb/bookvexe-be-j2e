@@ -1,6 +1,8 @@
 package org.example.bookvexebej2e.models.dto.user;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.example.bookvexebej2e.models.dto.base.BasePermissionResponse;
 import org.example.bookvexebej2e.models.dto.customer.CustomerResponse;
 import org.example.bookvexebej2e.models.dto.employee.EmployeeResponse;
 
@@ -8,7 +10,8 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-public class UserResponse {
+@EqualsAndHashCode(callSuper = true)
+public class UserResponse extends BasePermissionResponse {
     private UUID id;
     private String username;
     private Boolean isGoogle;
@@ -18,4 +21,13 @@ public class UserResponse {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private Boolean isDeleted;
+
+    public UserResponse() {
+        super();
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+        setPermissionsByDeletedStatus(isDeleted);
+    }
 }

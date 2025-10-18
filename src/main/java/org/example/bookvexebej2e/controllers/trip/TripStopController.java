@@ -53,21 +53,21 @@ public class TripStopController {
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         tripStopService.delete(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
-    @PatchMapping("/activate/{id}")
+    @PostMapping("/activate/{id}")
     public ResponseEntity<Void> activate(@PathVariable UUID id) {
         tripStopService.activate(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
-    @PatchMapping("/deactivate/{id}")
+    @PostMapping("/deactivate/{id}")
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         tripStopService.deactivate(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
     @GetMapping("/select")
@@ -84,7 +84,6 @@ public class TripStopController {
     public ResponseEntity<Page<TripStopSelectResponse>> findAllForSelect2(@RequestBody TripStopQuery query) {
         return ResponseEntity.ok(tripStopService.findAllForSelect(query));
     }
-
 
     @GetMapping("/select/{tripId}")
     public ResponseEntity<List<TripStopSelectResponse>> getTripStopsForSelect(@PathVariable UUID tripId) {

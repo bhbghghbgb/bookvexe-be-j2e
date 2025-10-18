@@ -1,13 +1,16 @@
 package org.example.bookvexebej2e.models.dto.car;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.example.bookvexebej2e.models.dto.base.BasePermissionResponse;
 import org.example.bookvexebej2e.models.dto.employee.EmployeeResponse;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-public class CarEmployeeResponse {
+@EqualsAndHashCode(callSuper = true)
+public class CarEmployeeResponse extends BasePermissionResponse {
     private UUID id;
     private CarResponse car;
     private EmployeeResponse employee;
@@ -15,4 +18,13 @@ public class CarEmployeeResponse {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private Boolean isDeleted;
+
+    public CarEmployeeResponse() {
+        super();
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+        setPermissionsByDeletedStatus(isDeleted);
+    }
 }

@@ -46,7 +46,7 @@ public class RolePermissionController {
 
     @PutMapping("/{id}")
     public ResponseEntity<RolePermissionResponse> update(@PathVariable UUID id,
-        @RequestBody RolePermissionUpdate updateDto) {
+            @RequestBody RolePermissionUpdate updateDto) {
         return ResponseEntity.ok(rolePermissionService.update(id, updateDto));
     }
 
@@ -54,21 +54,21 @@ public class RolePermissionController {
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         rolePermissionService.delete(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
-    @PatchMapping("/activate/{id}")
+    @PostMapping("/activate/{id}")
     public ResponseEntity<Void> activate(@PathVariable UUID id) {
         rolePermissionService.activate(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
-    @PatchMapping("/deactivate/{id}")
+    @PostMapping("/deactivate/{id}")
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         rolePermissionService.deactivate(id);
         return ResponseEntity.ok()
-            .build();
+                .build();
     }
 
     @GetMapping("/select")
@@ -82,7 +82,8 @@ public class RolePermissionController {
     }
 
     @PostMapping("/select/pagination")
-    public ResponseEntity<Page<RolePermissionSelectResponse>> findAllForSelect2(@RequestBody RolePermissionQuery query) {
+    public ResponseEntity<Page<RolePermissionSelectResponse>> findAllForSelect2(
+            @RequestBody RolePermissionQuery query) {
         return ResponseEntity.ok(rolePermissionService.findAllForSelect(query));
     }
 

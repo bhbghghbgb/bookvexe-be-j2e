@@ -105,7 +105,10 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public void deactivate(UUID id) {
-        delete(id);
+        InvoiceDbModel entity = invoiceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(InvoiceDbModel.class, id));
+        entity.setIsDeleted(true);
+        invoiceRepository.save(entity);
     }
 
     @Override
@@ -127,7 +130,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     private Specification<InvoiceDbModel> buildSpecification(InvoiceQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
+            // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getPaymentId() != null) {
                 predicates.add(cb.equal(root.get("payment")
