@@ -1,6 +1,5 @@
 package org.example.bookvexebej2e.models.dto.trip;
 
-
 import lombok.Data;
 import org.example.bookvexebej2e.models.dto.route.RouteResponse;
 

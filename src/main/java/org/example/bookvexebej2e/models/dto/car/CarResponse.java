@@ -1,9 +1,9 @@
 package org.example.bookvexebej2e.models.dto.car;
 
-import lombok.Data;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import lombok.Data;
 
 @Data
 public class CarResponse {

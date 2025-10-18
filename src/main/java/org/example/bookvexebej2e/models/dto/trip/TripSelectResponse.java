@@ -1,11 +1,11 @@
 package org.example.bookvexebej2e.models.dto.trip;
 
-
-import lombok.Data;
-import org.example.bookvexebej2e.models.dto.route.RouteResponse;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import org.example.bookvexebej2e.models.dto.route.RouteResponse;
+
+import lombok.Data;
 
 @Data
 public class TripSelectResponse {

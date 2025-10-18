@@ -1,11 +1,12 @@
 package org.example.bookvexebej2e.models.dto.trip;
 
-import lombok.Data;
-import org.example.bookvexebej2e.models.dto.car.CarResponse;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import org.example.bookvexebej2e.models.dto.car.CarResponse;
+
+import lombok.Data;
 
 @Data
 public class TripCarResponse {

@@ -23,7 +23,7 @@ CREATE TABLE bookings
     updated_by      BINARY(16)     NULL,
     code            VARCHAR(255)   NULL,
     type            VARCHAR(255)   NULL,
-    user_id         BINARY(16)     NULL,
+    customer_id     BINARY(16)     NULL,
     trip_id         BINARY(16)     NULL,
     pickup_stop_id  BINARY(16)     NULL,
     dropoff_stop_id BINARY(16)     NULL,
@@ -426,7 +426,8 @@ ALTER TABLE bookings
     ADD CONSTRAINT FK_BOOKINGS_ON_TRIPID FOREIGN KEY (trip_id) REFERENCES trips (uuid);
 
 ALTER TABLE bookings
-    ADD CONSTRAINT FK_BOOKINGS_ON_USERID FOREIGN KEY (user_id) REFERENCES users (uuid);
+    ADD CONSTRAINT FK_BOOKINGS_ON_CUSTOMERID FOREIGN KEY (customer_id) REFERENCES customer(uuid);
+
 
 ALTER TABLE car_employees
     ADD CONSTRAINT FK_CAREMPLOYEES_ON_CARID FOREIGN KEY (car_id) REFERENCES cars (uuid);
