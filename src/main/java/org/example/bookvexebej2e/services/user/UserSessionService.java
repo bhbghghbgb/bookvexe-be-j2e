@@ -24,4 +24,6 @@ public interface UserSessionService {
     void deactivate(UUID id);
 
     List<UserSessionSelectResponse> findAllForSelect();
+
+    Page<UserSessionSelectResponse> findAllForSelect(UserSessionQuery query);
 }

@@ -126,6 +126,15 @@ public class PaymentServiceImpl implements PaymentService {
             .toList();
     }
 
+    @Override
+    public Page<PaymentSelectResponse> findAllForSelect(PaymentQuery query) {
+        Specification<PaymentDbModel> spec = buildSpecification(query);
+        Pageable pageable = buildPageable(query);
+        Page<PaymentDbModel> entities = paymentRepository.findAll(spec, pageable);
+        return entities.map(paymentMapper::toSelectResponse);
+    }
+
+
     private Specification<PaymentDbModel> buildSpecification(PaymentQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();

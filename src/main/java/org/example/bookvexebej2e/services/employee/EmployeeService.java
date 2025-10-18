@@ -24,4 +24,6 @@ public interface EmployeeService {
     void deactivate(UUID id);
 
     List<EmployeeSelectResponse> findAllForSelect();
+
+    Page<EmployeeSelectResponse> findAllForSelect(EmployeeQuery query);
 }

@@ -117,6 +117,15 @@ public class CarEmployeeServiceImpl implements CarEmployeeService {
             .toList();
     }
 
+    @Override
+    public Page<CarEmployeeSelectResponse> findAllForSelect(CarEmployeeQuery query) {
+        Specification<CarEmployeeDbModel> spec = buildSpecification(query);
+        Pageable pageable = buildPageable(query);
+        Page<CarEmployeeDbModel> entities = carEmployeeRepository.findAll(spec, pageable);
+        return entities.map(carEmployeeMapper::toSelectResponse);
+    }
+
+
     private Specification<CarEmployeeDbModel> buildSpecification(CarEmployeeQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();

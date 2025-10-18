@@ -1,14 +1,13 @@
 package org.example.bookvexebej2e.models.dto.booking;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.UUID;
-
+import lombok.Data;
 import org.example.bookvexebej2e.models.dto.customer.CustomerResponse;
 import org.example.bookvexebej2e.models.dto.trip.TripResponse;
 import org.example.bookvexebej2e.models.dto.trip.TripStopResponse;
 
-import lombok.Data;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 public class BookingResponse {

@@ -74,4 +74,15 @@ public class CarTypeController {
     public ResponseEntity<List<CarTypeSelectResponse>> findAllForSelect() {
         return ResponseEntity.ok(carTypeService.findAllForSelect());
     }
+
+    @GetMapping("/select/pagination")
+    public ResponseEntity<Page<CarTypeSelectResponse>> findAllForSelect(CarTypeQuery query) {
+        return ResponseEntity.ok(carTypeService.findAllForSelect(query));
+    }
+
+    @PostMapping("/select/pagination")
+    public ResponseEntity<Page<CarTypeSelectResponse>> findAllForSelect2(@RequestBody CarTypeQuery query) {
+        return ResponseEntity.ok(carTypeService.findAllForSelect(query));
+    }
+
 }

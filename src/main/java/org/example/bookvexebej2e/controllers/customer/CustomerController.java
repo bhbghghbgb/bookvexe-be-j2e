@@ -74,4 +74,15 @@ public class CustomerController {
     public ResponseEntity<List<CustomerSelectResponse>> findAllForSelect() {
         return ResponseEntity.ok(customerService.findAllForSelect());
     }
+
+    @GetMapping("/select/pagination")
+    public ResponseEntity<Page<CustomerSelectResponse>> findAllForSelect(CustomerQuery query) {
+        return ResponseEntity.ok(customerService.findAllForSelect(query));
+    }
+
+    @PostMapping("/select/pagination")
+    public ResponseEntity<Page<CustomerSelectResponse>> findAllForSelect2(@RequestBody CustomerQuery query) {
+        return ResponseEntity.ok(customerService.findAllForSelect(query));
+    }
+
 }

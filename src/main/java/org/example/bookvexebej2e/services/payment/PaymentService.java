@@ -24,4 +24,6 @@ public interface PaymentService {
     void deactivate(UUID id);
 
     List<PaymentSelectResponse> findAllForSelect();
+
+    Page<PaymentSelectResponse> findAllForSelect(PaymentQuery query);
 }

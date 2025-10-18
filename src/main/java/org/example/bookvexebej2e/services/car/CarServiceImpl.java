@@ -107,6 +107,15 @@ public class CarServiceImpl implements CarService {
             .toList();
     }
 
+    @Override
+    public Page<CarSelectResponse> findAllForSelect(CarQuery query) {
+        Specification<CarDbModel> spec = buildSpecification(query);
+        Pageable pageable = buildPageable(query);
+        Page<CarDbModel> entities = carRepository.findAll(spec, pageable);
+        return entities.map(carMapper::toSelectResponse);
+    }
+
+
     private Specification<CarDbModel> buildSpecification(CarQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();

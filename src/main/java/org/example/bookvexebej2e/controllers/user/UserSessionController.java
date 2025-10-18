@@ -74,4 +74,15 @@ public class UserSessionController {
     public ResponseEntity<List<UserSessionSelectResponse>> findAllForSelect() {
         return ResponseEntity.ok(userSessionService.findAllForSelect());
     }
+
+    @GetMapping("/select/pagination")
+    public ResponseEntity<Page<UserSessionSelectResponse>> findAllForSelect(UserSessionQuery query) {
+        return ResponseEntity.ok(userSessionService.findAllForSelect(query));
+    }
+
+    @PostMapping("/select/pagination")
+    public ResponseEntity<Page<UserSessionSelectResponse>> findAllForSelect2(@RequestBody UserSessionQuery query) {
+        return ResponseEntity.ok(userSessionService.findAllForSelect(query));
+    }
+
 }

@@ -1,8 +1,8 @@
 package org.example.bookvexebej2e.models.dto.customer;
 
-import java.util.UUID;
-
 import lombok.Data;
+
+import java.util.UUID;
 
 @Data
 public class CustomerSelectResponse {

@@ -74,4 +74,15 @@ public class BookingController {
     public ResponseEntity<List<BookingSelectResponse>> findAllForSelect() {
         return ResponseEntity.ok(bookingService.findAllForSelect());
     }
+
+    @GetMapping("/select/pagination")
+    public ResponseEntity<Page<BookingSelectResponse>> findAllForSelect(BookingQuery query) {
+        return ResponseEntity.ok(bookingService.findAllForSelect(query));
+    }
+
+    @PostMapping("/select/pagination")
+    public ResponseEntity<Page<BookingSelectResponse>> findAllForSelect2(@RequestBody BookingQuery query) {
+        return ResponseEntity.ok(bookingService.findAllForSelect(query));
+    }
+
 }

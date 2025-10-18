@@ -10,7 +10,7 @@ import java.util.UUID;
 @Data
 public class TripCarResponse {
     private UUID id;
-//    private TripResponse trip;
+    //    private TripResponse trip;
     private CarResponse car;
     private BigDecimal price;
     private Integer availableSeats;

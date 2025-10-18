@@ -24,4 +24,6 @@ public interface UserService {
     void deactivate(UUID id);
 
     List<UserSelectResponse> findAllForSelect();
+
+    Page<UserSelectResponse> findAllForSelect(UserQuery query);
 }

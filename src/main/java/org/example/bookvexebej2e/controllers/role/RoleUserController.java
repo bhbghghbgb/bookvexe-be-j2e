@@ -74,4 +74,15 @@ public class RoleUserController {
     public ResponseEntity<List<RoleUserSelectResponse>> findAllForSelect() {
         return ResponseEntity.ok(roleUserService.findAllForSelect());
     }
+
+    @GetMapping("/select/pagination")
+    public ResponseEntity<Page<RoleUserSelectResponse>> findAllForSelect(RoleUserQuery query) {
+        return ResponseEntity.ok(roleUserService.findAllForSelect(query));
+    }
+
+    @PostMapping("/select/pagination")
+    public ResponseEntity<Page<RoleUserSelectResponse>> findAllForSelect2(@RequestBody RoleUserQuery query) {
+        return ResponseEntity.ok(roleUserService.findAllForSelect(query));
+    }
+
 }

@@ -116,6 +116,15 @@ public class EmployeeServiceImpl implements EmployeeService {
             .toList();
     }
 
+    @Override
+    public Page<EmployeeSelectResponse> findAllForSelect(EmployeeQuery query) {
+        Specification<EmployeeDbModel> spec = buildSpecification(query);
+        Pageable pageable = buildPageable(query);
+        Page<EmployeeDbModel> entities = employeeRepository.findAll(spec, pageable);
+        return entities.map(employeeMapper::toSelectResponse);
+    }
+
+
     private Specification<EmployeeDbModel> buildSpecification(EmployeeQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();

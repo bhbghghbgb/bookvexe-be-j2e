@@ -74,4 +74,15 @@ public class RouteController {
     public ResponseEntity<List<RouteSelectResponse>> findAllForSelect() {
         return ResponseEntity.ok(routeService.findAllForSelect());
     }
+
+    @GetMapping("/select/pagination")
+    public ResponseEntity<Page<RouteSelectResponse>> findAllForSelect(RouteQuery query) {
+        return ResponseEntity.ok(routeService.findAllForSelect(query));
+    }
+
+    @PostMapping("/select/pagination")
+    public ResponseEntity<Page<RouteSelectResponse>> findAllForSelect2(@RequestBody RouteQuery query) {
+        return ResponseEntity.ok(routeService.findAllForSelect(query));
+    }
+
 }

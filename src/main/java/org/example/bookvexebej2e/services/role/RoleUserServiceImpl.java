@@ -117,6 +117,15 @@ public class RoleUserServiceImpl implements RoleUserService {
             .toList();
     }
 
+    @Override
+    public Page<RoleUserSelectResponse> findAllForSelect(RoleUserQuery query) {
+        Specification<RoleUserDbModel> spec = buildSpecification(query);
+        Pageable pageable = buildPageable(query);
+        Page<RoleUserDbModel> entities = roleUserRepository.findAll(spec, pageable);
+        return entities.map(roleUserMapper::toSelectResponse);
+    }
+
+
     private Specification<RoleUserDbModel> buildSpecification(RoleUserQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();

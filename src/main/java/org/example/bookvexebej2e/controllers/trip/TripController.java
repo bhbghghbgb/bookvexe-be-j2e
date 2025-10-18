@@ -74,4 +74,15 @@ public class TripController {
     public ResponseEntity<List<TripSelectResponse>> findAllForSelect() {
         return ResponseEntity.ok(tripService.findAllForSelect());
     }
+
+    @GetMapping("/select/pagination")
+    public ResponseEntity<Page<TripSelectResponse>> findAllForSelect(TripQuery query) {
+        return ResponseEntity.ok(tripService.findAllForSelect(query));
+    }
+
+    @PostMapping("/select/pagination")
+    public ResponseEntity<Page<TripSelectResponse>> findAllForSelect2(@RequestBody TripQuery query) {
+        return ResponseEntity.ok(tripService.findAllForSelect(query));
+    }
+
 }

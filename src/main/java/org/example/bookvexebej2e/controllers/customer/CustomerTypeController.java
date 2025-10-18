@@ -75,4 +75,15 @@ public class CustomerTypeController {
     public ResponseEntity<List<CustomerTypeSelectResponse>> findAllForSelect() {
         return ResponseEntity.ok(customerTypeService.findAllForSelect());
     }
+
+    @GetMapping("/select/pagination")
+    public ResponseEntity<Page<CustomerTypeSelectResponse>> findAllForSelect(CustomerTypeQuery query) {
+        return ResponseEntity.ok(customerTypeService.findAllForSelect(query));
+    }
+
+    @PostMapping("/select/pagination")
+    public ResponseEntity<Page<CustomerTypeSelectResponse>> findAllForSelect2(@RequestBody CustomerTypeQuery query) {
+        return ResponseEntity.ok(customerTypeService.findAllForSelect(query));
+    }
+
 }

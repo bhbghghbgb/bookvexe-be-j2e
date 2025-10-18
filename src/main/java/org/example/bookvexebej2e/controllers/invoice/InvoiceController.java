@@ -74,4 +74,15 @@ public class InvoiceController {
     public ResponseEntity<List<InvoiceSelectResponse>> findAllForSelect() {
         return ResponseEntity.ok(invoiceService.findAllForSelect());
     }
+
+    @GetMapping("/select/pagination")
+    public ResponseEntity<Page<InvoiceSelectResponse>> findAllForSelect(InvoiceQuery query) {
+        return ResponseEntity.ok(invoiceService.findAllForSelect(query));
+    }
+
+    @PostMapping("/select/pagination")
+    public ResponseEntity<Page<InvoiceSelectResponse>> findAllForSelect2(@RequestBody InvoiceQuery query) {
+        return ResponseEntity.ok(invoiceService.findAllForSelect(query));
+    }
+
 }
