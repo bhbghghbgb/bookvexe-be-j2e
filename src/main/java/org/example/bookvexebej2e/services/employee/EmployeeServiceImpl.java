@@ -1,13 +1,18 @@
 package org.example.bookvexebej2e.services.employee;
 
-import jakarta.persistence.criteria.Predicate;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.EmployeeMapper;
 import org.example.bookvexebej2e.models.db.EmployeeDbModel;
 import org.example.bookvexebej2e.models.db.UserDbModel;
-import org.example.bookvexebej2e.models.dto.employee.*;
+import org.example.bookvexebej2e.models.dto.employee.EmployeeCreate;
+import org.example.bookvexebej2e.models.dto.employee.EmployeeQuery;
+import org.example.bookvexebej2e.models.dto.employee.EmployeeResponse;
+import org.example.bookvexebej2e.models.dto.employee.EmployeeSelectResponse;
+import org.example.bookvexebej2e.models.dto.employee.EmployeeUpdate;
 import org.example.bookvexebej2e.repositories.employee.EmployeeRepository;
 import org.example.bookvexebej2e.repositories.user.UserRepository;
 import org.springframework.data.domain.Page;
@@ -17,9 +22,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -33,8 +38,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     public List<EmployeeResponse> findAll() {
         List<EmployeeDbModel> entities = employeeRepository.findAllNotDeleted();
         return entities.stream()
-            .map(employeeMapper::toResponse)
-            .toList();
+                .map(employeeMapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -48,7 +53,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public EmployeeResponse findById(UUID id) {
         EmployeeDbModel entity = employeeRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(EmployeeDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(EmployeeDbModel.class, id));
         return employeeMapper.toResponse(entity);
     }
 
@@ -65,7 +70,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         EmployeeDbModel savedEntity = employeeRepository.save(entity);
 
         UserDbModel userEntity = new UserDbModel();
-        userEntity.setUsername(entity.getPhone());
+        userEntity.setUsername(entity.getCode());
         userEntity.setPassword("123456");
         userEntity.setIsGoogle(false);
         userEntity.setEmployee(savedEntity);
@@ -78,7 +83,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public EmployeeResponse update(UUID id, EmployeeUpdate updateDto) {
         EmployeeDbModel entity = employeeRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(EmployeeDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(EmployeeDbModel.class, id));
 
         entity.setCode(updateDto.getCode());
         entity.setName(updateDto.getName());
@@ -98,7 +103,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public void activate(UUID id) {
         EmployeeDbModel entity = employeeRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(EmployeeDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(EmployeeDbModel.class, id));
         entity.setIsDeleted(false);
         employeeRepository.save(entity);
     }
@@ -112,8 +117,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     public List<EmployeeSelectResponse> findAllForSelect() {
         List<EmployeeDbModel> entities = employeeRepository.findAllNotDeleted();
         return entities.stream()
-            .map(employeeMapper::toSelectResponse)
-            .toList();
+                .map(employeeMapper::toSelectResponse)
+                .toList();
     }
 
     @Override
@@ -124,31 +129,30 @@ public class EmployeeServiceImpl implements EmployeeService {
         return entities.map(employeeMapper::toSelectResponse);
     }
 
-
     private Specification<EmployeeDbModel> buildSpecification(EmployeeQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.or(cb.equal(root.get("isDeleted"), false), cb.isNull(root.get("isDeleted"))));
 
             if (query.getCode() != null && !query.getCode()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("code")), "%" + query.getCode()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
             if (query.getName() != null && !query.getName()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("name")), "%" + query.getName()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
             if (query.getEmail() != null && !query.getEmail()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("email")), "%" + query.getEmail()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
             if (query.getPhone() != null && !query.getPhone()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("phone")), "%" + query.getPhone()
-                    .toLowerCase() + "%"));
+                        .toLowerCase() + "%"));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

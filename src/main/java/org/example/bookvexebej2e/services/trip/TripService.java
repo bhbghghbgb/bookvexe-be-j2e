@@ -1,10 +1,14 @@
 package org.example.bookvexebej2e.services.trip;
 
-import org.example.bookvexebej2e.models.dto.trip.*;
-import org.springframework.data.domain.Page;
-
 import java.util.List;
 import java.util.UUID;
+
+import org.example.bookvexebej2e.models.dto.trip.TripCreate;
+import org.example.bookvexebej2e.models.dto.trip.TripQuery;
+import org.example.bookvexebej2e.models.dto.trip.TripResponse;
+import org.example.bookvexebej2e.models.dto.trip.TripSelectResponse;
+import org.example.bookvexebej2e.models.dto.trip.TripUpdate;
+import org.springframework.data.domain.Page;
 
 public interface TripService {
     List<TripResponse> findAll();

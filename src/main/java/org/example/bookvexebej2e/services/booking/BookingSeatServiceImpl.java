@@ -1,13 +1,21 @@
 package org.example.bookvexebej2e.services.booking;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.BookingSeatMapper;
 import org.example.bookvexebej2e.models.db.BookingDbModel;
 import org.example.bookvexebej2e.models.db.BookingSeatDbModel;
 import org.example.bookvexebej2e.models.db.CarSeatDbModel;
-import org.example.bookvexebej2e.models.dto.booking.*;
+import org.example.bookvexebej2e.models.dto.booking.BookingSeatCreate;
+import org.example.bookvexebej2e.models.dto.booking.BookingSeatQuery;
+import org.example.bookvexebej2e.models.dto.booking.BookingSeatResponse;
+import org.example.bookvexebej2e.models.dto.booking.BookingSeatSelectResponse;
+import org.example.bookvexebej2e.models.dto.booking.BookingSeatUpdate;
 import org.example.bookvexebej2e.repositories.booking.BookingRepository;
 import org.example.bookvexebej2e.repositories.booking.BookingSeatRepository;
 import org.example.bookvexebej2e.repositories.car.CarSeatRepository;
@@ -18,9 +26,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -35,8 +42,8 @@ public class BookingSeatServiceImpl implements BookingSeatService {
     public List<BookingSeatResponse> findAll() {
         List<BookingSeatDbModel> entities = bookingSeatRepository.findAllNotDeleted();
         return entities.stream()
-            .map(bookingSeatMapper::toResponse)
-            .toList();
+                .map(bookingSeatMapper::toResponse)
+                .toList();
     }
 
     @Override
@@ -50,7 +57,7 @@ public class BookingSeatServiceImpl implements BookingSeatService {
     @Override
     public BookingSeatResponse findById(UUID id) {
         BookingSeatDbModel entity = bookingSeatRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(BookingSeatDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(BookingSeatDbModel.class, id));
         return bookingSeatMapper.toResponse(entity);
     }
 
@@ -62,22 +69,52 @@ public class BookingSeatServiceImpl implements BookingSeatService {
 
         // Resolve booking relationship
         BookingDbModel booking = bookingRepository.findById(createDto.getBookingId())
-            .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, createDto.getBookingId()));
+                .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, createDto.getBookingId()));
         entity.setBooking(booking);
 
         // Resolve seat relationship
         CarSeatDbModel seat = carSeatRepository.findById(createDto.getSeatId())
-            .orElseThrow(() -> new ResourceNotFoundException(CarSeatDbModel.class, createDto.getSeatId()));
+                .orElseThrow(() -> new ResourceNotFoundException(CarSeatDbModel.class, createDto.getSeatId()));
         entity.setSeat(seat);
+
+        // Auto-generate code based on booking code + ddmmyyyy
+        String bookingSeatCode = generateBookingSeatCode(booking.getCode());
+        entity.setCode(bookingSeatCode);
 
         BookingSeatDbModel savedEntity = bookingSeatRepository.save(entity);
         return bookingSeatMapper.toResponse(savedEntity);
     }
 
+    /**
+     * Generate booking seat code based on booking code + ddmmyyyy format + sequence
+     * number
+     * 
+     * @param bookingCode The booking code
+     * @return Generated booking seat code
+     */
+    private String generateBookingSeatCode(String bookingCode) {
+        // Get current date in ddmmyyyy format
+        LocalDateTime now = LocalDateTime.now();
+        String dateString = now.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+
+        // Base code without sequence number
+        String baseCode = bookingCode + dateString;
+
+        // Find existing booking seats with similar code pattern to determine next
+        // sequence number
+        long existingCount = bookingSeatRepository.countByCodeStartingWith(baseCode);
+
+        // Generate sequence number (starting from 001)
+        String sequenceNumber = String.format("%03d", existingCount + 1);
+
+        // Combine booking code with date and sequence
+        return baseCode + sequenceNumber;
+    }
+
     @Override
     public BookingSeatResponse update(UUID id, BookingSeatUpdate updateDto) {
         BookingSeatDbModel entity = bookingSeatRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(BookingSeatDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(BookingSeatDbModel.class, id));
 
         entity.setStatus(updateDto.getStatus());
         entity.setPrice(updateDto.getPrice());
@@ -85,13 +122,13 @@ public class BookingSeatServiceImpl implements BookingSeatService {
         // Resolve relationships if provided
         if (updateDto.getBookingId() != null) {
             BookingDbModel booking = bookingRepository.findById(updateDto.getBookingId())
-                .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, updateDto.getBookingId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, updateDto.getBookingId()));
             entity.setBooking(booking);
         }
 
         if (updateDto.getSeatId() != null) {
             CarSeatDbModel seat = carSeatRepository.findById(updateDto.getSeatId())
-                .orElseThrow(() -> new ResourceNotFoundException(CarSeatDbModel.class, updateDto.getSeatId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(CarSeatDbModel.class, updateDto.getSeatId()));
             entity.setSeat(seat);
         }
 
@@ -107,7 +144,7 @@ public class BookingSeatServiceImpl implements BookingSeatService {
     @Override
     public void activate(UUID id) {
         BookingSeatDbModel entity = bookingSeatRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(BookingSeatDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(BookingSeatDbModel.class, id));
         entity.setIsDeleted(false);
         bookingSeatRepository.save(entity);
     }
@@ -121,8 +158,8 @@ public class BookingSeatServiceImpl implements BookingSeatService {
     public List<BookingSeatSelectResponse> findAllForSelect() {
         List<BookingSeatDbModel> entities = bookingSeatRepository.findAllNotDeleted();
         return entities.stream()
-            .map(bookingSeatMapper::toSelectResponse)
-            .toList();
+                .map(bookingSeatMapper::toSelectResponse)
+                .toList();
     }
 
     @Override
@@ -133,7 +170,6 @@ public class BookingSeatServiceImpl implements BookingSeatService {
         return entities.map(bookingSeatMapper::toSelectResponse);
     }
 
-
     private Specification<BookingSeatDbModel> buildSpecification(BookingSeatQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -141,14 +177,14 @@ public class BookingSeatServiceImpl implements BookingSeatService {
 
             if (query.getBookingId() != null) {
                 predicates.add(cb.equal(root.get("booking")
-                    .get("id"), query.getBookingId()));
+                        .get("id"), query.getBookingId()));
             }
             if (query.getSeatId() != null) {
                 predicates.add(cb.equal(root.get("seat")
-                    .get("id"), query.getSeatId()));
+                        .get("id"), query.getSeatId()));
             }
             if (query.getStatus() != null && !query.getStatus()
-                .isEmpty()) {
+                    .isEmpty()) {
                 predicates.add(cb.equal(root.get("status"), query.getStatus()));
             }
 

@@ -1,13 +1,15 @@
 package org.example.bookvexebej2e.models.dto.booking;
 
-import lombok.Data;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.models.dto.customer.CustomerResponse;
 import org.example.bookvexebej2e.models.dto.trip.TripResponse;
 import org.example.bookvexebej2e.models.dto.trip.TripStopResponse;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.UUID;
+import lombok.Data;
 
 @Data
 public class BookingResponse {
@@ -16,6 +18,7 @@ public class BookingResponse {
     private String type;
     private CustomerResponse customer;
     private TripResponse trip;
+    private List<BookingSeatResponse> bookingSeats;
     private TripStopResponse pickupStop;
     private TripStopResponse dropoffStop;
     private String bookingStatus;

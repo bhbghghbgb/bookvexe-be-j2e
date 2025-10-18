@@ -109,6 +109,7 @@ CREATE TABLE `cars`
 (
     `id`           varchar(255) PRIMARY KEY,
     `carTypeId`    varchar(255),
+    `code`        varchar(255),
     `licensePlate` varchar(20) UNIQUE,
     `isDeleted`    bool,
     `createdDate`  datetime,

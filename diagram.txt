@@ -110,6 +110,7 @@ table carTypes {
 table cars {
   id varchar(255) [pk, note: 'Mã định danh duy nhất của xe']
   carTypeId varchar(255) [note: 'Liên kết với bảng carTypes - loại xe']
+  code varchar(255) [note: 'Mã xe (VD: 16S, 24S, 40S - số ghế)']
   licensePlate varchar(20) [unique, note: 'Biển số xe (duy nhất, VD: 51A-12345)']
   isDeleted bool [note: 'Cờ đánh dấu xóa mềm']
   createdDate datetime [note: 'Thời điểm thêm xe vào hệ thống']

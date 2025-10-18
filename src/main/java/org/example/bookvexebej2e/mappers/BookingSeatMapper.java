@@ -5,9 +5,8 @@ import org.example.bookvexebej2e.models.dto.booking.BookingSeatResponse;
 import org.example.bookvexebej2e.models.dto.booking.BookingSeatSelectResponse;
 import org.mapstruct.Mapper;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = { CarSeatMapper.class })
 public interface BookingSeatMapper {
-
     BookingSeatResponse toResponse(BookingSeatDbModel entity);
 
     BookingSeatSelectResponse toSelectResponse(BookingSeatDbModel entity);
