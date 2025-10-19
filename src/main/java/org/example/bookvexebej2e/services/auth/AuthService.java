@@ -52,7 +52,7 @@ public class AuthService {
     }
 
     public AuthResponse refreshToken(String refreshToken) {
-        if (!tokenService.validateToken(refreshToken, "REFRESH")) {
+        if (!tokenService.validateTokenIsValid(refreshToken, "REFRESH")) {
             throw new UnauthorizedException("Invalid refresh token");
         }
 
@@ -90,7 +90,7 @@ public class AuthService {
     }
 
     public void confirmPasswordResetAsCustomer(PasswordResetConfirmRequest request) {
-        if (!tokenService.validateToken(request.getToken(), "RESET_PASSWORD")) {
+        if (!tokenService.validateTokenIsValid(request.getToken(), "RESET_PASSWORD")) {
             throw new UnauthorizedException("Invalid or expired reset token");
         }
 
