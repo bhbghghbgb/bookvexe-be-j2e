@@ -1,10 +1,12 @@
 package org.example.bookvexebej2e.exceptions;
 
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.Set;
 
+@Getter
 @ResponseStatus(HttpStatus.FORBIDDEN)
 public class ForbiddenException extends RuntimeException {
     private final Set<String> requiredRoles;
@@ -16,11 +18,4 @@ public class ForbiddenException extends RuntimeException {
         this.userRoles = userRoles;
     }
 
-    public Set<String> getRequiredRoles() {
-        return requiredRoles;
-    }
-
-    public Set<String> getUserRoles() {
-        return userRoles;
-    }
 }
