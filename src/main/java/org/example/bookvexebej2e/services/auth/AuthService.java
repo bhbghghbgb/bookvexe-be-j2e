@@ -1,6 +1,7 @@
 package org.example.bookvexebej2e.services.auth;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.bookvexebej2e.configs.JwtUtils;
 import org.example.bookvexebej2e.exceptions.UnauthorizedException;
 import org.example.bookvexebej2e.models.db.UserDbModel;
@@ -17,6 +18,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -83,7 +85,7 @@ public class AuthService {
             var resetToken = tokenService.createPasswordResetToken(user);
 
             // Print reset code to console (in production, send email)
-            System.out.println("Password reset token for " + user.getUsername() + ": " + resetToken.getToken());
+            log.info("Password reset token for {}: {}", user.getUsername(), resetToken.getToken());
         }
     }
 

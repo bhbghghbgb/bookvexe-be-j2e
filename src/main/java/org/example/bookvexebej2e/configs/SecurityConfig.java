@@ -1,7 +1,9 @@
 package org.example.bookvexebej2e.configs;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.bookvexebej2e.services.auth.AuthUserDetailsService;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +14,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -22,6 +25,7 @@ import java.util.Collections;
 
 @Configuration
 @RequiredArgsConstructor
+@Slf4j
 public class SecurityConfig {
 
     private final AuthUserDetailsService userDetailsService;
@@ -56,7 +60,8 @@ public class SecurityConfig {
      * Configures the main security filter chain.
      */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http,
+        ObjectProvider<ClientRegistrationRepository> clientRegistrations) throws Exception {
         http
             // CORS and CSRF Configuration
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -85,8 +90,8 @@ public class SecurityConfig {
             })
 
             // 5. Configure OAuth2 Login (using modern lambda syntax)
-            .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/auth/oauth2/success")
-                .failureUrl("/auth/oauth2/failure"))
+            //            .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/auth/oauth2/success")
+            //                .failureUrl("/auth/oauth2/failure"))
 
             // 6. Set the authentication provider
             .authenticationProvider(authenticationProvider())
@@ -94,6 +99,15 @@ public class SecurityConfig {
             // 7. Add the custom JWT filter BEFORE the standard UsernamePasswordAuthenticationFilter
             // This ensures JWT processing happens before Spring tries to look for form data/session.
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        // Only enable oauth2Login if OAuth2 clients are present
+        if (clientRegistrations.getIfAvailable() != null) {
+            http.oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/auth/oauth2/success")
+                .failureUrl("/auth/oauth2/failure"));
+            log.info("OAuth2 login enabled (client registrations found).");
+        } else {
+            log.warn("OAuth2 login disabled (no client registrations found).");
+        }
 
         return http.build();
     }
