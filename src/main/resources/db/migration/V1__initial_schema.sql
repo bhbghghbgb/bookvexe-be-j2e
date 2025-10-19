@@ -6,7 +6,7 @@ CREATE TABLE booking_seats
     created_by   BINARY(16)     NULL,
     updated_date datetime       NULL,
     updated_by   BINARY(16)     NULL,
-    code            VARCHAR(255)   NULL,
+    code         VARCHAR(255)   NULL,
     booking_id   BINARY(16)     NULL,
     seat_id      BINARY(16)     NULL,
     status       VARCHAR(20)    NULL,
@@ -84,8 +84,8 @@ CREATE TABLE cars
     created_by    BINARY(16)   NULL,
     updated_date  datetime     NULL,
     updated_by    BINARY(16)   NULL,
-    code          VARCHAR(255) NULL,
     car_type_id   BINARY(16)   NULL,
+    code          VARCHAR(255) NULL,
     license_plate VARCHAR(20)  NULL,
     CONSTRAINT pk_cars PRIMARY KEY (uuid)
 );
@@ -294,6 +294,22 @@ CREATE TABLE routes
     CONSTRAINT pk_routes PRIMARY KEY (uuid)
 );
 
+CREATE TABLE tokens
+(
+    uuid         BINARY(16)   NOT NULL,
+    is_deleted   BIT(1)       NULL,
+    created_date datetime     NULL,
+    created_by   BINARY(16)   NULL,
+    updated_date datetime     NULL,
+    updated_by   BINARY(16)   NULL,
+    user_id      BINARY(16)   NOT NULL,
+    token        VARCHAR(255) NOT NULL,
+    token_type   VARCHAR(255) NOT NULL,
+    expires_at   datetime     NOT NULL,
+    revoked      BIT(1)       NULL,
+    CONSTRAINT pk_tokens PRIMARY KEY (uuid)
+);
+
 CREATE TABLE trip_cars
 (
     uuid            BINARY(16)     NOT NULL,
@@ -371,19 +387,20 @@ CREATE TABLE users
     CONSTRAINT pk_users PRIMARY KEY (uuid)
 );
 
--- UNIQUE CONSTRAINTS
 ALTER TABLE bookings
     ADD CONSTRAINT uc_bookings_code UNIQUE (code);
+
 ALTER TABLE booking_seats
     ADD CONSTRAINT uc_bookingseats_code UNIQUE (code);
-ALTER TABLE car_types
-    ADD CONSTRAINT uc_cartypes_code UNIQUE (code);
 
 ALTER TABLE cars
     ADD CONSTRAINT uc_cars_code UNIQUE (code);
 
 ALTER TABLE cars
     ADD CONSTRAINT uc_cars_licenseplate UNIQUE (license_plate);
+
+ALTER TABLE car_types
+    ADD CONSTRAINT uc_cartypes_code UNIQUE (code);
 
 ALTER TABLE customer
     ADD CONSTRAINT uc_customer_code UNIQUE (code);
@@ -421,6 +438,9 @@ ALTER TABLE payments
 ALTER TABLE `role`
     ADD CONSTRAINT uc_role_code UNIQUE (code);
 
+ALTER TABLE tokens
+    ADD CONSTRAINT uc_tokens_token UNIQUE (token);
+
 ALTER TABLE user_sessions
     ADD CONSTRAINT uc_user_sessions_accesstoken UNIQUE (access_token);
 
@@ -433,7 +453,6 @@ ALTER TABLE users
 ALTER TABLE users
     ADD CONSTRAINT uc_users_username UNIQUE (username);
 
--- FOREIGN KEY CONSTRAINTS
 ALTER TABLE booking_seats
     ADD CONSTRAINT FK_BOOKINGSEATS_ON_BOOKINGID FOREIGN KEY (booking_id) REFERENCES bookings (uuid);
 
@@ -499,6 +518,9 @@ ALTER TABLE role_user
 
 ALTER TABLE role_user
     ADD CONSTRAINT FK_ROLEUSER_ON_USERID FOREIGN KEY (user_id) REFERENCES users (uuid);
+
+ALTER TABLE tokens
+    ADD CONSTRAINT FK_TOKENS_ON_USERID FOREIGN KEY (user_id) REFERENCES users (uuid);
 
 ALTER TABLE trip_cars
     ADD CONSTRAINT FK_TRIPCARS_ON_CARID FOREIGN KEY (car_id) REFERENCES cars (uuid);
