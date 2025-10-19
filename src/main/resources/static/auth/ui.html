@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Authentication Debug UI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            border-bottom: 2px solid #5cb85c;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        #loginForm, #tokenDisplay {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        label, button {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+            margin-top: 10px;
+        }
+
+        .login-btn {
+            background-color: #5cb85c;
+        }
+
+        .refresh-btn {
+            background-color: #f0ad4e;
+        }
+
+        .copy-btn {
+            background-color: #0275d8;
+            margin-top: 5px;
+            font-size: 0.8em;
+            padding: 5px 10px;
+        }
+
+        pre {
+            background-color: #eee;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .token-section h3 {
+            margin-top: 0;
+        }
+
+        .error {
+            color: #d9534f;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>JWT Authentication Debug Console</h2>
+
+    <div id="loginForm">
+        <h3>Login</h3>
+        <form id="loginFormElement">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required value="user">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required value="password">
+            <button type="submit" class="login-btn">Log In</button>
+            <p id="loginMessage" class="error"></p>
+        </form>
+    </div>
+
+    <div id="tokenDisplay" style="display:none;">
+        <h3>User & Token Information</h3>
+
+        <button id="refreshTokenBtn" class="refresh-btn">Refresh Access Token</button>
+
+        <div class="token-section">
+            <h4>Access Token:</h4>
+            <pre id="accessTokenValue"></pre>
+            <button class="copy-btn" data-target="accessTokenValue">Copy</button>
+        </div>
+        <div class="token-section">
+            <h4>Refresh Token:</h4>
+            <pre id="refreshTokenValue"></pre>
+            <button class="copy-btn" data-target="refreshTokenValue">Copy</button>
+        </div>
+
+        <div class="token-section">
+            <h4>Decoded Access Token Payload (Debugging):</h4>
+            <pre id="decodedPayload"></pre>
+        </div>
+
+        <div class="token-section">
+            <h4>Token Status Message:</h4>
+            <p id="statusMessage"></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_LOGIN_URL = '/auth/login';
+    const API_REFRESH_URL = '/auth/refresh';
+
+    // State variables
+    let currentRefreshToken = null;
+
+    // Utility to decode JWT payload (base64)
+    function decodeJwt(token) {
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        } catch (e) {
+            return {error: "Invalid Token Format"};
+        }
+    }
+
+    // Utility to update the UI with tokens and payload
+    function updateTokenDisplay(accessToken, refreshToken) {
+        const displayDiv = document.getElementById('tokenDisplay');
+        const accessTokenValue = document.getElementById('accessTokenValue');
+        const refreshTokenValue = document.getElementById('refreshTokenValue');
+        const decodedPayload = document.getElementById('decodedPayload');
+        const statusMessage = document.getElementById('statusMessage');
+
+        accessTokenValue.textContent = accessToken || "N/A";
+        refreshTokenValue.textContent = refreshToken || "N/A";
+        currentRefreshToken = refreshToken;
+
+        if (accessToken) {
+            const payload = decodeJwt(accessToken);
+            decodedPayload.textContent = JSON.stringify(payload, null, 2);
+            statusMessage.textContent = "Successfully logged in / token refreshed.";
+            statusMessage.className = "";
+            displayDiv.style.display = 'block';
+        } else {
+            decodedPayload.textContent = "N/A";
+            statusMessage.textContent = "Please log in.";
+            statusMessage.className = "error";
+            displayDiv.style.display = 'none';
+        }
+    }
+
+    // --- Form Submission Handlers ---
+
+    // 1. LOGIN Handler
+    document.getElementById('loginFormElement').addEventListener('submit', async function (event) {
+        event.preventDefault();
+        const form = event.target;
+        const username = form.username.value;
+        const password = form.password.value;
+        const loginMessage = document.getElementById('loginMessage');
+
+        loginMessage.textContent = 'Authenticating...';
+
+        try {
+            const response = await fetch(API_LOGIN_URL, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, password})
+            });
+
+            if (!response.ok) {
+                const errorBody = await response.json();
+                throw new Error(errorBody.message || `Login failed with status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            updateTokenDisplay(data.accessToken, data.refreshToken);
+            loginMessage.textContent = 'Login successful!';
+            loginMessage.className = 'success';
+
+        } catch (error) {
+            loginMessage.textContent = `Login failed: ${error.message}`;
+            loginMessage.className = 'error';
+            updateTokenDisplay(null, null);
+        }
+    });
+
+    // 2. REFRESH Token Handler
+    document.getElementById('refreshTokenBtn').addEventListener('click', async function () {
+        if (!currentRefreshToken) {
+            alert("No refresh token available. Please log in first.");
+            return;
+        }
+
+        const statusMessage = document.getElementById('statusMessage');
+        statusMessage.textContent = 'Attempting to refresh token...';
+        statusMessage.className = '';
+
+        try {
+            const response = await fetch(API_REFRESH_URL, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + currentRefreshToken
+                }
+            });
+
+            if (!response.ok) {
+                const errorBody = await response.json();
+                throw new Error(errorBody.message || `Refresh failed with status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            // Update with the new tokens
+            updateTokenDisplay(data.accessToken, data.refreshToken);
+
+        } catch (error) {
+            statusMessage.textContent = `Token Refresh Failed: ${error.message}`;
+            statusMessage.className = 'error';
+            console.error('Refresh Error:', error);
+        }
+    });
+
+    // 3. Copy Button Handler
+    document.querySelectorAll('.copy-btn').forEach(button => {
+        button.addEventListener('click', function () {
+            const targetId = this.getAttribute('data-target');
+            const textToCopy = document.getElementById(targetId).textContent;
+
+            if (textToCopy && textToCopy !== 'N/A') {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    alert(`Copied to clipboard: ${textToCopy.substring(0, 30)}...`);
+                }).catch(err => {
+                    console.error('Could not copy text: ', err);
+                });
+            }
+        });
+    });
+
+</script>
+</body>
+</html>

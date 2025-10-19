@@ -1,7 +1,5 @@
 package org.example.bookvexebej2e.configs;
 
-// OpenApiConfig.java (using springdoc-openapi)
-
 import io.swagger.v3.core.converter.AnnotatedType;
 import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.core.converter.ResolvedSchema;
@@ -29,7 +27,7 @@ public class OpenApiConfig {
         // 2. Define the content for the error response (JSON media type)
         Content content = new Content().addMediaType("application/json", new MediaType().schema(resolvedSchema.schema));
 
-        // 3. Define the reusable 500 and 404 response objects
+        // 3. Define the reusable 401, 403, 404, and 500 response objects
         ApiResponse internalServerErrorResponse = new ApiResponse().description(
                 "Internal Server Error (e.g., unexpected exception)")
             .content(content);
@@ -37,6 +35,15 @@ public class OpenApiConfig {
         ApiResponse notFoundResponse = new ApiResponse().description(
                 "Resource Not Found (e.g., requested ID not found)")
             .content(content);
+
+        ApiResponse unauthorizedResponse = new ApiResponse().description(
+                "Unauthorized (Authentication required or invalid token)")
+            .content(content);
+
+        ApiResponse forbiddenResponse = new ApiResponse().description(
+                "Forbidden (Authenticated, but insufficient permissions)")
+            .content(content);
+
 
         // 4. Return the customizer implementation
         return openApi -> {
@@ -47,14 +54,24 @@ public class OpenApiConfig {
                     .forEach(operation -> {
                         ApiResponses responses = operation.getResponses();
 
-                        // Add 500 response if not already present
-                        if (responses.get("500") == null) {
-                            responses.addApiResponse("500", internalServerErrorResponse);
+                        // Add 401 response if not already present
+                        if (responses.get("401") == null) {
+                            responses.addApiResponse("401", unauthorizedResponse);
+                        }
+
+                        // Add 403 response if not already present
+                        if (responses.get("403") == null) {
+                            responses.addApiResponse("403", forbiddenResponse);
                         }
 
                         // Add 404 response if not already present
                         if (responses.get("404") == null) {
                             responses.addApiResponse("404", notFoundResponse);
+                        }
+
+                        // Add 500 response if not already present
+                        if (responses.get("500") == null) {
+                            responses.addApiResponse("500", internalServerErrorResponse);
                         }
                     }));
         };
