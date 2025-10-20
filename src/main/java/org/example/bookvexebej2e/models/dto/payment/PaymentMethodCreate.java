@@ -7,5 +7,5 @@ public class PaymentMethodCreate {
     private String code;
     private String name;
     private String description;
-    private Boolean isActive;
+    private Boolean isDeleted;
 }
