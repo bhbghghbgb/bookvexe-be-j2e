@@ -25,9 +25,6 @@ public class PaymentMethodDbModel extends BaseModel {
     @Column(length = 255, name = "description")
     private String description;
 
-    @Column
-    private Boolean isActive;
-
     @OneToMany(mappedBy = "method")
     private List<PaymentDbModel> payments;
 }
