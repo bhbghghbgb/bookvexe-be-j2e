@@ -6,29 +6,24 @@ import lombok.*;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "booking_seats")
+@Table(name = "bookingSeats")
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class BookingSeatDbModel {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "booking_seat_id")
-    private Integer bookingSeatId;
-
+@ToString
+public class BookingSeatDbModel extends BaseModel {
     @ManyToOne
-    @JoinColumn(name = "booking_id")
+    @JoinColumn(name = "bookingId")
     private BookingDbModel booking;
 
     @ManyToOne
-    @JoinColumn(name = "seat_id")
+    @JoinColumn(name = "seatId")
     private CarSeatDbModel seat;
 
-    @Column(name = "is_reserved")
-    private Boolean isReserved = true;
+    @Column(length = 20, name = "status")
+    private String status;
 
-    @Column(name = "price", nullable = false, precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2, name = "price")
     private BigDecimal price;
 }

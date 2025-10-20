@@ -27,19 +27,19 @@ public class SecurityConfig {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
         http.csrf(AbstractHttpConfigurer::disable); // Disable CSRF here
         http.authorizeHttpRequests(auth -> {
-            if (allowAllAdminAccess) {
-                auth.requestMatchers("/admin/**")
-                    .permitAll();
-            } else {
-                auth.requestMatchers("/admin/**")
-                    .hasRole("admin");
-            }
+            //            if (allowAllAdminAccess) {
+            //                auth.requestMatchers("/admin/**")
+            //                    .permitAll();
+            //            } else {
+            //                auth.requestMatchers("/admin/**")
+            //                    .hasRole("admin");
+            //            }
             auth.anyRequest()
                 .permitAll();
         });
 
-        http.oauth2ResourceServer(
-            oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
+        //        http.oauth2ResourceServer(
+        //            oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
 
         return http.build();
     }

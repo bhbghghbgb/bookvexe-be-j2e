@@ -1,29 +1,24 @@
 package org.example.bookvexebej2e.models.db;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.*;
 
 @Entity
-@Table(name = "role_user")
+@Table(name = "roleUser")
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class RoleUserDbModel {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Integer id;
-
+@ToString
+public class RoleUserDbModel extends BaseModel {
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private UserDbModel user;
-
-    @ManyToOne
-    @JoinColumn(name = "role_id")
+    @JoinColumn(name = "roleId")
     private RoleDbModel role;
 
-    @Column(name = "is_active")
-    private Boolean isActive = true;
+    @ManyToOne
+    @JoinColumn(name = "userId")
+    private UserDbModel user;
 }

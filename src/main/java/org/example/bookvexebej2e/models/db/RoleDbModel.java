@@ -1,33 +1,33 @@
 package org.example.bookvexebej2e.models.db;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "role")
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
-public class RoleDbModel {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Integer id;
-
-    @Column(name = "code", unique = true, nullable = false, length = 100)
+@ToString
+public class RoleDbModel extends BaseModel {
+    @Column(length = 100, unique = true, name = "code")
     private String code;
 
-    @Column(name = "name", length = 100)
+    @Column(length = 100, name = "name")
     private String name;
 
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    @Column(columnDefinition = "TEXT", name = "description")
+    private String description;
+
+    @OneToMany(mappedBy = "role")
+    private List<RolePermissionDbModel> rolePermissions;
+
+    @OneToMany(mappedBy = "role")
+    private List<RoleUserDbModel> roleUsers;
 }

@@ -2,46 +2,53 @@ package org.example.bookvexebej2e.models.db;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "bookings")
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
-public class BookingDbModel {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "booking_id")
-    private Integer bookingId;
+@ToString
+public class BookingDbModel extends BaseModel {
+
+    @Column(length = 255, name = "code")
+    private String code;
+
+    @Column(length = 255, name = "type")
+    private String type;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private UserDbModel user;
+    @JoinColumn(name = "customerId")
+    private CustomerDbModel customer;
 
     @ManyToOne
-    @JoinColumn(name = "trip_id")
+    @JoinColumn(name = "tripId")
     private TripDbModel trip;
 
-    @Column(name = "booking_status", nullable = false, length = 20)
-    private String bookingStatus = "pending";
+    @ManyToOne
+    @JoinColumn(name = "pickupStopId")
+    private TripStopDbModel pickupStop;
 
-    @Column(name = "total_price", nullable = false, precision = 10, scale = 2)
+    @ManyToOne
+    @JoinColumn(name = "dropoffStopId")
+    private TripStopDbModel dropoffStop;
+
+    @Column(length = 20, name = "bookingStatus")
+    private String bookingStatus = "PENDING";
+
+    @Column(precision = 10, scale = 2, name = "totalPrice")
     private BigDecimal totalPrice;
 
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    @OneToMany(mappedBy = "booking")
+    private List<BookingSeatDbModel> bookingSeats;
 
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @OneToOne(mappedBy = "booking")
+    private PaymentDbModel payment;
+
+    @OneToMany(mappedBy = "booking")
+    private List<NotificationDbModel> notifications;
 }

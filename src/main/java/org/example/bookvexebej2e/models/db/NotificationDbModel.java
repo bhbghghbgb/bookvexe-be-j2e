@@ -2,8 +2,6 @@ package org.example.bookvexebej2e.models.db;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -11,48 +9,38 @@ import java.time.LocalDateTime;
 @Table(name = "notifications")
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
-public class NotificationDbModel {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "notification_id")
-    private Integer notificationId;
-
+@ToString
+public class NotificationDbModel extends BaseModel {
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "userId")
     private UserDbModel user;
 
     @ManyToOne
-    @JoinColumn(name = "booking_id")
+    @JoinColumn(name = "bookingId")
     private BookingDbModel booking;
 
     @ManyToOne
-    @JoinColumn(name = "trip_id")
+    @JoinColumn(name = "tripId")
     private TripDbModel trip;
 
     @ManyToOne
-    @JoinColumn(name = "type_id")
+    @JoinColumn(name = "typeId")
     private NotificationTypeDbModel type;
 
-    @Column(name = "channel", nullable = false, length = 20)
-    private String channel = "email";
+    @Column(length = 20, name = "channel")
+    private String channel;
 
-    @Column(name = "title", nullable = false, length = 100)
+    @Column(length = 100, name = "title")
     private String title;
 
-    @Column(name = "message", nullable = false, columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", name = "message")
     private String message;
 
-    @Column(name = "is_sent")
-    private Boolean isSent = false;
+    @Column(name = "isSent")
+    private Boolean isSent;
 
-    @Column(name = "sent_at")
+    @Column(name = "sentAt")
     private LocalDateTime sentAt;
-
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
 }

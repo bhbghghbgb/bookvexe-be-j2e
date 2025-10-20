@@ -2,48 +2,30 @@ package org.example.bookvexebej2e.models.db;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "cars")
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
-public class CarDbModel {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "car_id")
-    private Integer carId;
-
+@ToString
+public class CarDbModel extends BaseModel {
     @ManyToOne
-    @JoinColumn(name = "owner_id")
-    private UserDbModel owner;
-
-    @ManyToOne
-    @JoinColumn(name = "car_type_id")
+    @JoinColumn(name = "carTypeId")
     private CarTypeDbModel carType;
 
-    @Column(name = "license_plate", unique = true, nullable = false, length = 20)
+    @Column(length = 20, unique = true, name = "licensePlate")
     private String licensePlate;
 
-    @Column(name = "seat_count", nullable = false)
-    private Integer seatCount;
+    @OneToMany(mappedBy = "car")
+    private List<CarSeatDbModel> carSeats;
 
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    @OneToMany(mappedBy = "car")
+    private List<CarEmployeeDbModel> carEmployees;
 
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @Column(name = "is_active", nullable = false)
-    private Boolean isActive;
+    @OneToMany(mappedBy = "car")
+    private List<TripCarDbModel> tripCars;
 }

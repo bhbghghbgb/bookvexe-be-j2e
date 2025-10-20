@@ -1,207 +1,382 @@
-CREATE TABLE `role` (
-  `id` int PRIMARY KEY AUTO_INCREMENT,
-  `code` varchar(100) UNIQUE NOT NULL,
-  `name` varchar(100)
+CREATE TABLE `role`
+(
+    `id`          varchar(255) PRIMARY KEY,
+    `code`        varchar(100) UNIQUE,
+    `name`        varchar(100),
+    `description` text,
+    `isDeleted`   bool,
+    `createdDate` datetime,
+    `createdBy`   varchar(255),
+    `updatedDate` datetime,
+    `updatedBy`   varchar(255)
 );
 
-CREATE TABLE `role_user` (
-  `id` int PRIMARY KEY AUTO_INCREMENT,
-  `user_id` int,
-  `role_id` int
+CREATE TABLE `rolePermission`
+(
+    `id`              varchar(255) PRIMARY KEY,
+    `roleId`          varchar(255),
+    `isCanRead`       bool,
+    `isCanCreate`     bool,
+    `isCanUpdate`     bool,
+    `isCanDelete`     bool,
+    `isCanActivate`   bool,
+    `isCanDeactivate` bool,
+    `isCanImport`     bool,
+    `isCanExport`     bool,
+    `isDeleted`       bool,
+    `createdDate`     datetime,
+    `createdBy`       varchar(255),
+    `updatedDate`     datetime,
+    `updatedBy`       varchar(255)
 );
 
-CREATE TABLE `role_permission` (
-  `role_id` int,
-  `canRead` boolean,
-  `canCreate` boolean,
-  `canUpdate` boolean,
-  `canDelete` boolean,
-  `canActivate` boolean,
-  `canDeactivate` boolean,
-  `canImport` boolean,
-  `canExport` boolean
+CREATE TABLE `users`
+(
+    `id`            varchar(255) PRIMARY KEY,
+    `username`      varchar(255),
+    `password`      varchar(255),
+    `isGoogle`      bool,
+    `googleAccount` varchar(255),
+    `roleId`        varchar(255),
+    `employeeId`    varchar(255),
+    `customerId`    varchar(255),
+    `isDeleted`     bool,
+    `createdDate`   datetime,
+    `createdBy`     varchar(255),
+    `updatedDate`   datetime,
+    `updatedBy`     varchar(255)
 );
 
-CREATE TABLE `users` (
-  `user_id` int PRIMARY KEY AUTO_INCREMENT,
-  `full_name` varchar(100) NOT NULL,
-  `email` varchar(100) UNIQUE NOT NULL,
-  `phone_number` varchar(15) UNIQUE NOT NULL,
-  `password_hash` varchar(255) NOT NULL,
-  `role_id` int,
-  `is_active` boolean DEFAULT true,
-  `created_at` datetime DEFAULT (CURRENT_TIMESTAMP),
-  `updated_at` datetime
+CREATE TABLE `employee`
+(
+    `id`          varchar(255) PRIMARY KEY,
+    `code`        varchar(255),
+    `name`        varchar(255),
+    `email`       varchar(100),
+    `phone`       varchar(15),
+    `description` text,
+    `isDeleted`   bool,
+    `createdDate` datetime,
+    `createdBy`   varchar(255),
+    `updatedDate` datetime,
+    `updatedBy`   varchar(255)
 );
 
-CREATE TABLE `password_reset_tokens` (
-  `token_id` int PRIMARY KEY AUTO_INCREMENT,
-  `user_id` int,
-  `token` varchar(255) UNIQUE NOT NULL,
-  `expires_at` datetime NOT NULL,
-  `created_at` datetime DEFAULT (CURRENT_TIMESTAMP)
+CREATE TABLE `customer`
+(
+    `id`             varchar(255) PRIMARY KEY,
+    `code`           varchar(255),
+    `name`           varchar(255),
+    `email`          varchar(100),
+    `phone`          varchar(15),
+    `customerTypeId` varchar(255),
+    `description`    text,
+    `isDeleted`      bool,
+    `createdDate`    datetime,
+    `createdBy`      varchar(255),
+    `updatedDate`    datetime,
+    `updatedBy`      varchar(255)
 );
 
-CREATE TABLE `user_sessions` (
-  `session_id` int PRIMARY KEY AUTO_INCREMENT,
-  `user_id` int,
-  `access_token` varchar(255) UNIQUE NOT NULL,
-  `created_at` datetime DEFAULT (CURRENT_TIMESTAMP),
-  `expires_at` datetime NOT NULL,
-  `revoked` boolean DEFAULT false
+CREATE TABLE `customerType`
+(
+    `id`          varchar(255) PRIMARY KEY,
+    `code`        varchar(255),
+    `name`        varchar(255),
+    `description` text,
+    `isDeleted`   bool,
+    `createdDate` datetime,
+    `createdBy`   varchar(255),
+    `updatedDate` datetime,
+    `updatedBy`   varchar(255)
 );
 
-CREATE TABLE `routes` (
-  `route_id` int PRIMARY KEY AUTO_INCREMENT,
-  `start_location` varchar(100) NOT NULL,
-  `end_location` varchar(100) NOT NULL,
-  `distance_km` decimal(6,2),
-  `estimated_duration` int,
-  `created_at` datetime DEFAULT (CURRENT_TIMESTAMP),
-  `updated_at` datetime
+CREATE TABLE `carTypes`
+(
+    `id`          varchar(255) PRIMARY KEY,
+    `code`        varchar(255),
+    `name`        varchar(255),
+    `description` varchar(255),
+    `seatCount`   int,
+    `isDeleted`   bool,
+    `createdDate` datetime,
+    `createdBy`   varchar(255),
+    `updatedDate` datetime,
+    `updatedBy`   varchar(255)
 );
 
-CREATE TABLE `car_types` (
-  `car_type_id` int PRIMARY KEY AUTO_INCREMENT,
-  `type_name` varchar(50) UNIQUE NOT NULL,
-  `description` varchar(255)
+CREATE TABLE `cars`
+(
+    `id`           varchar(255) PRIMARY KEY,
+    `carTypeId`    varchar(255),
+    `licensePlate` varchar(20) UNIQUE,
+    `isDeleted`    bool,
+    `createdDate`  datetime,
+    `createdBy`    varchar(255),
+    `updatedDate`  datetime,
+    `updatedBy`    varchar(255)
 );
 
-CREATE TABLE `cars` (
-  `car_id` int PRIMARY KEY AUTO_INCREMENT,
-  `owner_id` int,
-  `car_type_id` int,
-  `license_plate` varchar(20) UNIQUE NOT NULL,
-  `seat_count` int NOT NULL,
-  `created_at` datetime DEFAULT (CURRENT_TIMESTAMP),
-  `updated_at` datetime
+CREATE TABLE `carSeats`
+(
+    `id`           varchar(255) PRIMARY KEY,
+    `carId`        varchar(255),
+    `seatNumber`   varchar(10),
+    `seatPosition` varchar(50),
+    `isDeleted`    bool,
+    `createdDate`  datetime,
+    `createdBy`    varchar(255),
+    `updatedDate`  datetime,
+    `updatedBy`    varchar(255)
 );
 
-CREATE TABLE `trips` (
-  `trip_id` int PRIMARY KEY AUTO_INCREMENT,
-  `route_id` int,
-  `bus_id` int,
-  `departure_time` datetime NOT NULL,
-  `price` decimal(10,2) NOT NULL,
-  `available_seats` int NOT NULL,
-  `created_at` datetime DEFAULT (CURRENT_TIMESTAMP),
-  `updated_at` datetime
+CREATE TABLE `carEmployees`
+(
+    `id`          varchar(255) PRIMARY KEY,
+    `carId`       varchar(255),
+    `employeeId`  varchar(255),
+    `isDeleted`   bool,
+    `createdDate` datetime,
+    `createdBy`   varchar(255),
+    `updatedDate` datetime,
+    `updatedBy`   varchar(255)
 );
 
-CREATE TABLE `car_seats` (
-  `seat_id` int PRIMARY KEY AUTO_INCREMENT,
-  `car_id` int,
-  `seat_number` varchar(10) NOT NULL,
-  `seat_position` varchar(50),
-  `is_active` boolean DEFAULT true
+CREATE TABLE `routes`
+(
+    `id`                varchar(255) PRIMARY KEY,
+    `startLocation`     varchar(100),
+    `endLocation`       varchar(100),
+    `distanceKm`        decimal(6, 2),
+    `estimatedDuration` int,
+    `isDeleted`         bool,
+    `createdDate`       datetime,
+    `createdBy`         varchar(255),
+    `updatedDate`       datetime,
+    `updatedBy`         varchar(255)
 );
 
-CREATE TABLE `bookings` (
-  `booking_id` int PRIMARY KEY AUTO_INCREMENT,
-  `user_id` int,
-  `trip_id` int,
-  `booking_status` varchar(20) NOT NULL DEFAULT 'pending',
-  `total_price` decimal(10,2) NOT NULL,
-  `created_at` datetime DEFAULT (CURRENT_TIMESTAMP),
-  `updated_at` datetime
+CREATE TABLE `trips`
+(
+    `id`             varchar(255) PRIMARY KEY,
+    `routeId`        varchar(255),
+    `departureTime`  datetime,
+    `price`          decimal(10, 2),
+    `availableSeats` int,
+    `isDeleted`      bool,
+    `createdDate`    datetime,
+    `createdBy`      varchar(255),
+    `updatedDate`    datetime,
+    `updatedBy`      varchar(255)
 );
 
-CREATE TABLE `booking_seats` (
-  `booking_seat_id` int PRIMARY KEY AUTO_INCREMENT,
-  `booking_id` int,
-  `seat_id` int,
-  `is_reserved` boolean DEFAULT true,
-  `price` decimal(10,2) NOT NULL
+CREATE TABLE `tripStops`
+(
+    `id`          varchar(255) PRIMARY KEY,
+    `tripId`      varchar(255),
+    `stopType`    varchar(10),
+    `location`    varchar(255),
+    `orderIndex`  int,
+    `isDeleted`   bool,
+    `createdDate` datetime,
+    `createdBy`   varchar(255),
+    `updatedDate` datetime,
+    `updatedBy`   varchar(255)
 );
 
-CREATE TABLE `payment_methods` (
-  `method_id` int PRIMARY KEY AUTO_INCREMENT,
-  `method_name` varchar(50) UNIQUE NOT NULL,
-  `description` varchar(255),
-  `is_active` boolean DEFAULT true
+CREATE TABLE `tripCars`
+(
+    `id`             varchar(255) PRIMARY KEY,
+    `tripId`         varchar(255),
+    `carId`          varchar(255),
+    `price`          decimal(10, 2),
+    `availableSeats` int,
+    `isDeleted`      bool,
+    `createdDate`    datetime,
+    `createdBy`      varchar(255),
+    `updatedDate`    datetime,
+    `updatedBy`      varchar(255)
 );
 
-CREATE TABLE `payments` (
-  `payment_id` int PRIMARY KEY AUTO_INCREMENT,
-  `booking_id` int,
-  `method_id` int,
-  `amount` decimal(10,2) NOT NULL,
-  `status` varchar(20) NOT NULL DEFAULT 'pending',
-  `transaction_code` varchar(100),
-  `paid_at` datetime,
-  `created_at` datetime DEFAULT (CURRENT_TIMESTAMP),
-  `updated_at` datetime
+CREATE TABLE `bookings`
+(
+    `id`            varchar(255) PRIMARY KEY,
+    `code`          varchar(255),
+    `type`          varchar(255),
+    `userId`        varchar(255),
+    `tripId`        varchar(255),
+    `pickupStopId`  varchar(255),
+    `dropoffStopId` varchar(255),
+    `bookingStatus` varchar(20),
+    `totalPrice`    decimal(10, 2),
+    `isDeleted`     bool,
+    `createdDate`   datetime,
+    `createdBy`     varchar(255),
+    `updatedDate`   datetime,
+    `updatedBy`     varchar(255)
 );
 
-CREATE TABLE `invoices` (
-  `invoice_id` int PRIMARY KEY AUTO_INCREMENT,
-  `payment_id` int,
-  `invoice_number` varchar(50) UNIQUE NOT NULL,
-  `file_url` varchar(255),
-  `issued_at` datetime DEFAULT (CURRENT_TIMESTAMP),
-  `created_at` datetime DEFAULT (CURRENT_TIMESTAMP)
+CREATE TABLE `bookingSeats`
+(
+    `id`          varchar(255) PRIMARY KEY,
+    `bookingId`   varchar(255),
+    `seatId`      varchar(255),
+    `status`      varchar(20),
+    `price`       decimal(10, 2),
+    `isDeleted`   bool,
+    `createdDate` datetime,
+    `createdBy`   varchar(255),
+    `updatedDate` datetime,
+    `updatedBy`   varchar(255)
 );
 
-CREATE TABLE `notification_types` (
-  `type_id` int PRIMARY KEY AUTO_INCREMENT,
-  `type_name` varchar(50) UNIQUE NOT NULL,
-  `description` varchar(255)
+CREATE TABLE `paymentMethods`
+(
+    `id`          varchar(255) PRIMARY KEY,
+    `code`        varchar(255) UNIQUE,
+    `name`        varchar(50) UNIQUE,
+    `description` varchar(255),
+    `isActive`    bool,
+    `isDeleted`   bool,
+    `createdDate` datetime,
+    `createdBy`   varchar(255),
+    `updatedDate` datetime,
+    `updatedBy`   varchar(255)
 );
 
-CREATE TABLE `notifications` (
-  `notification_id` int PRIMARY KEY AUTO_INCREMENT,
-  `user_id` int,
-  `booking_id` int,
-  `trip_id` int,
-  `type_id` int,
-  `channel` varchar(20) NOT NULL DEFAULT 'email',
-  `title` varchar(100) NOT NULL,
-  `message` text NOT NULL,
-  `is_sent` boolean DEFAULT false,
-  `sent_at` datetime,
-  `created_at` datetime DEFAULT (CURRENT_TIMESTAMP)
+CREATE TABLE `payments`
+(
+    `id`              varchar(255) PRIMARY KEY,
+    `bookingId`       varchar(255),
+    `methodId`        varchar(255),
+    `amount`          decimal(10, 2),
+    `status`          varchar(20),
+    `transactionCode` varchar(100),
+    `paidAt`          datetime,
+    `isDeleted`       bool,
+    `createdDate`     datetime,
+    `createdBy`       varchar(255),
+    `updatedDate`     datetime,
+    `updatedBy`       varchar(255)
 );
 
-ALTER TABLE `role_user` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`);
+CREATE TABLE `invoices`
+(
+    `id`            varchar(255) PRIMARY KEY,
+    `paymentId`     varchar(255),
+    `invoiceNumber` varchar(50) UNIQUE,
+    `fileUrl`       varchar(255),
+    `issuedAt`      datetime,
+    `isDeleted`     bool,
+    `createdDate`   datetime,
+    `createdBy`     varchar(255),
+    `updatedDate`   datetime,
+    `updatedBy`     varchar(255)
+);
 
-ALTER TABLE `role_user` ADD FOREIGN KEY (`role_id`) REFERENCES `role` (`id`);
+CREATE TABLE `notificationTypes`
+(
+    `id`          varchar(255) PRIMARY KEY,
+    `code`        varchar(255) UNIQUE,
+    `name`        varchar(50) UNIQUE,
+    `description` varchar(255),
+    `isDeleted`   bool,
+    `createdDate` datetime,
+    `createdBy`   varchar(255),
+    `updatedDate` datetime,
+    `updatedBy`   varchar(255)
+);
 
-ALTER TABLE `role_permission` ADD FOREIGN KEY (`role_id`) REFERENCES `role` (`id`);
+CREATE TABLE `notifications`
+(
+    `id`          varchar(255) PRIMARY KEY,
+    `userId`      varchar(255),
+    `bookingId`   varchar(255),
+    `tripId`      varchar(255),
+    `typeId`      varchar(255),
+    `channel`     varchar(20),
+    `title`       varchar(100),
+    `message`     text,
+    `isSent`      bool,
+    `sentAt`      datetime,
+    `isDeleted`   bool,
+    `createdDate` datetime,
+    `createdBy`   varchar(255),
+    `updatedDate` datetime,
+    `updatedBy`   varchar(255)
+);
 
-ALTER TABLE `users` ADD FOREIGN KEY (`role_id`) REFERENCES `role` (`id`);
+ALTER TABLE `users`
+    ADD FOREIGN KEY (`roleId`) REFERENCES `role` (`id`);
 
-ALTER TABLE `password_reset_tokens` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`);
+ALTER TABLE `users`
+    ADD FOREIGN KEY (`employeeId`) REFERENCES `employee` (`id`);
 
-ALTER TABLE `user_sessions` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`);
+ALTER TABLE `users`
+    ADD FOREIGN KEY (`customerId`) REFERENCES `customer` (`id`);
 
-ALTER TABLE `cars` ADD FOREIGN KEY (`owner_id`) REFERENCES `users` (`user_id`);
+ALTER TABLE `carEmployees`
+    ADD FOREIGN KEY (`employeeId`) REFERENCES `employee` (`id`);
 
-ALTER TABLE `cars` ADD FOREIGN KEY (`car_type_id`) REFERENCES `car_types` (`car_type_id`);
+ALTER TABLE `carEmployees`
+    ADD FOREIGN KEY (`carId`) REFERENCES `cars` (`id`);
 
-ALTER TABLE `trips` ADD FOREIGN KEY (`route_id`) REFERENCES `routes` (`route_id`);
+ALTER TABLE `customer`
+    ADD FOREIGN KEY (`customerTypeId`) REFERENCES `customerType` (`id`);
 
-ALTER TABLE `trips` ADD FOREIGN KEY (`bus_id`) REFERENCES `cars` (`car_id`);
+ALTER TABLE `cars`
+    ADD FOREIGN KEY (`carTypeId`) REFERENCES `carTypes` (`id`);
 
-ALTER TABLE `car_seats` ADD FOREIGN KEY (`car_id`) REFERENCES `cars` (`car_id`);
+ALTER TABLE `carSeats`
+    ADD FOREIGN KEY (`carId`) REFERENCES `cars` (`id`);
 
-ALTER TABLE `bookings` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`);
+ALTER TABLE `trips`
+    ADD FOREIGN KEY (`routeId`) REFERENCES `routes` (`id`);
 
-ALTER TABLE `bookings` ADD FOREIGN KEY (`trip_id`) REFERENCES `trips` (`trip_id`);
+ALTER TABLE `tripCars`
+    ADD FOREIGN KEY (`tripId`) REFERENCES `trips` (`id`);
 
-ALTER TABLE `booking_seats` ADD FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`booking_id`);
+ALTER TABLE `tripCars`
+    ADD FOREIGN KEY (`carId`) REFERENCES `cars` (`id`);
 
-ALTER TABLE `booking_seats` ADD FOREIGN KEY (`seat_id`) REFERENCES `car_seats` (`seat_id`);
+ALTER TABLE `tripStops`
+    ADD FOREIGN KEY (`tripId`) REFERENCES `trips` (`id`);
 
-ALTER TABLE `payments` ADD FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`booking_id`);
+ALTER TABLE `bookings`
+    ADD FOREIGN KEY (`userId`) REFERENCES `users` (`id`);
 
-ALTER TABLE `payments` ADD FOREIGN KEY (`method_id`) REFERENCES `payment_methods` (`method_id`);
+ALTER TABLE `bookings`
+    ADD FOREIGN KEY (`tripId`) REFERENCES `trips` (`id`);
 
-ALTER TABLE `invoices` ADD FOREIGN KEY (`payment_id`) REFERENCES `payments` (`payment_id`);
+ALTER TABLE `bookings`
+    ADD FOREIGN KEY (`pickupStopId`) REFERENCES `tripStops` (`id`);
 
-ALTER TABLE `notifications` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`);
+ALTER TABLE `bookings`
+    ADD FOREIGN KEY (`dropoffStopId`) REFERENCES `tripStops` (`id`);
 
-ALTER TABLE `notifications` ADD FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`booking_id`);
+ALTER TABLE `bookingSeats`
+    ADD FOREIGN KEY (`bookingId`) REFERENCES `bookings` (`id`);
 
-ALTER TABLE `notifications` ADD FOREIGN KEY (`trip_id`) REFERENCES `trips` (`trip_id`);
+ALTER TABLE `bookingSeats`
+    ADD FOREIGN KEY (`seatId`) REFERENCES `carSeats` (`id`);
 
-ALTER TABLE `notifications` ADD FOREIGN KEY (`type_id`) REFERENCES `notification_types` (`type_id`);
+ALTER TABLE `payments`
+    ADD FOREIGN KEY (`bookingId`) REFERENCES `bookings` (`id`);
+
+ALTER TABLE `payments`
+    ADD FOREIGN KEY (`methodId`) REFERENCES `paymentMethods` (`id`);
+
+ALTER TABLE `invoices`
+    ADD FOREIGN KEY (`paymentId`) REFERENCES `payments` (`id`);
+
+ALTER TABLE `notifications`
+    ADD FOREIGN KEY (`userId`) REFERENCES `users` (`id`);
+
+ALTER TABLE `notifications`
+    ADD FOREIGN KEY (`bookingId`) REFERENCES `bookings` (`id`);
+
+ALTER TABLE `notifications`
+    ADD FOREIGN KEY (`tripId`) REFERENCES `trips` (`id`);
+
+ALTER TABLE `notifications`
+    ADD FOREIGN KEY (`typeId`) REFERENCES `notificationTypes` (`id`);

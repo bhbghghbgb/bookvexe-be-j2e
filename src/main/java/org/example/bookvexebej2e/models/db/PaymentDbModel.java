@@ -2,9 +2,6 @@ package org.example.bookvexebej2e.models.db;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -13,41 +10,30 @@ import java.time.LocalDateTime;
 @Table(name = "payments")
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
-public class PaymentDbModel {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "payment_id")
-    private Integer paymentId;
-
-    @ManyToOne
-    @JoinColumn(name = "booking_id")
+@ToString
+public class PaymentDbModel extends BaseModel {
+    @OneToOne
+    @JoinColumn(name = "bookingId")
     private BookingDbModel booking;
 
     @ManyToOne
-    @JoinColumn(name = "method_id")
+    @JoinColumn(name = "methodId")
     private PaymentMethodDbModel method;
 
-    @Column(name = "amount", nullable = false, precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2, name = "amount")
     private BigDecimal amount;
 
-    @Column(name = "status", nullable = false, length = 20)
-    private String status = "pending";
+    @Column(length = 20, name = "status")
+    private String status;
 
-    @Column(name = "transaction_code", length = 100)
+    @Column(length = 100, name = "transactionCode")
     private String transactionCode;
 
-    @Column(name = "paid_at")
+    @Column(name = "paidAt")
     private LocalDateTime paidAt;
 
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @OneToOne(mappedBy = "payment")
+    private InvoiceDbModel invoice;
 }

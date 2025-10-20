@@ -1,24 +1,33 @@
 package org.example.bookvexebej2e.models.db;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
-@Table(name = "car_types")
+@Table(name = "carTypes")
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class CarTypeDbModel {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "car_type_id")
-    private Integer carTypeId;
+@ToString
+public class CarTypeDbModel extends BaseModel {
+    @Column(length = 255, name = "code")
+    private String code;
 
-    @Column(name = "type_name", unique = true, nullable = false, length = 50)
-    private String typeName;
+    @Column(length = 255, name = "name")
+    private String name;
 
-    @Column(name = "description", length = 255)
+    @Column(length = 255, name = "description")
     private String description;
+
+    @Column(name = "seatCount")
+    private Integer seatCount;
+
+    @OneToMany(mappedBy = "carType")
+    private List<CarDbModel> cars;
 }

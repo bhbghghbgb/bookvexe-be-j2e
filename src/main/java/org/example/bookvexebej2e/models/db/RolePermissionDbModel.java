@@ -4,43 +4,38 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "role_permission")
+@Table(name = "rolePermission")
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class RolePermissionDbModel {
-    @Id
-    @Column(name = "role_id")
-    private Integer roleId;
-
-    @OneToOne
-    @MapsId
-    @JoinColumn(name = "role_id")
+@ToString
+public class RolePermissionDbModel extends BaseModel {
+    @ManyToOne
+    @JoinColumn(name = "roleId")
     private RoleDbModel role;
 
-    @Column(name = "canRead")
-    private Boolean canRead;
+    @Column(length = 100, name = "isCanRead")
+    private Boolean isCanRead;
 
-    @Column(name = "canCreate")
-    private Boolean canCreate;
+    @Column(length = 100, name = "isCanCreate")
+    private Boolean isCanCreate;
 
-    @Column(name = "canUpdate")
-    private Boolean canUpdate;
+    @Column(length = 100, name = "isCanUpdate")
+    private Boolean isCanUpdate;
 
-    @Column(name = "canDelete")
-    private Boolean canDelete;
+    @Column(length = 100, name = "isCanDelete")
+    private Boolean isCanDelete;
 
-    @Column(name = "canActivate")
-    private Boolean canActivate;
+    @Column(length = 100, name = "isCanActivate")
+    private Boolean isCanActivate;
 
-    @Column(name = "canDeactivate")
-    private Boolean canDeactivate;
+    @Column(length = 100, name = "isCanDeactivate")
+    private Boolean isCanDeactivate;
 
-    @Column(name = "canImport")
-    private Boolean canImport;
+    @Column(length = 100, name = "isCanImport")
+    private Boolean isCanImport;
 
-    @Column(name = "canExport")
-    private Boolean canExport;
+    @Column(length = 100, name = "isCanExport")
+    private Boolean isCanExport;
 }
