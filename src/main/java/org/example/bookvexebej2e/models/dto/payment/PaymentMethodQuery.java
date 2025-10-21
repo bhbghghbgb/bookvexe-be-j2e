@@ -9,5 +9,5 @@ import org.example.bookvexebej2e.models.dto.base.BasePageableQuery;
 public class PaymentMethodQuery extends BasePageableQuery {
     private String code;
     private String name;
-    private Boolean isActive;
+    private Boolean isDeleted;
 }

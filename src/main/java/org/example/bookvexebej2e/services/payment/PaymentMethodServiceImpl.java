@@ -1,17 +1,11 @@
 package org.example.bookvexebej2e.services.payment;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.PaymentMethodMapper;
 import org.example.bookvexebej2e.models.db.PaymentMethodDbModel;
-import org.example.bookvexebej2e.models.dto.payment.PaymentMethodCreate;
-import org.example.bookvexebej2e.models.dto.payment.PaymentMethodQuery;
-import org.example.bookvexebej2e.models.dto.payment.PaymentMethodResponse;
-import org.example.bookvexebej2e.models.dto.payment.PaymentMethodSelectResponse;
-import org.example.bookvexebej2e.models.dto.payment.PaymentMethodUpdate;
+import org.example.bookvexebej2e.models.dto.payment.*;
 import org.example.bookvexebej2e.repositories.payment.PaymentMethodRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,8 +14,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -34,8 +29,8 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     public List<PaymentMethodResponse> findAll() {
         List<PaymentMethodDbModel> entities = paymentMethodRepository.findAllNotDeleted();
         return entities.stream()
-                .map(paymentMethodMapper::toResponse)
-                .toList();
+            .map(paymentMethodMapper::toResponse)
+            .toList();
     }
 
     @Override
@@ -48,8 +43,8 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
 
     @Override
     public PaymentMethodResponse findById(UUID id) {
-        PaymentMethodDbModel entity = paymentMethodRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new ResourceNotFoundException(PaymentMethodDbModel.class, id));
+        PaymentMethodDbModel entity = paymentMethodRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(PaymentMethodDbModel.class, id));
         return paymentMethodMapper.toResponse(entity);
     }
 
@@ -59,7 +54,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
         entity.setCode(createDto.getCode());
         entity.setName(createDto.getName());
         entity.setDescription(createDto.getDescription());
-        entity.setIsActive(createDto.getIsActive());
+        entity.setIsDeleted(createDto.getIsDeleted());
 
         PaymentMethodDbModel savedEntity = paymentMethodRepository.save(entity);
         return paymentMethodMapper.toResponse(savedEntity);
@@ -68,12 +63,12 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     @Override
     public PaymentMethodResponse update(UUID id, PaymentMethodUpdate updateDto) {
         PaymentMethodDbModel entity = paymentMethodRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new ResourceNotFoundException(PaymentMethodDbModel.class, id));
+            .orElseThrow(() -> new ResourceNotFoundException(PaymentMethodDbModel.class, id));
 
         entity.setCode(updateDto.getCode());
         entity.setName(updateDto.getName());
         entity.setDescription(updateDto.getDescription());
-        entity.setIsActive(updateDto.getIsActive());
+        entity.setIsDeleted(updateDto.getIsDeleted());
 
         PaymentMethodDbModel updatedEntity = paymentMethodRepository.save(entity);
         return paymentMethodMapper.toResponse(updatedEntity);
@@ -87,25 +82,22 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     @Override
     public void activate(UUID id) {
         PaymentMethodDbModel entity = paymentMethodRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(PaymentMethodDbModel.class, id));
+            .orElseThrow(() -> new ResourceNotFoundException(PaymentMethodDbModel.class, id));
         entity.setIsDeleted(false);
         paymentMethodRepository.save(entity);
     }
 
     @Override
     public void deactivate(UUID id) {
-        PaymentMethodDbModel entity = paymentMethodRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(PaymentMethodDbModel.class, id));
-        entity.setIsDeleted(true);
-        paymentMethodRepository.save(entity);
+        delete(id);
     }
 
     @Override
     public List<PaymentMethodSelectResponse> findAllForSelect() {
         List<PaymentMethodDbModel> entities = paymentMethodRepository.findAllNotDeleted();
         return entities.stream()
-                .map(paymentMethodMapper::toSelectResponse)
-                .toList();
+            .map(paymentMethodMapper::toSelectResponse)
+            .toList();
     }
 
     @Override
@@ -116,23 +108,23 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
         return entities.map(paymentMethodMapper::toSelectResponse);
     }
 
+
     private Specification<PaymentMethodDbModel> buildSpecification(PaymentMethodQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getCode() != null && !query.getCode()
-                    .isEmpty()) {
+                .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("code")), "%" + query.getCode()
-                        .toLowerCase() + "%"));
+                    .toLowerCase() + "%"));
             }
             if (query.getName() != null && !query.getName()
-                    .isEmpty()) {
+                .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("name")), "%" + query.getName()
-                        .toLowerCase() + "%"));
+                    .toLowerCase() + "%"));
             }
-            if (query.getIsActive() != null) {
-                predicates.add(cb.equal(root.get("isActive"), query.getIsActive()));
+            if (query.getIsDeleted() != null) {
+                predicates.add(cb.equal(root.get("isDeleted"), query.getIsDeleted()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

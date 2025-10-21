@@ -1,19 +1,23 @@
 package org.example.bookvexebej2e.models.dto.payment;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.example.bookvexebej2e.models.dto.base.BasePermissionResponse;
 import org.example.bookvexebej2e.models.dto.booking.BookingResponse;
+import org.example.bookvexebej2e.models.dto.invoice.InvoiceResponse;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
-public class PaymentResponse extends BasePermissionResponse {
-    private UUID id;
+public class PaymentResponse {
+    @JsonIgnoreProperties("payment")
     private BookingResponse booking;
+
+    @JsonIgnoreProperties("payment")
+    private InvoiceResponse invoice;
+
+    private UUID id;
     private PaymentMethodResponse method;
     private BigDecimal amount;
     private String status;
@@ -22,13 +26,4 @@ public class PaymentResponse extends BasePermissionResponse {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private Boolean isDeleted;
-
-    public PaymentResponse() {
-        super();
-    }
-
-    public void setIsDeleted(Boolean isDeleted) {
-        this.isDeleted = isDeleted;
-        setPermissionsByDeletedStatus(isDeleted);
-    }
 }
