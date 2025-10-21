@@ -9,8 +9,8 @@ spring:
   application:
     name: bookvexe-be-j2e
 
-  config:
-    import: optional:classpath:application-oauth.yml
+#  config:
+#    import: optional:classpath:application-oauth.yml
 
   datasource:
     url: jdbc:mysql://localhost:3306/bookvexedb_j2e

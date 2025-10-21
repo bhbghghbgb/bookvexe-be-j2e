@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.services.user;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.configs.SecurityUtils;
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.UserMapper;
 import org.example.bookvexebej2e.models.db.CustomerDbModel;
@@ -32,6 +33,7 @@ public class UserServiceImpl implements UserService {
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final SecurityUtils securityUtils;
 
     @Override
     public List<UserResponse> findAll() {
@@ -54,6 +56,22 @@ public class UserServiceImpl implements UserService {
         UserDbModel entity = userRepository.findByIdAndNotDeleted(id)
             .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, id));
         return userMapper.toResponse(entity);
+    }
+
+    /**
+     * Retrieves the authenticated user's details and maps them to a UserResponse DTO.
+     *
+     * @return UserResponse DTO of the currently authenticated user.
+     * @throws ResourceNotFoundException if the user is not found (should not happen after auth).
+     */
+    public UserResponse getCurrentUser() {
+        UserDbModel currentUserEntity = securityUtils.getCurrentUserEntity();
+
+        if (currentUserEntity == null) {
+            throw new ResourceNotFoundException(UserDbModel.class, "Authenticated user not found.");
+        }
+
+        return userMapper.toResponse(currentUserEntity);
     }
 
     @Override

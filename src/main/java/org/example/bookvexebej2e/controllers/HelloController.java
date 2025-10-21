@@ -1,5 +1,8 @@
 package org.example.bookvexebej2e.controllers;
 
+import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.models.dto.user.UserResponse;
+import org.example.bookvexebej2e.services.user.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -11,7 +14,11 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@RequiredArgsConstructor
 public class HelloController {
+
+    private final UserService userService;
+
     @GetMapping("/hello")
     public Map<String, String> hello() {
         return Map.of("message", "Hello World");
@@ -28,5 +35,10 @@ public class HelloController {
             .stream()
             .map(GrantedAuthority::getAuthority)
             .toList();
+    }
+
+    @GetMapping("/me")
+    public UserResponse me() {
+        return userService.getCurrentUser();
     }
 }
