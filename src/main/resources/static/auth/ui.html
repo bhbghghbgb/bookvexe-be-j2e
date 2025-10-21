@@ -130,6 +130,11 @@
             <h4>Token Status Message:</h4>
             <p id="statusMessage"></p>
         </div>
+
+        <div class="token-section">
+            <h4>Authenticated User Data (/me):</h4>
+            <pre id="meDataValue"></pre>
+        </div>
     </div>
 </div>
 
@@ -178,7 +183,43 @@
             statusMessage.className = "error";
             displayDiv.style.display = 'none';
         }
+
+        if (accessToken) {
+            fetchMeData(accessToken);
+        } else {
+            document.getElementById('meDataValue').textContent = "N/A (Access Token Missing)";
+        }
     }
+
+    async function fetchMeData(accessToken) {
+        const meDataValue = document.getElementById('meDataValue');
+        meDataValue.textContent = 'Fetching /me data...';
+
+        try {
+            const response = await fetch('/me', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken
+                }
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Failed to fetch /me: ${response.status} - ${errorText.substring(0, 100)}...`);
+            }
+
+            const data = await response.json();
+            meDataValue.textContent = JSON.stringify(data, null, 2);
+
+        } catch (error) {
+            meDataValue.textContent = `Error fetching /me: ${error.message}`;
+            meDataValue.className = 'error';
+            console.error('Me Data Error:', error);
+        }
+    }
+
+    // And ensure that the existing LOGIN and REFRESH handlers call updateTokenDisplay(data.accessToken, data.refreshToken)
+    // upon success, which will then trigger fetchMeData().
 
     // --- Form Submission Handlers ---
 
