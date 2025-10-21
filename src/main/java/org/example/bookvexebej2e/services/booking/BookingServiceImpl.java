@@ -166,7 +166,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingSelectResponse> findAllForSelect() {
-        List<BookingDbModel> entities = bookingRepository.findAllNotDeleted();
+        List<BookingDbModel> entities = bookingRepository.findAllNotDeletedWithCustomer();
         return entities.stream()
                 .map(bookingMapper::toSelectResponse)
                 .toList();

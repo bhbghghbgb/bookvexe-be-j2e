@@ -89,4 +89,18 @@ public class BookingRepositoryImpl implements BookingRepositoryCustom {
 
         return cb.or(predicates.toArray(new Predicate[0]));
     }
+
+    public List<BookingDbModel> findAllNotDeletedWithCustomer() {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<BookingDbModel> query = cb.createQuery(BookingDbModel.class);
+        Root<BookingDbModel> root = query.from(BookingDbModel.class);
+
+        // JOIN FETCH customer
+        root.fetch("customer", JoinType.LEFT);
+
+        // WHERE deleted = false
+        query.select(root).orderBy(cb.desc(root.get("createdDate")));
+
+        return entityManager.createQuery(query).getResultList();
+    }
 }
