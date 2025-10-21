@@ -211,7 +211,6 @@ CREATE TABLE payment_methods
     code          VARCHAR(255) NULL,
     name          VARCHAR(50)  NULL,
     `description` VARCHAR(255) NULL,
-    is_active     BIT(1)       NULL,
     CONSTRAINT pk_paymentmethods PRIMARY KEY (uuid)
 );
 
