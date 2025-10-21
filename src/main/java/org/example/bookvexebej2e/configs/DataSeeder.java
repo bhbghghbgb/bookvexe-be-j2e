@@ -54,6 +54,7 @@ public class DataSeeder {
             if (existingUser.isEmpty()) {
                 log.info("No 'admin' user found. Creating default administrator account.");
 
+
                 UserDbModel adminUser = new UserDbModel();
                 adminUser.setUsername(DEFAULT_USERNAME);
                 adminUser.setPassword(passwordEncoder.encode(DEFAULT_PASSWORD));
@@ -63,14 +64,20 @@ public class DataSeeder {
 
                 // Assign the ADMIN role
                 try {
-                    RoleUserDbModel roleUser = new RoleUserDbModel();
-                    roleUser.setUser(savedUser);
-                    roleUser.setRole(adminRole);
-                    roleUserRepository.save(roleUser);
+                    // Check if the association already exists
+                    Optional<RoleUserDbModel> existingAssociation = roleUserRepository.findByUserIdAndRoleId(
+                        savedUser.getId(), adminRole.getId());
+                    if (existingAssociation.isEmpty()) {
+                        RoleUserDbModel roleUser = new RoleUserDbModel();
+                        roleUser.setUser(savedUser);
+                        roleUser.setRole(adminRole);
+                        roleUserRepository.save(roleUser);
 
-                    log.info(
-                        "Default administrator account created successfully: " + DEFAULT_USERNAME + "/" + DEFAULT_PASSWORD);
-
+                        log.info(
+                            "Default administrator account created successfully: " + DEFAULT_USERNAME + "/" + DEFAULT_PASSWORD);
+                    } else {
+                        log.info("Default user already has ADMIN role association. Skipping assignment.");
+                    }
                 } catch (Exception e) {
                     log.error("Failed to assign ADMIN role to default user: {}", e.getMessage());
                 }

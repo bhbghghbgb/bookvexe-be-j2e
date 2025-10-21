@@ -15,6 +15,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -30,6 +31,7 @@ public class SecurityConfig {
 
     private final AuthUserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final AuthenticationEntryPoint unauthorizedHandler;
     private final PasswordEncoder passwordEncoder;
 
     @Value("${security.admin.allow-all:false}")
@@ -67,6 +69,8 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            // EXPLICITLY SET THE ENTRY POINT TO RETURN 401 ON AUTH FAILURE
+            .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(unauthorizedHandler))
 
             // 1. CONDITIONAL AUTHORIZATION LOGIC
             .authorizeHttpRequests(authz -> {
@@ -78,7 +82,7 @@ public class SecurityConfig {
                     // PROD MODE: Standard authorization rules
                     authz
                         // Permit public/auth/swagger/root
-                        .requestMatchers("/", "/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/error")
+                        .requestMatchers("/", "/hello", "/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/error")
                         .permitAll()
                         // Require ADMIN role for /admin/**
                         .requestMatchers("/admin/**")
