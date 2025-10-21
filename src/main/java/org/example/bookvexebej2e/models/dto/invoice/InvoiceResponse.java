@@ -1,5 +1,6 @@
 package org.example.bookvexebej2e.models.dto.invoice;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.example.bookvexebej2e.models.dto.base.BasePermissionResponse;
@@ -12,6 +13,7 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 public class InvoiceResponse extends BasePermissionResponse {
     private UUID id;
+    @JsonIgnoreProperties("invoice")
     private PaymentResponse payment;
     private String invoiceNumber;
     private String fileUrl;
