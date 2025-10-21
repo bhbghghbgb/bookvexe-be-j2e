@@ -1,6 +1,6 @@
 security:
   admin:
-    allow-all: true
+    allow-all: false
 
 spring:
   profiles:
@@ -10,7 +10,7 @@ spring:
     name: bookvexe-be-j2e
 
   config:
-    import: optional:classpath:application-oauth.yaml
+    import: optional:classpath:application-oauth.yml
 
   datasource:
     url: jdbc:mysql://localhost:3306/bookvexedb_j2e
