@@ -82,8 +82,9 @@ public class SecurityConfig {
                     // PROD MODE: Standard authorization rules
                     authz
                         // Permit public/auth/swagger/root
-                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/", "/hello", "/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/error")
+
+                        .requestMatchers("/swagger/**", "/swagger/v1/**", "/", "/hello", "/auth/**",
+                                "/swagger-ui/**", "/v3/api-docs/**", "/error", "/dev/*")
                         .permitAll()
                         // Require ADMIN role for /admin/**
                         .requestMatchers("/admin/**")

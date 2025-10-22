@@ -58,6 +58,7 @@ public class DataSeeder {
                 UserDbModel adminUser = new UserDbModel();
                 adminUser.setUsername(DEFAULT_USERNAME);
                 adminUser.setPassword(passwordEncoder.encode(DEFAULT_PASSWORD));
+                adminUser.setIsAdmin(true);
 
                 // Save the user first to get an ID
                 UserDbModel savedUser = userRepository.save(adminUser);
