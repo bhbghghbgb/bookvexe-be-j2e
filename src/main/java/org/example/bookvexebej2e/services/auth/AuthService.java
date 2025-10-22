@@ -7,10 +7,7 @@ import org.example.bookvexebej2e.exceptions.UnauthorizedException;
 import org.example.bookvexebej2e.models.db.CustomerDbModel;
 import org.example.bookvexebej2e.models.db.CustomerTypeDbModel;
 import org.example.bookvexebej2e.models.db.UserDbModel;
-import org.example.bookvexebej2e.models.dto.auth.AuthResponse;
-import org.example.bookvexebej2e.models.dto.auth.LoginRequest;
-import org.example.bookvexebej2e.models.dto.auth.PasswordResetConfirmRequest;
-import org.example.bookvexebej2e.models.dto.auth.PasswordResetRequest;
+import org.example.bookvexebej2e.models.dto.auth.*;
 import org.example.bookvexebej2e.repositories.auth.TokenRepository;
 import org.example.bookvexebej2e.repositories.customer.CustomerRepository;
 import org.example.bookvexebej2e.repositories.customer.CustomerTypeRepository;
@@ -175,6 +172,30 @@ public class AuthService {
             tokenService.revokeAllUserTokens(userId, "REFRESH");
         }
     }
+
+    public void changePassword(String accessToken, ChangePasswordRequest request) {
+        if (!jwtUtils.validateToken(accessToken)) {
+            throw new UnauthorizedException("Invalid token");
+        }
+
+        UUID userId = jwtUtils.getUserIdFromToken(accessToken);
+        UserDbModel user = userRepository.findById(userId)
+            .orElseThrow(() -> new UnauthorizedException("User not found"));
+
+        // Verify current password
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new UnauthorizedException("Current password is incorrect");
+        }
+
+        // Update to new password
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        // Revoke all tokens for security
+        tokenService.revokeAllUserTokens(user.getId(), "ACCESS");
+        tokenService.revokeAllUserTokens(user.getId(), "REFRESH");
+    }
+
 
     private UUID getUserIdFromResetToken(String token) {
         // For reset tokens, we need to get user ID from database
