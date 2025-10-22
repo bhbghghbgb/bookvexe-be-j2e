@@ -3,6 +3,9 @@ package org.example.bookvexebej2e.controllers.booking;
 import java.util.List;
 import java.util.UUID;
 
+import org.example.bookvexebej2e.configs.annotations.RequirePermission;
+import org.example.bookvexebej2e.models.constant.ModuleCode;
+import org.example.bookvexebej2e.models.constant.PermissionAction;
 import org.example.bookvexebej2e.models.dto.booking.BookingCreate;
 import org.example.bookvexebej2e.models.dto.booking.BookingQuery;
 import org.example.bookvexebej2e.models.dto.booking.BookingResponse;
@@ -31,36 +34,43 @@ public class BookingController {
     }
 
     @GetMapping
+    @RequirePermission(module = ModuleCode.BOOKING, action = PermissionAction.READ)
     public ResponseEntity<List<BookingResponse>> findAll() {
         return ResponseEntity.ok(bookingService.findAll());
     }
 
     @GetMapping("/pagination")
+    @RequirePermission(module = ModuleCode.BOOKING, action = PermissionAction.READ)
     public ResponseEntity<Page<BookingResponse>> findAll(BookingQuery query) {
         return ResponseEntity.ok(bookingService.findAll(query));
     }
 
     @PostMapping("/pagination")
+    @RequirePermission(module = ModuleCode.BOOKING, action = PermissionAction.READ)
     public ResponseEntity<Page<BookingResponse>> findAll2(@RequestBody BookingQuery query) {
         return ResponseEntity.ok(bookingService.findAll(query));
     }
 
     @GetMapping("/{id}")
+    @RequirePermission(module = ModuleCode.BOOKING, action = PermissionAction.READ)
     public ResponseEntity<BookingResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(bookingService.findById(id));
     }
 
     @PostMapping
+    @RequirePermission(module = ModuleCode.BOOKING, action = PermissionAction.CREATE)
     public ResponseEntity<BookingResponse> create(@RequestBody BookingCreate createDto) {
         return ResponseEntity.ok(bookingService.create(createDto));
     }
 
     @PutMapping("/{id}")
+    @RequirePermission(module = ModuleCode.BOOKING, action = PermissionAction.UPDATE)
     public ResponseEntity<BookingResponse> update(@PathVariable UUID id, @RequestBody BookingUpdate updateDto) {
         return ResponseEntity.ok(bookingService.update(id, updateDto));
     }
 
     @DeleteMapping("/{id}")
+    @RequirePermission(module = ModuleCode.BOOKING, action = PermissionAction.DELETE)
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         bookingService.delete(id);
         return ResponseEntity.ok()
@@ -68,6 +78,7 @@ public class BookingController {
     }
 
     @PostMapping("/activate/{id}")
+    @RequirePermission(module = ModuleCode.BOOKING, action = PermissionAction.ACTIVATE)
     public ResponseEntity<Void> activate(@PathVariable UUID id) {
         bookingService.activate(id);
         return ResponseEntity.ok()
@@ -75,6 +86,7 @@ public class BookingController {
     }
 
     @PostMapping("/deactivate/{id}")
+    @RequirePermission(module = ModuleCode.BOOKING, action = PermissionAction.DEACTIVATE)
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         bookingService.deactivate(id);
         return ResponseEntity.ok()

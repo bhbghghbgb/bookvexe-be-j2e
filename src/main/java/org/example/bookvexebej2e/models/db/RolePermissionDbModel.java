@@ -14,6 +14,8 @@ public class RolePermissionDbModel extends BaseModel {
     @ManyToOne
     @JoinColumn(name = "roleId")
     private RoleDbModel role;
+    @Column(length = 255, name = "module")
+    private String module;
 
     @Column(length = 100, name = "isCanRead")
     private Boolean isCanRead;

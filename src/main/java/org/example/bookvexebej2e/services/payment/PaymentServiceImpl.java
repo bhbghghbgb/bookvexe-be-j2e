@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.services.payment;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
@@ -84,10 +85,11 @@ public class PaymentServiceImpl implements PaymentService {
         PaymentDbModel entity = paymentRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> new ResourceNotFoundException(PaymentDbModel.class, id));
 
-        entity.setAmount(updateDto.getAmount());
-        entity.setStatus(updateDto.getStatus());
-        entity.setTransactionCode(updateDto.getTransactionCode());
-        entity.setPaidAt(updateDto.getPaidAt());
+        // Chỉ cập nhật nếu có giá trị mới
+        Optional.ofNullable(updateDto.getAmount()).ifPresent(entity::setAmount);
+        Optional.ofNullable(updateDto.getStatus()).ifPresent(entity::setStatus);
+        Optional.ofNullable(updateDto.getTransactionCode()).ifPresent(entity::setTransactionCode);
+        Optional.ofNullable(updateDto.getPaidAt()).ifPresent(entity::setPaidAt);
 
         if (updateDto.getBookingId() != null) {
             BookingDbModel booking = bookingRepository.findById(updateDto.getBookingId())
@@ -97,14 +99,15 @@ public class PaymentServiceImpl implements PaymentService {
 
         if (updateDto.getMethodId() != null) {
             PaymentMethodDbModel method = paymentMethodRepository.findById(updateDto.getMethodId())
-                    .orElseThrow(
-                            () -> new ResourceNotFoundException(PaymentMethodDbModel.class, updateDto.getMethodId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(PaymentMethodDbModel.class, updateDto.getMethodId()));
             entity.setMethod(method);
         }
 
+        // Không đụng tới code, createdAt, v.v.
         PaymentDbModel updatedEntity = paymentRepository.save(entity);
         return paymentMapper.toResponse(updatedEntity);
     }
+
 
     @Override
     public void delete(UUID id) {

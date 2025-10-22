@@ -7,6 +7,7 @@ import java.util.UUID;
 @Data
 public class RolePermissionUpdate {
     private UUID roleId;
+    private String module;
     private Boolean isCanRead;
     private Boolean isCanCreate;
     private Boolean isCanUpdate;
