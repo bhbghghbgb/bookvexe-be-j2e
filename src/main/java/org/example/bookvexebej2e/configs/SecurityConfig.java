@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -32,6 +33,7 @@ public class SecurityConfig {
     private final AuthUserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationEntryPoint unauthorizedHandler;
+    private final AuthenticationSuccessHandler oauth2SuccessHandler;
     private final PasswordEncoder passwordEncoder;
 
     @Value("${security.admin.allow-all:false}")
@@ -108,7 +110,7 @@ public class SecurityConfig {
 
         // Only enable oauth2Login if OAuth2 clients are present
         if (clientRegistrations.getIfAvailable() != null) {
-            http.oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/auth/oauth2/success")
+            http.oauth2Login(oauth2 -> oauth2.successHandler(oauth2SuccessHandler)
                 .failureUrl("/auth/oauth2/failure"));
             log.info("OAuth2 login enabled (client registrations found).");
         } else {
