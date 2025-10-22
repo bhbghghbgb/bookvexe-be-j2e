@@ -16,7 +16,14 @@ spring:
     url: jdbc:postgresql://localhost:5432/bookvexedb_j2e
     username: root
     password: nopass
-
+  ai:
+    vertex:
+      ai:
+        gemini:
+          project-id: gen-lang-client-0404640351
+          location: us-central1
+          model: gemini-1.5-pro
+          api-key: AIzaSyCADFsFVQKe4rSl3S-4WlJHooKB8rrqVg8
   jpa:
     show-sql: true
     hibernate:
