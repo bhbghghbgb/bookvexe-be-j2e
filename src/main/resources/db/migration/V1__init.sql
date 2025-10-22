@@ -11,6 +11,10 @@
 -- - Data inserts omitted due to binary UUID values requiring manual hex-to-UUID conversion (e.g., via tools like hexdump or Python). Regenerate or convert data separately if needed.
 -- - Run in order: DROPs, CREATEs, ALTERs for UNIQUE/INDEX/FK.
 
+-- Enable required extensions
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "vector";
+
 -- Drop all tables if they exist (in reverse dependency order for safety, but since no data, order is flexible)
 DROP TABLE IF EXISTS booking_seats;
 DROP TABLE IF EXISTS bookings;
@@ -404,6 +408,15 @@ CREATE TABLE role_user (
   user_id UUID,
   PRIMARY KEY (uuid)
 );
+
+CREATE TABLE knowledge (
+  id bigserial PRIMARY KEY,
+  title text,
+  content text NOT NULL,
+  embedding vector(1536),  -- số chiều tùy model
+  created_at timestamptz DEFAULT now()
+);
+
 
 -- Add UNIQUE constraints
 ALTER TABLE booking_seats ADD CONSTRAINT uc_bookingseats_code UNIQUE (code);
