@@ -22,7 +22,7 @@ spring:
       base-url: http://localhost:11434  # URL của Ollama server (mặc định)
       chat:
         options:
-          model: llama3.2  # Mô hình AI (có thể đổi thành mistral, gemma2, v.v.)
+          model: gemma2  # Mô hình AI (có thể đổi thành mistral, gemma2, v.v.)
           temperature: 0.7
       embedding:
         options:
