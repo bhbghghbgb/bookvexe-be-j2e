@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.services.auth.AuthUserDetailsService;
+import org.example.bookvexebej2e.services.auth.TokenService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,22 +23,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
     private final AuthUserDetailsService userDetailsService;
+    private final TokenService tokenService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
         FilterChain filterChain) throws ServletException, IOException {
         try {
             String jwt = parseJwt(request);
-            if (jwt != null && jwtUtils.validateToken(jwt)) {
-                String username = jwtUtils.getUsernameFromToken(jwt);
+            if (jwt != null) {
+                // 1. Validate signature, format, and expiration
+                if (jwtUtils.validateToken(jwt)) {
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    // Validate the token type (must be 'ACCESS') against the database
+                    if (tokenService.validateTokenIsValid(jwt, "ACCESS")) {
+                        String username = jwtUtils.getUsernameFromToken(jwt);
 
-                SecurityContextHolder.getContext()
-                    .setAuthentication(authentication);
+                        // Proceed with setting Security Context
+                        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                        SecurityContextHolder.getContext()
+                            .setAuthentication(authentication);
+                    } else {
+                        // Token is valid but wrong type (e.g., REFRESH) or revoked
+                        logger.warn("JWT is valid but is not an ACCESS token or has been revoked.");
+                        // DO NOT throw exception here, just let it pass without authentication
+                    }
+                }
             }
         } catch (Exception e) {
             logger.error("Cannot set user authentication: {}", e);
