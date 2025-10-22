@@ -14,8 +14,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/bookvexedb_j2e
-    username: root
-    password: nopass
+    username: postgres
+    password: ""
 
   jpa:
     show-sql: true

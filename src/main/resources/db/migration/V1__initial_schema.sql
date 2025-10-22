@@ -1,0 +1,545 @@
+CREATE TABLE booking_seats
+(
+    uuid UUID NOT NULL,
+    is_deleted   BOOLEAN,
+    created_date TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    code         VARCHAR(255),
+    booking_id UUID,
+    seat_id UUID,
+    status       VARCHAR(20),
+    price        DECIMAL(10, 2),
+    CONSTRAINT pk_bookingseats PRIMARY KEY (uuid)
+);
+
+CREATE TABLE bookings
+(
+    uuid UUID NOT NULL,
+    is_deleted     BOOLEAN,
+    created_date   TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date   TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    code           VARCHAR(255),
+    type           VARCHAR(255),
+    customer_id UUID,
+    trip_id UUID,
+    pickup_stop_id UUID,
+    dropoff_stop_id UUID,
+    booking_status VARCHAR(20),
+    total_price    DECIMAL(10, 2),
+    CONSTRAINT pk_bookings PRIMARY KEY (uuid)
+);
+
+CREATE TABLE car_employees
+(
+    uuid UUID NOT NULL,
+    is_deleted   BOOLEAN,
+    created_date TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    car_id UUID,
+    employee_id UUID,
+    role         VARCHAR(20),
+    CONSTRAINT pk_caremployees PRIMARY KEY (uuid)
+);
+
+CREATE TABLE car_seats
+(
+    uuid UUID NOT NULL,
+    is_deleted    BOOLEAN,
+    created_date  TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date  TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    car_id UUID,
+    seat_number   VARCHAR(10),
+    seat_position VARCHAR(50),
+    CONSTRAINT pk_carseats PRIMARY KEY (uuid)
+);
+
+CREATE TABLE car_types
+(
+    uuid UUID NOT NULL,
+    is_deleted   BOOLEAN,
+    created_date TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    code         VARCHAR(255),
+    name         VARCHAR(255),
+    description  VARCHAR(255),
+    seat_count   INTEGER,
+    CONSTRAINT pk_cartypes PRIMARY KEY (uuid)
+);
+
+CREATE TABLE cars
+(
+    uuid UUID NOT NULL,
+    is_deleted    BOOLEAN,
+    created_date  TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date  TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    car_type_id UUID,
+    code          VARCHAR(255),
+    license_plate VARCHAR(20),
+    CONSTRAINT pk_cars PRIMARY KEY (uuid)
+);
+
+CREATE TABLE customer
+(
+    uuid UUID NOT NULL,
+    is_deleted   BOOLEAN,
+    created_date TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    code         VARCHAR(255),
+    name         VARCHAR(255),
+    email        VARCHAR(100),
+    phone        VARCHAR(15),
+    customer_type_id UUID,
+    description  TEXT,
+    CONSTRAINT pk_customer PRIMARY KEY (uuid)
+);
+
+CREATE TABLE customer_type
+(
+    uuid UUID NOT NULL,
+    is_deleted   BOOLEAN,
+    created_date TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    code         VARCHAR(255),
+    name         VARCHAR(255),
+    description  TEXT,
+    CONSTRAINT pk_customertype PRIMARY KEY (uuid)
+);
+
+CREATE TABLE employee
+(
+    uuid UUID NOT NULL,
+    is_deleted   BOOLEAN,
+    created_date TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    code         VARCHAR(255),
+    name         VARCHAR(255),
+    email        VARCHAR(100),
+    phone        VARCHAR(15),
+    description  TEXT,
+    CONSTRAINT pk_employee PRIMARY KEY (uuid)
+);
+
+CREATE TABLE invoices
+(
+    uuid UUID NOT NULL,
+    is_deleted     BOOLEAN,
+    created_date   TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date   TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    payment_id UUID,
+    invoice_number VARCHAR(50),
+    file_url       VARCHAR(255),
+    issued_at      TIMESTAMP WITHOUT TIME ZONE,
+    CONSTRAINT pk_invoices PRIMARY KEY (uuid)
+);
+
+CREATE TABLE notification_types
+(
+    uuid UUID NOT NULL,
+    is_deleted   BOOLEAN,
+    created_date TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    code         VARCHAR(255),
+    name         VARCHAR(50),
+    description  VARCHAR(255),
+    CONSTRAINT pk_notificationtypes PRIMARY KEY (uuid)
+);
+
+CREATE TABLE notifications
+(
+    uuid UUID NOT NULL,
+    is_deleted   BOOLEAN,
+    created_date TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    user_id UUID,
+    booking_id UUID,
+    trip_id UUID,
+    type_id UUID,
+    channel      VARCHAR(20),
+    title        VARCHAR(100),
+    message      TEXT,
+    is_sent      BOOLEAN,
+    sent_at      TIMESTAMP WITHOUT TIME ZONE,
+    CONSTRAINT pk_notifications PRIMARY KEY (uuid)
+);
+
+CREATE TABLE password_reset_tokens
+(
+    uuid UUID NOT NULL,
+    is_deleted   BOOLEAN,
+    created_date TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    user_id UUID,
+    token        VARCHAR(255) NOT NULL,
+    expires_at   TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    CONSTRAINT pk_password_reset_tokens PRIMARY KEY (uuid)
+);
+
+CREATE TABLE payment_methods
+(
+    uuid UUID NOT NULL,
+    is_deleted   BOOLEAN,
+    created_date TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    code         VARCHAR(255),
+    name         VARCHAR(50),
+    description  VARCHAR(255),
+    CONSTRAINT pk_paymentmethods PRIMARY KEY (uuid)
+);
+
+CREATE TABLE payments
+(
+    uuid UUID NOT NULL,
+    is_deleted       BOOLEAN,
+    created_date     TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date     TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    booking_id UUID,
+    method_id UUID,
+    amount           DECIMAL(10, 2),
+    status           VARCHAR(20),
+    transaction_code VARCHAR(100),
+    paid_at          TIMESTAMP WITHOUT TIME ZONE,
+    CONSTRAINT pk_payments PRIMARY KEY (uuid)
+);
+
+CREATE TABLE role
+(
+    uuid UUID NOT NULL,
+    is_deleted   BOOLEAN,
+    created_date TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    code         VARCHAR(100),
+    name         VARCHAR(100),
+    description  TEXT,
+    CONSTRAINT pk_role PRIMARY KEY (uuid)
+);
+
+CREATE TABLE role_permission
+(
+    uuid UUID NOT NULL,
+    is_deleted        BOOLEAN,
+    created_date      TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date      TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    role_id UUID,
+    module            VARCHAR(255),
+    is_can_read       BOOLEAN,
+    is_can_create     BOOLEAN,
+    is_can_update     BOOLEAN,
+    is_can_delete     BOOLEAN,
+    is_can_activate   BOOLEAN,
+    is_can_deactivate BOOLEAN,
+    is_can_import     BOOLEAN,
+    is_can_export     BOOLEAN,
+    CONSTRAINT pk_rolepermission PRIMARY KEY (uuid)
+);
+
+CREATE TABLE role_user
+(
+    uuid UUID NOT NULL,
+    is_deleted   BOOLEAN,
+    created_date TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    role_id UUID,
+    user_id UUID,
+    CONSTRAINT pk_roleuser PRIMARY KEY (uuid)
+);
+
+CREATE TABLE routes
+(
+    uuid UUID NOT NULL,
+    is_deleted         BOOLEAN,
+    created_date       TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date       TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    start_location     VARCHAR(100),
+    end_location       VARCHAR(100),
+    distance_km        DECIMAL(6, 2),
+    estimated_duration INTEGER,
+    CONSTRAINT pk_routes PRIMARY KEY (uuid)
+);
+
+CREATE TABLE tokens
+(
+    uuid UUID NOT NULL,
+    is_deleted   BOOLEAN,
+    created_date TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    user_id UUID NOT NULL,
+    token        VARCHAR(255) NOT NULL,
+    token_type   VARCHAR(255) NOT NULL,
+    expires_at   TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    revoked      BOOLEAN,
+    CONSTRAINT pk_tokens PRIMARY KEY (uuid)
+);
+
+CREATE TABLE trip_cars
+(
+    uuid UUID NOT NULL,
+    is_deleted      BOOLEAN,
+    created_date    TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date    TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    trip_id UUID,
+    car_id UUID,
+    price           DECIMAL(10, 2),
+    available_seats INTEGER,
+    CONSTRAINT pk_tripcars PRIMARY KEY (uuid)
+);
+
+CREATE TABLE trip_stops
+(
+    uuid UUID NOT NULL,
+    is_deleted   BOOLEAN,
+    created_date TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    trip_id UUID,
+    stop_type    VARCHAR(10),
+    location     VARCHAR(255),
+    order_index  INTEGER,
+    CONSTRAINT pk_tripstops PRIMARY KEY (uuid)
+);
+
+CREATE TABLE trips
+(
+    uuid UUID NOT NULL,
+    is_deleted      BOOLEAN,
+    created_date    TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date    TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    route_id UUID,
+    departure_time  TIMESTAMP WITHOUT TIME ZONE,
+    price           DECIMAL(10, 2),
+    available_seats INTEGER,
+    CONSTRAINT pk_trips PRIMARY KEY (uuid)
+);
+
+CREATE TABLE user_sessions
+(
+    uuid UUID NOT NULL,
+    is_deleted   BOOLEAN,
+    created_date TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    user_id UUID,
+    access_token VARCHAR(255) NOT NULL,
+    expires_at   TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    revoked      BOOLEAN,
+    CONSTRAINT pk_user_sessions PRIMARY KEY (uuid)
+);
+
+CREATE TABLE users
+(
+    uuid UUID NOT NULL,
+    is_deleted     BOOLEAN,
+    created_date   TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID,
+    updated_date   TIMESTAMP WITHOUT TIME ZONE,
+    updated_by UUID,
+    username       VARCHAR(255),
+    password       VARCHAR(255),
+    is_google      BOOLEAN,
+    google_account VARCHAR(255),
+    is_admin       BOOLEAN,
+    employee_id UUID,
+    customer_id UUID,
+    CONSTRAINT pk_users PRIMARY KEY (uuid)
+);
+
+ALTER TABLE bookings
+    ADD CONSTRAINT uc_bookings_code UNIQUE (code);
+
+ALTER TABLE booking_seats
+    ADD CONSTRAINT uc_bookingseats_code UNIQUE (code);
+
+ALTER TABLE cars
+    ADD CONSTRAINT uc_cars_code UNIQUE (code);
+
+ALTER TABLE cars
+    ADD CONSTRAINT uc_cars_licenseplate UNIQUE (license_plate);
+
+ALTER TABLE car_types
+    ADD CONSTRAINT uc_cartypes_code UNIQUE (code);
+
+ALTER TABLE customer
+    ADD CONSTRAINT uc_customer_code UNIQUE (code);
+
+ALTER TABLE customer_type
+    ADD CONSTRAINT uc_customertype_code UNIQUE (code);
+
+ALTER TABLE employee
+    ADD CONSTRAINT uc_employee_code UNIQUE (code);
+
+ALTER TABLE invoices
+    ADD CONSTRAINT uc_invoices_invoicenumber UNIQUE (invoice_number);
+
+ALTER TABLE invoices
+    ADD CONSTRAINT uc_invoices_paymentid UNIQUE (payment_id);
+
+ALTER TABLE notification_types
+    ADD CONSTRAINT uc_notificationtypes_code UNIQUE (code);
+
+ALTER TABLE notification_types
+    ADD CONSTRAINT uc_notificationtypes_name UNIQUE (name);
+
+ALTER TABLE password_reset_tokens
+    ADD CONSTRAINT uc_password_reset_tokens_token UNIQUE (token);
+
+ALTER TABLE payment_methods
+    ADD CONSTRAINT uc_paymentmethods_code UNIQUE (code);
+
+ALTER TABLE payment_methods
+    ADD CONSTRAINT uc_paymentmethods_name UNIQUE (name);
+
+ALTER TABLE payments
+    ADD CONSTRAINT uc_payments_bookingid UNIQUE (booking_id);
+
+ALTER TABLE role
+    ADD CONSTRAINT uc_role_code UNIQUE (code);
+
+ALTER TABLE tokens
+    ADD CONSTRAINT uc_tokens_token UNIQUE (token);
+
+ALTER TABLE user_sessions
+    ADD CONSTRAINT uc_user_sessions_accesstoken UNIQUE (access_token);
+
+ALTER TABLE users
+    ADD CONSTRAINT uc_users_customerid UNIQUE (customer_id);
+
+ALTER TABLE users
+    ADD CONSTRAINT uc_users_employeeid UNIQUE (employee_id);
+
+ALTER TABLE users
+    ADD CONSTRAINT uc_users_username UNIQUE (username);
+
+ALTER TABLE booking_seats
+    ADD CONSTRAINT FK_BOOKINGSEATS_ON_BOOKINGID FOREIGN KEY (booking_id) REFERENCES bookings (uuid);
+
+ALTER TABLE booking_seats
+    ADD CONSTRAINT FK_BOOKINGSEATS_ON_SEATID FOREIGN KEY (seat_id) REFERENCES car_seats (uuid);
+
+ALTER TABLE bookings
+    ADD CONSTRAINT FK_BOOKINGS_ON_CUSTOMERID FOREIGN KEY (customer_id) REFERENCES customer (uuid);
+
+ALTER TABLE bookings
+    ADD CONSTRAINT FK_BOOKINGS_ON_DROPOFFSTOPID FOREIGN KEY (dropoff_stop_id) REFERENCES trip_stops (uuid);
+
+ALTER TABLE bookings
+    ADD CONSTRAINT FK_BOOKINGS_ON_PICKUPSTOPID FOREIGN KEY (pickup_stop_id) REFERENCES trip_stops (uuid);
+
+ALTER TABLE bookings
+    ADD CONSTRAINT FK_BOOKINGS_ON_TRIPID FOREIGN KEY (trip_id) REFERENCES trips (uuid);
+
+ALTER TABLE car_employees
+    ADD CONSTRAINT FK_CAREMPLOYEES_ON_CARID FOREIGN KEY (car_id) REFERENCES cars (uuid);
+
+ALTER TABLE car_employees
+    ADD CONSTRAINT FK_CAREMPLOYEES_ON_EMPLOYEEID FOREIGN KEY (employee_id) REFERENCES employee (uuid);
+
+ALTER TABLE car_seats
+    ADD CONSTRAINT FK_CARSEATS_ON_CARID FOREIGN KEY (car_id) REFERENCES cars (uuid);
+
+ALTER TABLE cars
+    ADD CONSTRAINT FK_CARS_ON_CARTYPEID FOREIGN KEY (car_type_id) REFERENCES car_types (uuid);
+
+ALTER TABLE customer
+    ADD CONSTRAINT FK_CUSTOMER_ON_CUSTOMERTYPEID FOREIGN KEY (customer_type_id) REFERENCES customer_type (uuid);
+
+ALTER TABLE invoices
+    ADD CONSTRAINT FK_INVOICES_ON_PAYMENTID FOREIGN KEY (payment_id) REFERENCES payments (uuid);
+
+ALTER TABLE notifications
+    ADD CONSTRAINT FK_NOTIFICATIONS_ON_BOOKINGID FOREIGN KEY (booking_id) REFERENCES bookings (uuid);
+
+ALTER TABLE notifications
+    ADD CONSTRAINT FK_NOTIFICATIONS_ON_TRIPID FOREIGN KEY (trip_id) REFERENCES trips (uuid);
+
+ALTER TABLE notifications
+    ADD CONSTRAINT FK_NOTIFICATIONS_ON_TYPEID FOREIGN KEY (type_id) REFERENCES notification_types (uuid);
+
+ALTER TABLE notifications
+    ADD CONSTRAINT FK_NOTIFICATIONS_ON_USERID FOREIGN KEY (user_id) REFERENCES users (uuid);
+
+ALTER TABLE password_reset_tokens
+    ADD CONSTRAINT FK_PASSWORD_RESET_TOKENS_ON_USERID FOREIGN KEY (user_id) REFERENCES users (uuid);
+
+ALTER TABLE payments
+    ADD CONSTRAINT FK_PAYMENTS_ON_BOOKINGID FOREIGN KEY (booking_id) REFERENCES bookings (uuid);
+
+ALTER TABLE payments
+    ADD CONSTRAINT FK_PAYMENTS_ON_METHODID FOREIGN KEY (method_id) REFERENCES payment_methods (uuid);
+
+ALTER TABLE role_permission
+    ADD CONSTRAINT FK_ROLEPERMISSION_ON_ROLEID FOREIGN KEY (role_id) REFERENCES role (uuid);
+
+ALTER TABLE role_user
+    ADD CONSTRAINT FK_ROLEUSER_ON_ROLEID FOREIGN KEY (role_id) REFERENCES role (uuid);
+
+ALTER TABLE role_user
+    ADD CONSTRAINT FK_ROLEUSER_ON_USERID FOREIGN KEY (user_id) REFERENCES users (uuid);
+
+ALTER TABLE tokens
+    ADD CONSTRAINT FK_TOKENS_ON_USERID FOREIGN KEY (user_id) REFERENCES users (uuid);
+
+ALTER TABLE trip_cars
+    ADD CONSTRAINT FK_TRIPCARS_ON_CARID FOREIGN KEY (car_id) REFERENCES cars (uuid);
+
+ALTER TABLE trip_cars
+    ADD CONSTRAINT FK_TRIPCARS_ON_TRIPID FOREIGN KEY (trip_id) REFERENCES trips (uuid);
+
+ALTER TABLE trip_stops
+    ADD CONSTRAINT FK_TRIPSTOPS_ON_TRIPID FOREIGN KEY (trip_id) REFERENCES trips (uuid);
+
+ALTER TABLE trips
+    ADD CONSTRAINT FK_TRIPS_ON_ROUTEID FOREIGN KEY (route_id) REFERENCES routes (uuid);
+
+ALTER TABLE users
+    ADD CONSTRAINT FK_USERS_ON_CUSTOMERID FOREIGN KEY (customer_id) REFERENCES customer (uuid);
+
+ALTER TABLE users
+    ADD CONSTRAINT FK_USERS_ON_EMPLOYEEID FOREIGN KEY (employee_id) REFERENCES employee (uuid);
+
+ALTER TABLE user_sessions
+    ADD CONSTRAINT FK_USER_SESSIONS_ON_USERID FOREIGN KEY (user_id) REFERENCES users (uuid);
