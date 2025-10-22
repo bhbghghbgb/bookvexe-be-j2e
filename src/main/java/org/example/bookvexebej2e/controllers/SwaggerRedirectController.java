@@ -5,7 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
-@Profile("dev") // Only active in development
+@Profile("/dev") // Only active in development
 public class SwaggerRedirectController {
 
     @GetMapping("/")
