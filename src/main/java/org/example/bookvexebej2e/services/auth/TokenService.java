@@ -1,5 +1,6 @@
 package org.example.bookvexebej2e.services.auth;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.configs.JwtUtils;
 import org.example.bookvexebej2e.models.db.TokenDbModel;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class TokenService {
 
@@ -50,7 +52,7 @@ public class TokenService {
         tokenRepository.revokeAllUserTokensByType(userId, tokenType);
     }
 
-    public boolean validateToken(String token, String tokenType) {
+    public boolean validateTokenIsValid(String token, String tokenType) {
         return tokenRepository.findByTokenAndTokenTypeAndRevokedFalse(token, tokenType)
             .map(t -> !t.getExpiresAt()
                 .isBefore(LocalDateTime.now()))
