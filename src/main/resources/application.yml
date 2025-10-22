@@ -18,17 +18,15 @@ spring:
     username: root
     password: nopass
   ai:
-    vertex:
-      ai:
-        gemini:
-          project-id: gen-lang-client-0404640351
-          location: us-central1
-          credentials:
-            location: classpath:gen-lang-client-0404640351-86b203cf3a47.json
-          chat:
-            options:
-              model: gemini-2.0-flash-exp
-              temperature: 0.7
+    ollama:
+      base-url: http://localhost:11434  # URL của Ollama server (mặc định)
+      chat:
+        options:
+          model: llama3.2  # Mô hình AI (có thể đổi thành mistral, gemma2, v.v.)
+          temperature: 0.7
+      embedding:
+        options:
+          model: nomic-embed-text  # Mô hình embedding cho vector search
   jpa:
     show-sql: true
     hibernate:
