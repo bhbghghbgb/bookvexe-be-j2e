@@ -7,9 +7,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @EnableJpaRepositories(basePackages = "org.example.bookvexebej2e.repositories", repositoryBaseClass =
     BaseRepositoryImpl.class)
-@SpringBootApplication(exclude = {
-    org.springframework.ai.autoconfigure.vertexai.gemini.VertexAiGeminiAutoConfiguration.class
-})
+@SpringBootApplication
 public class BookvexeBeJ2eApplication {
 
     public static void main(String[] args) {
