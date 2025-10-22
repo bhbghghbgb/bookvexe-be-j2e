@@ -4,10 +4,13 @@ import org.example.bookvexebej2e.models.db.Knowledge;
 import org.example.bookvexebej2e.repositories.chat.KnowledgeRepository;
 import org.example.bookvexebej2e.services.chat.AiChatService;
 import org.example.bookvexebej2e.services.chat.EmbeddingService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/ai")
+@Profile("ai-enabled")  // Only enable when "ai-enabled" profile is active
 public class ChatController {
 
     private final AiChatService aiChatService;
