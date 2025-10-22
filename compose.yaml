@@ -1,9 +1,12 @@
 services:
   postgres:
-    image: 'postgres:latest'
+    image: ankane/pgvector:latest
+    container_name: my_postgres
     environment:
-      - 'POSTGRES_DB=bookvexedb_j2e'
-      - 'POSTGRES_USER=root'
-      - 'POSTGRES_PASSWORD=nopass'
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=nopass
+      - POSTGRES_DB=bookvexedb_j2e
     ports:
-      - '5432:5432'
+      - "5432:5432"
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
