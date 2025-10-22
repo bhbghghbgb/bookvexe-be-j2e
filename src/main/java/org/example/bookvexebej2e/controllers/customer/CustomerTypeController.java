@@ -3,6 +3,9 @@ package org.example.bookvexebej2e.controllers.customer;
 import java.util.List;
 import java.util.UUID;
 
+import org.example.bookvexebej2e.configs.annotations.RequirePermission;
+import org.example.bookvexebej2e.models.constant.ModuleCode;
+import org.example.bookvexebej2e.models.constant.PermissionAction;
 import org.example.bookvexebej2e.models.dto.customer.CustomerTypeCreate;
 import org.example.bookvexebej2e.models.dto.customer.CustomerTypeQuery;
 import org.example.bookvexebej2e.models.dto.customer.CustomerTypeResponse;
@@ -31,37 +34,44 @@ public class CustomerTypeController {
     }
 
     @GetMapping
+    @RequirePermission(module = ModuleCode.CUSTOMER, action = PermissionAction.READ)
     public ResponseEntity<List<CustomerTypeResponse>> findAll() {
         return ResponseEntity.ok(customerTypeService.findAll());
     }
 
     @GetMapping("/pagination")
+    @RequirePermission(module = ModuleCode.CUSTOMER, action = PermissionAction.READ)
     public ResponseEntity<Page<CustomerTypeResponse>> findAll(CustomerTypeQuery query) {
         return ResponseEntity.ok(customerTypeService.findAll(query));
     }
 
     @PostMapping("/pagination")
+    @RequirePermission(module = ModuleCode.CUSTOMER, action = PermissionAction.READ)
     public ResponseEntity<Page<CustomerTypeResponse>> findAll2(@RequestBody CustomerTypeQuery query) {
         return ResponseEntity.ok(customerTypeService.findAll(query));
     }
 
     @GetMapping("/{id}")
+    @RequirePermission(module = ModuleCode.CUSTOMER, action = PermissionAction.READ)
     public ResponseEntity<CustomerTypeResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(customerTypeService.findById(id));
     }
 
     @PostMapping
+    @RequirePermission(module = ModuleCode.CUSTOMER, action = PermissionAction.CREATE)
     public ResponseEntity<CustomerTypeResponse> create(@RequestBody CustomerTypeCreate createDto) {
         return ResponseEntity.ok(customerTypeService.create(createDto));
     }
 
     @PutMapping("/{id}")
+    @RequirePermission(module = ModuleCode.CUSTOMER, action = PermissionAction.UPDATE)
     public ResponseEntity<CustomerTypeResponse> update(@PathVariable UUID id,
             @RequestBody CustomerTypeUpdate updateDto) {
         return ResponseEntity.ok(customerTypeService.update(id, updateDto));
     }
 
     @DeleteMapping("/{id}")
+    @RequirePermission(module = ModuleCode.CUSTOMER, action = PermissionAction.DELETE)
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         customerTypeService.delete(id);
         return ResponseEntity.ok()
@@ -69,6 +79,7 @@ public class CustomerTypeController {
     }
 
     @PostMapping("/activate/{id}")
+    @RequirePermission(module = ModuleCode.CUSTOMER, action = PermissionAction.ACTIVATE)
     public ResponseEntity<Void> activate(@PathVariable UUID id) {
         customerTypeService.activate(id);
         return ResponseEntity.ok()
@@ -76,6 +87,7 @@ public class CustomerTypeController {
     }
 
     @PostMapping("/deactivate/{id}")
+    @RequirePermission(module = ModuleCode.CUSTOMER, action = PermissionAction.DEACTIVATE)
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         customerTypeService.deactivate(id);
         return ResponseEntity.ok()

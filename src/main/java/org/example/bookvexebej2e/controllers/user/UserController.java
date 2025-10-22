@@ -1,5 +1,8 @@
 package org.example.bookvexebej2e.controllers.user;
 
+import org.example.bookvexebej2e.configs.annotations.RequirePermission;
+import org.example.bookvexebej2e.models.constant.ModuleCode;
+import org.example.bookvexebej2e.models.constant.PermissionAction;
 import org.example.bookvexebej2e.models.dto.user.*;
 import org.example.bookvexebej2e.services.user.UserService;
 import org.springframework.data.domain.Page;
@@ -20,36 +23,43 @@ public class UserController {
     }
 
     @GetMapping
+    @RequirePermission(module = ModuleCode.USER, action = PermissionAction.READ)
     public ResponseEntity<List<UserResponse>> findAll() {
         return ResponseEntity.ok(userService.findAll());
     }
 
     @GetMapping("/pagination")
+    @RequirePermission(module = ModuleCode.USER, action = PermissionAction.READ)
     public ResponseEntity<Page<UserResponse>> findAll(UserQuery query) {
         return ResponseEntity.ok(userService.findAll(query));
     }
 
     @PostMapping("/pagination")
+    @RequirePermission(module = ModuleCode.USER, action = PermissionAction.READ)
     public ResponseEntity<Page<UserResponse>> findAll2(@RequestBody UserQuery query) {
         return ResponseEntity.ok(userService.findAll(query));
     }
 
     @GetMapping("/{id}")
+    @RequirePermission(module = ModuleCode.USER, action = PermissionAction.READ)
     public ResponseEntity<UserResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.findById(id));
     }
 
     @PostMapping
+    @RequirePermission(module = ModuleCode.USER, action = PermissionAction.CREATE)
     public ResponseEntity<UserResponse> create(@RequestBody UserCreate createDto) {
         return ResponseEntity.ok(userService.create(createDto));
     }
 
     @PutMapping("/{id}")
+    @RequirePermission(module = ModuleCode.USER, action = PermissionAction.UPDATE)
     public ResponseEntity<UserResponse> update(@PathVariable UUID id, @RequestBody UserUpdate updateDto) {
         return ResponseEntity.ok(userService.update(id, updateDto));
     }
 
     @DeleteMapping("/{id}")
+    @RequirePermission(module = ModuleCode.USER, action = PermissionAction.DELETE)
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         userService.delete(id);
         return ResponseEntity.ok()
@@ -57,6 +67,7 @@ public class UserController {
     }
 
     @PostMapping("/activate/{id}")
+    @RequirePermission(module = ModuleCode.USER, action = PermissionAction.ACTIVATE)
     public ResponseEntity<Void> activate(@PathVariable UUID id) {
         userService.activate(id);
         return ResponseEntity.ok()
@@ -64,6 +75,7 @@ public class UserController {
     }
 
     @PostMapping("/deactivate/{id}")
+    @RequirePermission(module = ModuleCode.USER, action = PermissionAction.DEACTIVATE)
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         userService.deactivate(id);
         return ResponseEntity.ok()
@@ -71,11 +83,13 @@ public class UserController {
     }
 
     @GetMapping("/select")
+    @RequirePermission(module = ModuleCode.USER, action = PermissionAction.READ)
     public ResponseEntity<List<UserSelectResponse>> findAllForSelect() {
         return ResponseEntity.ok(userService.findAllForSelect());
     }
 
     @GetMapping("/select/pagination")
+    @RequirePermission(module = ModuleCode.USER, action = PermissionAction.READ)
     public ResponseEntity<Page<UserSelectResponse>> findAllForSelect(UserQuery query) {
         return ResponseEntity.ok(userService.findAllForSelect(query));
     }

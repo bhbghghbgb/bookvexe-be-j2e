@@ -25,6 +25,9 @@ public class UserDbModel extends BaseModel {
     @Column(length = 255, name = "googleAccount")
     private String googleAccount;
 
+    @Column(name = "isAdmin")
+    private Boolean isAdmin = false;
+
     @OneToOne
     @JoinColumn(name = "employeeId")
     private EmployeeDbModel employee;
