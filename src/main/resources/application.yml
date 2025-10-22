@@ -4,7 +4,7 @@ security:
 
 spring:
   profiles:
-    active: dev,ai-enabled  # Kích hoạt lại AI với Ollama
+    active: dev
 
 
   application:
