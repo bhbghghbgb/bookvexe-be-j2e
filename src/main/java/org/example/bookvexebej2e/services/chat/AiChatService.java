@@ -3,11 +3,13 @@ package org.example.bookvexebej2e.services.chat;
 import org.example.bookvexebej2e.models.db.Knowledge;
 import org.example.bookvexebej2e.repositories.chat.KnowledgeRepository;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Profile("ai-enabled")  // Only enable when "ai-enabled" profile is active
 public class AiChatService {
 
     private final ChatClient chatClient;
