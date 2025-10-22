@@ -1,9 +1,6 @@
 package org.example.bookvexebej2e.models.db;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
@@ -25,7 +22,7 @@ public class RoleDbModel extends BaseModel {
     @Column(columnDefinition = "TEXT", name = "description")
     private String description;
 
-    @OneToMany(mappedBy = "role")
+    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RolePermissionDbModel> rolePermissions;
 
     @OneToMany(mappedBy = "role")

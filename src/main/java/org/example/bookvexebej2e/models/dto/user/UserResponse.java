@@ -15,6 +15,7 @@ public class UserResponse extends BasePermissionResponse {
     private UUID id;
     private String username;
     private Boolean isGoogle;
+    private Boolean isAdmin;
     private String googleAccount;
     private EmployeeResponse employee;
     private CustomerResponse customer;

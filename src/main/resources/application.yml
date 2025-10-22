@@ -15,7 +15,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/bookvexedb_j2e
     username: root
-    password: ""
+    password: Toor@root
 
   jpa:
     show-sql: true
