@@ -1,2 +1,0 @@
-ALTER TABLE users
-ADD COLUMN is_admin BIT(1)  DEFAULT FALSE;
