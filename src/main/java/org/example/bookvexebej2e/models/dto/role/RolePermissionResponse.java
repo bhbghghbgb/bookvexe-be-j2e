@@ -12,6 +12,7 @@ import java.util.UUID;
 public class RolePermissionResponse extends BasePermissionResponse {
     private UUID id;
     private RoleResponse role;
+    private String module;
     private Boolean isCanRead;
     private Boolean isCanCreate;
     private Boolean isCanUpdate;
