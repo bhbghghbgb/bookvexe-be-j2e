@@ -1,10 +1,3 @@
-# 🚀 Hướng Dẫn Sử Dụng AI với Ollama (Miễn Phí 100%)
-
-## ✅ Đã Chuyển Sang Ollama
-
-Thay vì sử dụng Google Vertex AI (tốn phí), giờ ứng dụng sử dụng **Ollama** - AI chạy local, hoàn toàn miễn phí!
-
----
 
 ## 📦 Cài Đặt Ollama
 
