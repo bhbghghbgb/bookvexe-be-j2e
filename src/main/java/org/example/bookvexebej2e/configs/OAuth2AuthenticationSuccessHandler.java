@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final AuthService authService;
-    private final String adminRedirectUrl = "http://localhost:5173/oauth/callback"; // Admin Frontend
+    private final String adminRedirectUrl = "http://localhost:5181/oauth/callback"; // Admin Frontend
     private final String userRedirectUrl = "http://localhost:3000/oauth/callback"; // User Frontend
 
     @Override
