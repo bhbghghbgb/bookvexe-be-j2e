@@ -36,7 +36,7 @@ public class UserDbModel extends BaseModel {
     @JoinColumn(name = "customerId")
     private CustomerDbModel customer;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "user", cascade = CascadeType.ALL)
     private List<RoleUserDbModel> roleUsers;
 
     @OneToMany(mappedBy = "user")

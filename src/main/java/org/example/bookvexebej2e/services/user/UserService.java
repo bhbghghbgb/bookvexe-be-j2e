@@ -13,6 +13,8 @@ public interface UserService {
 
     UserResponse findById(UUID id);
 
+    UserResponse getCurrentUser();
+
     UserResponse create(UserCreate createDto);
 
     UserResponse update(UUID id, UserUpdate updateDto);
