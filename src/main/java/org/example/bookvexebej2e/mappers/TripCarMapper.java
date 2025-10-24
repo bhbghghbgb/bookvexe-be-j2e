@@ -3,11 +3,11 @@ package org.example.bookvexebej2e.mappers;
 import org.example.bookvexebej2e.models.db.TripCarDbModel;
 import org.example.bookvexebej2e.models.dto.trip.TripCarResponse;
 import org.example.bookvexebej2e.models.dto.trip.TripCarSelectResponse;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.AfterMapping;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = { CarMapper.class })
 public interface TripCarMapper {
 
     TripCarResponse toResponse(TripCarDbModel entity);

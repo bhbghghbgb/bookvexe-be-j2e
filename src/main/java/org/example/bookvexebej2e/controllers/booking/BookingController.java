@@ -108,4 +108,22 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.findAllForSelect(query));
     }
 
+    @PostMapping("/confirm/{id}")
+    @RequirePermission(module = ModuleCode.BOOKING, action = PermissionAction.UPDATE)
+    public ResponseEntity<BookingResponse> confirmTrip(@PathVariable UUID id) {
+        return ResponseEntity.ok(bookingService.confirmTrip(id));
+    }
+
+    @PostMapping("/complete-trip/{id}")
+    @RequirePermission(module = ModuleCode.BOOKING, action = PermissionAction.UPDATE)
+    public ResponseEntity<BookingResponse> completeTrip(@PathVariable UUID id) {
+        return ResponseEntity.ok(bookingService.completeTrip(id));
+    }
+
+    @PostMapping("/update-status-by-date/{id}")
+    @RequirePermission(module = ModuleCode.BOOKING, action = PermissionAction.UPDATE)
+    public ResponseEntity<BookingResponse> updateStatusByDate(@PathVariable UUID id) {
+        return ResponseEntity.ok(bookingService.updateStatusByDate(id));
+    }
+
 }

@@ -12,4 +12,5 @@ public class TripCarSelectResponse {
     private UUID id;
     private CarSelectResponse car;
     private BigDecimal price;
+    private Integer availableSeats;
 }
