@@ -1,9 +1,12 @@
 package org.example.bookvexebej2e.models.dto.car;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.example.bookvexebej2e.models.dto.base.BasePermissionResponse;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -14,6 +17,9 @@ public class CarSeatResponse extends BasePermissionResponse {
     private UUID id;
     private String seatNumber;
     private String seatPosition;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<String> bookedStatuses; // Danh sách trạng thái đặt ghế (confirmed, pending, etc.)
+    private Boolean isBooked; // Trạng thái ghế đã được đặt hay chưa
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private Boolean isDeleted;
