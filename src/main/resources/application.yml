@@ -4,7 +4,7 @@ security:
 
 spring:
   profiles:
-    active: dev
+    active: dev, ai-enabled
 
 
   application:
