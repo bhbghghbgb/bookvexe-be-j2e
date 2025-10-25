@@ -50,7 +50,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleResponse findById(UUID id) {
-        RoleDbModel entity = roleRepository.findByIdAndNotDeleted(id)
+        RoleDbModel entity = roleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(RoleDbModel.class, id));
         return roleMapper.toResponse(entity);
     }
