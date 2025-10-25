@@ -1,10 +1,14 @@
 package org.example.bookvexebej2e.services.booking;
 
-import org.example.bookvexebej2e.models.dto.booking.*;
-import org.springframework.data.domain.Page;
-
 import java.util.List;
 import java.util.UUID;
+
+import org.example.bookvexebej2e.models.dto.booking.BookingCreate;
+import org.example.bookvexebej2e.models.dto.booking.BookingQuery;
+import org.example.bookvexebej2e.models.dto.booking.BookingResponse;
+import org.example.bookvexebej2e.models.dto.booking.BookingSelectResponse;
+import org.example.bookvexebej2e.models.dto.booking.BookingUpdate;
+import org.springframework.data.domain.Page;
 
 public interface BookingService {
     List<BookingResponse> findAll();
@@ -26,4 +30,10 @@ public interface BookingService {
     List<BookingSelectResponse> findAllForSelect();
 
     Page<BookingSelectResponse> findAllForSelect(BookingQuery query);
+
+    BookingResponse confirmTrip(UUID id);
+
+    BookingResponse completeTrip(UUID id);
+
+    BookingResponse updateStatusByDate(UUID id);
 }
