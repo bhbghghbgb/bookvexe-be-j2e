@@ -1,19 +1,14 @@
 package org.example.bookvexebej2e.services.customer;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
+import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.CustomerMapper;
 import org.example.bookvexebej2e.models.db.CustomerDbModel;
 import org.example.bookvexebej2e.models.db.CustomerTypeDbModel;
 import org.example.bookvexebej2e.models.db.UserDbModel;
-import org.example.bookvexebej2e.models.dto.customer.CustomerCreate;
-import org.example.bookvexebej2e.models.dto.customer.CustomerQuery;
-import org.example.bookvexebej2e.models.dto.customer.CustomerResponse;
-import org.example.bookvexebej2e.models.dto.customer.CustomerSelectResponse;
-import org.example.bookvexebej2e.models.dto.customer.CustomerUpdate;
+import org.example.bookvexebej2e.models.dto.customer.*;
 import org.example.bookvexebej2e.repositories.customer.CustomerRepository;
 import org.example.bookvexebej2e.repositories.customer.CustomerTypeRepository;
 import org.example.bookvexebej2e.repositories.user.UserRepository;
@@ -24,9 +19,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import jakarta.persistence.criteria.Predicate;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -70,10 +65,12 @@ public class CustomerServiceImpl implements CustomerService {
         entity.setPhone(createDto.getPhone());
         entity.setDescription(createDto.getDescription());
 
-        CustomerTypeDbModel customerType = customerTypeRepository.findById(createDto.getCustomerTypeId())
+        if (createDto.getCustomerTypeId() != null) {
+            CustomerTypeDbModel customerType = customerTypeRepository.findById(createDto.getCustomerTypeId())
                 .orElseThrow(
-                        () -> new ResourceNotFoundException(CustomerTypeDbModel.class, createDto.getCustomerTypeId()));
-        entity.setCustomerType(customerType);
+                    () -> new ResourceNotFoundException(CustomerTypeDbModel.class, createDto.getCustomerTypeId()));
+            entity.setCustomerType(customerType);
+        }
 
         CustomerDbModel savedEntity = customerRepository.save(entity);
 

@@ -64,6 +64,11 @@ public class AuthController {
             .build();
     }
 
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(authService.register(request));
+    }
+
     @GetMapping("/oauth2/success")
     public ResponseEntity<AuthResponse> oauth2Success() {
         // Handle OAuth2 success - you'll need to implement this based on your OAuth2 provider
