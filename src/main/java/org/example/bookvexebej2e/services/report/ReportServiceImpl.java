@@ -244,7 +244,7 @@ public class ReportServiceImpl implements ReportService {
             predicates.add(cb.exists(sub));
         }
 
-        Expression<String> statusLabel = cb.selectCase().when(cb.equal(b.get("bookingStatus"), "CANCELLED"), "Bị hủy").otherwise("Đã chạy");
+        Expression<Object> statusLabel = cb.selectCase().when(cb.equal(b.get("bookingStatus"), "CANCELLED"), "Bị hủy").otherwise("Đã chạy");
         cq.multiselect(statusLabel, cb.count(b.get("id")))
           .where(predicates.toArray(new Predicate[0]))
           .groupBy(statusLabel);
