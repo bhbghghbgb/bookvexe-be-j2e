@@ -11,6 +11,7 @@ public class ModuleCode {
     public static final String ROLE = "ROLE";
     public static final String CAR = "CAR";
     public static final String CAR_TYPE = "CAR_TYPE";
+    public static final String PERMISSION = "PERMISSION";
 
     private ModuleCode() {
         // Private constructor to prevent instantiation
