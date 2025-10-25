@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 
 @RestController
-@RequestMapping("/api/ai")
+@RequestMapping("/api/chat")
 @Profile("ai-enabled")  // Only enable when "ai-enabled" profile is active
 @Tag(name = "AI Chatbot", description = "API chatbot AI hỗ trợ khách hàng (tiếng Việt)")
 public class ChatController {
@@ -34,7 +34,7 @@ public class ChatController {
         this.databaseContextService = databaseContextService;
     }
 
-    @PostMapping("/chat")
+    @PostMapping("/prompt")
     @Operation(summary = "Hỏi chatbot AI", description = "Gửi câu hỏi đến AI chatbot và nhận câu trả lời bằng tiếng Việt")
     public ResponseEntity<ChatResponse> chat(@RequestBody ChatRequest req) {
         try {

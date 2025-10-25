@@ -28,26 +28,26 @@ public class AiChatService {
     }
 
     public String ask(String userPrompt) {
-        // 1️⃣ Phân tích câu hỏi để lấy context phù hợp
+        // 1 Phân tích câu hỏi để lấy context phù hợp
         String databaseContext = buildDatabaseContext(userPrompt);
 
-        // 2️⃣ Tạo embedding cho câu hỏi (tìm kiếm trong knowledge base)
+        // 2 Tạo embedding cho câu hỏi (tìm kiếm trong knowledge base)
         float[] queryVector = embeddingService.embed(userPrompt);
 
-        // 3️⃣ Tìm các tài liệu liên quan trong knowledge base
+        // 3 Tìm các tài liệu liên quan trong knowledge base
         List<Knowledge> relevantDocs = knowledgeRepository.findSimilar(
                 embeddingService.toPgVectorLiteral(queryVector), 5
         );
 
-        // 4️⃣ Ghép context từ knowledge base
+        // 4 Ghép context từ knowledge base
         String knowledgeContext = relevantDocs.stream()
                 .map(k -> "• " + k.getTitle() + ": " + k.getContent())
                 .collect(Collectors.joining("\n"));
 
-        // 5️⃣ Tạo prompt tiếng Việt tối ưu
+        // 5 Tạo prompt tiếng Việt tối ưu
         String prompt = buildVietnamesePrompt(userPrompt, databaseContext, knowledgeContext);
 
-        // 6️⃣ Gọi Gemini/Ollama
+        // 6 Gọi Gemini/Ollama
         return chatClient.prompt()
                 .user(prompt)
                 .call()
