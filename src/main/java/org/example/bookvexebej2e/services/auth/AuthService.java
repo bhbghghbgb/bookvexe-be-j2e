@@ -1,11 +1,11 @@
 package org.example.bookvexebej2e.services.auth;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.bookvexebej2e.configs.JwtUtils;
 import org.example.bookvexebej2e.exceptions.UnauthorizedException;
 import org.example.bookvexebej2e.models.db.CustomerDbModel;
-import org.example.bookvexebej2e.models.db.CustomerTypeDbModel;
 import org.example.bookvexebej2e.models.db.UserDbModel;
 import org.example.bookvexebej2e.models.dto.auth.*;
 import org.example.bookvexebej2e.repositories.auth.TokenRepository;
@@ -49,13 +49,22 @@ public class AuthService {
         return issueJwt(user);
     }
 
+    @Transactional
     public AuthResponse processOAuth2Login(OAuth2User oauth2User) {
         // 1. Extract Claims
         String googleId = oauth2User.getAttribute("sub");
         String email = oauth2User.getAttribute("email");
         String name = oauth2User.getAttribute("name");
 
-        // We will use the email as the unique username
+        if (googleId == null) {
+            throw new RuntimeException("Google OAuth2 mailfunction");
+        }
+
+        if (email == null) {
+            throw new RuntimeException("Email not provided by Google OAuth2");
+        }
+
+        // Use the email as the unique username
         String username = email;
 
         // Check for existing UserDbModel linked to this email/username
@@ -64,28 +73,36 @@ public class AuthService {
 
         if (existingUserOpt.isPresent()) {
             user = existingUserOpt.get();
-        } else {
-            CustomerTypeDbModel defaultCustomerType = null;
 
+            // Update user information if needed
+            if (user.getIsGoogle() && !googleId.equals(user.getGoogleAccount())) {
+                user.setGoogleAccount(googleId);
+                userRepository.save(user);
+            }
+        } else {
+            // Create new customer and user
             CustomerDbModel customer = new CustomerDbModel();
             customer.setCode("GGL_" + googleId);
-            customer.setName(name);
+            customer.setName(name != null ? name : "Google User");
             customer.setEmail(email);
             customer.setPhone(null); // No phone from Google
             customer.setDescription("Auto-created via Google OAuth2");
-            customer.setCustomerType(defaultCustomerType);
-            customerRepository.save(customer); // Save customer first
+            customer.setCustomerType(null); // No customer type for OAuth2 users
+
+            CustomerDbModel savedCustomer = customerRepository.save(customer);
 
             user = new UserDbModel();
             user.setUsername(username);
             user.setPassword(null); // No password for Google account
             user.setIsGoogle(true);
             user.setGoogleAccount(googleId);
-            user.setCustomer(customer); // Link the newly created customer
-            userRepository.save(user); // Save the user
+            user.setCustomer(savedCustomer);
 
-            customer.setUser(user);
-            customerRepository.save(customer); // Save customer again to update the link
+            UserDbModel savedUser = userRepository.save(user);
+
+            // Update customer with user reference
+            savedCustomer.setUser(savedUser);
+            customerRepository.save(savedCustomer);
 
             log.info("New Customer and User created via Google OAuth2: {}", username);
         }
@@ -203,5 +220,58 @@ public class AuthService {
             .map(t -> t.getUser()
                 .getId())
             .orElseThrow(() -> new UnauthorizedException("Invalid reset token"));
+    }
+
+    @Transactional
+    public AuthResponse register(RegisterRequest request) {
+        // Check if user already exists
+        if (userRepository.findByUsernameAndNotDeleted(request.getEmail()).isPresent()) {
+            throw new RuntimeException("User with this email already exists");
+        }
+
+        // Check if customer with this email or phone already exists
+        if (customerRepository.findByEmailAndIsDeletedFalse(request.getEmail()).isPresent()) {
+            throw new RuntimeException("Customer with this email already exists");
+        }
+
+        if (customerRepository.findByPhoneAndIsDeletedFalse(request.getPhone()).isPresent()) {
+            throw new RuntimeException("Customer with this phone already exists");
+        }
+
+        // Create customer
+        CustomerDbModel customer = new CustomerDbModel();
+        customer.setCode(generateCustomerCode());
+        customer.setName(request.getName());
+        customer.setEmail(request.getEmail());
+        customer.setPhone(request.getPhone());
+//        customer.setDescription(request.getDescription());
+        customer.setCustomerType(null); // No customer type for new registrations
+
+        CustomerDbModel savedCustomer = customerRepository.save(customer);
+
+        // Create user
+        UserDbModel user = new UserDbModel();
+        user.setUsername(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setIsGoogle(false);
+        user.setGoogleAccount(null);
+        user.setCustomer(savedCustomer);
+
+        UserDbModel savedUser = userRepository.save(user);
+
+        // Update customer with user reference
+        savedCustomer.setUser(savedUser);
+        customerRepository.save(savedCustomer);
+
+        log.info("New customer registered: {}", request.getEmail());
+
+        // Issue JWT tokens
+        return issueJwt(savedUser);
+    }
+
+    private String generateCustomerCode() {
+        // Generate a unique customer code like CUST_123456
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        return "CUST_" + timestamp.substring(timestamp.length() - 6);
     }
 }
