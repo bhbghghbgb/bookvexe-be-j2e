@@ -35,13 +35,35 @@ downloaded manually.
 - Run migrations as needed during startup
 - Stop MySQL by closing the command prompt window
 
+## Running PostgreSQL
+
+- Modify `start-postgres.bat` to set `POSTGRES_HOME` to `external-tools\postgres`
+- On the first start, the script will initialize the PostgreSQL data directory
+- Run `start-postgres.bat` from your project root to start PostgreSQL on demand
+- Logs will be written to `logfile.txt` inside the PostgreSQL folder
+- Stop PostgreSQL by running:
+  ```
+  bin\pg_ctl.exe -D data stop
+  ```
+
 ## Connecting Spring Boot
 
 Use connection parameters:
 
-- Host: `localhost`
-- User/password: as configured in `start-mysql.bat`
-- Port: 3306
+- MySQL
+    - Configure your Spring Boot application's database connection properties to point to:
+        - Host: `localhost`
+        - User: `root` (or as configured)
+        - Password: as set in `start-mysql.bat`
+        - Port: 3306 (default MySQL port)
+        - Database: as created in your migration or setup script
+- Postgres
+    - Use connection parameters:
+        - Host: `localhost`
+        - Port: `5432` (default PostgreSQL port)
+        - User: `postgres`
+        - Password: (set manually or via script)
+        - Database: as created in your migration or setup script
 
 ---
 

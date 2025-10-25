@@ -4,16 +4,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.bookvexebej2e.configs.JwtUtils;
 import org.example.bookvexebej2e.exceptions.UnauthorizedException;
+import org.example.bookvexebej2e.models.db.CustomerDbModel;
+import org.example.bookvexebej2e.models.db.CustomerTypeDbModel;
 import org.example.bookvexebej2e.models.db.UserDbModel;
-import org.example.bookvexebej2e.models.dto.auth.AuthResponse;
-import org.example.bookvexebej2e.models.dto.auth.LoginRequest;
-import org.example.bookvexebej2e.models.dto.auth.PasswordResetConfirmRequest;
-import org.example.bookvexebej2e.models.dto.auth.PasswordResetRequest;
+import org.example.bookvexebej2e.models.dto.auth.*;
 import org.example.bookvexebej2e.repositories.auth.TokenRepository;
+import org.example.bookvexebej2e.repositories.customer.CustomerRepository;
+import org.example.bookvexebej2e.repositories.customer.CustomerTypeRepository;
 import org.example.bookvexebej2e.repositories.user.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -23,18 +26,74 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final TokenRepository tokenRepository;
+    private final CustomerRepository customerRepository;
+    private final CustomerTypeRepository customerTypeRepository;
     private final TokenService tokenService;
     private final JwtUtils jwtUtils;
     private final PasswordEncoder passwordEncoder;
 
     public AuthResponse login(LoginRequest request) {
-        UserDbModel user = userRepository.findByUsernameAndNotDeleted(request.getUsername())
+        Optional<UserDbModel> userOptional;
+        if (Boolean.TRUE.equals(request.getLoginAsAdmin())) {
+            userOptional = userRepository.findAdminByUsernameAndNotDeleted(request.getUsername());
+        } else {
+            userOptional = userRepository.findByUsernameAndNotDeleted(request.getUsername());
+        }
+        UserDbModel user = userOptional
             .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new UnauthorizedException("Invalid credentials");
         }
 
+        return issueJwt(user);
+    }
+
+    public AuthResponse processOAuth2Login(OAuth2User oauth2User) {
+        // 1. Extract Claims
+        String googleId = oauth2User.getAttribute("sub");
+        String email = oauth2User.getAttribute("email");
+        String name = oauth2User.getAttribute("name");
+
+        // We will use the email as the unique username
+        String username = email;
+
+        // Check for existing UserDbModel linked to this email/username
+        Optional<UserDbModel> existingUserOpt = userRepository.findByUsernameAndNotDeleted(username);
+        UserDbModel user;
+
+        if (existingUserOpt.isPresent()) {
+            user = existingUserOpt.get();
+        } else {
+            CustomerTypeDbModel defaultCustomerType = null;
+
+            CustomerDbModel customer = new CustomerDbModel();
+            customer.setCode("GGL_" + googleId);
+            customer.setName(name);
+            customer.setEmail(email);
+            customer.setPhone(null); // No phone from Google
+            customer.setDescription("Auto-created via Google OAuth2");
+            customer.setCustomerType(defaultCustomerType);
+            customerRepository.save(customer); // Save customer first
+
+            user = new UserDbModel();
+            user.setUsername(username);
+            user.setPassword(null); // No password for Google account
+            user.setIsGoogle(true);
+            user.setGoogleAccount(googleId);
+            user.setCustomer(customer); // Link the newly created customer
+            userRepository.save(user); // Save the user
+
+            customer.setUser(user);
+            customerRepository.save(customer); // Save customer again to update the link
+
+            log.info("New Customer and User created via Google OAuth2: {}", username);
+        }
+
+        return issueJwt(user);
+    }
+
+    private AuthResponse issueJwt(UserDbModel user) {
         // Revoke existing tokens
         tokenService.revokeAllUserTokens(user.getId(), "ACCESS");
         tokenService.revokeAllUserTokens(user.getId(), "REFRESH");
@@ -46,6 +105,7 @@ public class AuthService {
         AuthResponse response = new AuthResponse();
         response.setAccessToken(accessToken.getToken());
         response.setRefreshToken(refreshToken.getToken());
+        // Use the access token expiration for the client-side expiresIn
         response.setExpiresIn(jwtUtils.getRefreshExpirationMs() / 1000);
 
         return response;
@@ -112,6 +172,30 @@ public class AuthService {
             tokenService.revokeAllUserTokens(userId, "REFRESH");
         }
     }
+
+    public void changePassword(String accessToken, ChangePasswordRequest request) {
+        if (!jwtUtils.validateToken(accessToken)) {
+            throw new UnauthorizedException("Invalid token");
+        }
+
+        UUID userId = jwtUtils.getUserIdFromToken(accessToken);
+        UserDbModel user = userRepository.findById(userId)
+            .orElseThrow(() -> new UnauthorizedException("User not found"));
+
+        // Verify current password
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new UnauthorizedException("Current password is incorrect");
+        }
+
+        // Update to new password
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        // Revoke all tokens for security
+        tokenService.revokeAllUserTokens(user.getId(), "ACCESS");
+        tokenService.revokeAllUserTokens(user.getId(), "REFRESH");
+    }
+
 
     private UUID getUserIdFromResetToken(String token) {
         // For reset tokens, we need to get user ID from database

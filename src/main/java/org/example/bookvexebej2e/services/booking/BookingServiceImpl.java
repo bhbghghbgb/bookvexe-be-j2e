@@ -1,11 +1,13 @@
 package org.example.bookvexebej2e.services.booking;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.BookingMapper;
+import org.example.bookvexebej2e.models.constant.BookingStatus;
 import org.example.bookvexebej2e.models.db.BookingDbModel;
 import org.example.bookvexebej2e.models.db.CustomerDbModel;
 import org.example.bookvexebej2e.models.db.TripDbModel;
@@ -54,6 +56,22 @@ public class BookingServiceImpl implements BookingService {
         Specification<BookingDbModel> spec = buildSpecification(query);
         Pageable pageable = buildPageable(query);
         Page<BookingDbModel> entities = bookingRepository.findAll(spec, pageable);
+
+        // Auto-update status based on departure date for eligible bookings
+        LocalDateTime now = LocalDateTime.now();
+        entities.forEach(entity -> {
+            if (BookingStatus.AWAIT_GO.equals(entity.getBookingStatus()) &&
+                    entity.getTrip() != null &&
+                    entity.getTrip().getDepartureTime() != null) {
+
+                LocalDateTime departureTime = entity.getTrip().getDepartureTime();
+                if (now.isAfter(departureTime) || now.isEqual(departureTime)) {
+                    entity.setBookingStatus(BookingStatus.DEPARTING);
+                    bookingRepository.save(entity);
+                }
+            }
+        });
+
         return entities.map(bookingMapper::toResponse);
     }
 
@@ -69,7 +87,9 @@ public class BookingServiceImpl implements BookingService {
         BookingDbModel entity = new BookingDbModel();
         entity.setCode(createDto.getCode());
         entity.setType(createDto.getType());
-        entity.setBookingStatus(createDto.getBookingStatus());
+        // Set default status to 'new' if not provided
+        entity.setBookingStatus(
+                createDto.getBookingStatus() != null ? createDto.getBookingStatus() : BookingStatus.NEW);
         entity.setTotalPrice(createDto.getTotalPrice());
 
         // Resolve relationships
@@ -216,5 +236,76 @@ public class BookingServiceImpl implements BookingService {
         Sort.Direction direction = Sort.Direction.fromString(query.getSortDirection());
         Sort sort = Sort.by(direction, query.getSortBy());
         return PageRequest.of(query.getPage(), query.getSize(), sort);
+    }
+
+    @Override
+    public BookingResponse confirmTrip(UUID id) {
+        BookingDbModel entity = bookingRepository.findByIdAndNotDeleted(id)
+                .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, id));
+
+        // Validate current status
+        if (!BookingStatus.NEW.equals(entity.getBookingStatus())) {
+            throw new IllegalStateException(
+                    "Booking can only be confirmed when status is 'new'. Current status: " + entity.getBookingStatus());
+        }
+
+        // Check if payment exists to determine next status
+        if (entity.getPayment() != null && "SUCCESS".equals(entity.getPayment().getStatus())) {
+            entity.setBookingStatus(BookingStatus.AWAIT_GO);
+        } else {
+            entity.setBookingStatus(BookingStatus.AWAIT_PAYMENT);
+        }
+
+        BookingDbModel savedEntity = bookingRepository.save(entity);
+        return bookingMapper.toResponse(savedEntity);
+    }
+
+    @Override
+    public BookingResponse completeTrip(UUID id) {
+        BookingDbModel entity = bookingRepository.findByIdAndNotDeleted(id)
+                .orElse(null);
+
+        if (entity == null) {
+            throw new ResourceNotFoundException(BookingDbModel.class, id);
+        }
+
+        // Validate current status
+        if (!BookingStatus.DEPARTING.equals(entity.getBookingStatus())) {
+            throw new IllegalStateException("Trip can only be completed when status is 'departing'. Current status: "
+                    + entity.getBookingStatus());
+        }
+
+        entity.setBookingStatus(BookingStatus.COMPLETED);
+        BookingDbModel savedEntity = bookingRepository.save(entity);
+        return bookingMapper.toResponse(savedEntity);
+    }
+
+    @Override
+    public BookingResponse updateStatusByDate(UUID id) {
+        BookingDbModel entity = bookingRepository.findByIdAndNotDeleted(id)
+                .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, id));
+
+        // Only update if status is AWAIT_GO
+        if (!BookingStatus.AWAIT_GO.equals(entity.getBookingStatus())) {
+            throw new IllegalStateException(
+                    "Status can only be updated by date when current status is 'await_go'. Current status: "
+                            + entity.getBookingStatus());
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime departureTime = entity.getTrip().getDepartureTime();
+
+        if (departureTime != null) {
+            if (now.isBefore(departureTime)) {
+                // Departure date has not come yet, keep as await_go
+                entity.setBookingStatus(BookingStatus.AWAIT_GO);
+            } else {
+                // Departure date has come, change to departing
+                entity.setBookingStatus(BookingStatus.DEPARTING);
+            }
+        }
+
+        BookingDbModel savedEntity = bookingRepository.save(entity);
+        return bookingMapper.toResponse(savedEntity);
     }
 }

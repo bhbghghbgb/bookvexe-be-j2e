@@ -1,36 +1,35 @@
 security:
   admin:
-    allow-all: false
+    allow-all: true
 
 spring:
   profiles:
     active: dev, ai-enabled
 
-
   application:
     name: bookvexe-be-j2e
 
-#  config:
-#    import: optional:classpath:application-oauth.yml
+  #  config:
+  #    import: optional:classpath:application-oauth.yml
 
   datasource:
     url: jdbc:postgresql://localhost:5432/bookvexedb_j2e
-    username: root
-    password: nopass
+    username: postgres
+    password: root
   ai:
     ollama:
-      base-url: http://localhost:11434  # URL của Ollama server (mặc định)
+      base-url: http://localhost:11434 # URL của Ollama server (mặc định)
       chat:
         options:
-          model: gemma2  # Mô hình AI (có thể đổi thành mistral, gemma2, v.v.)
+          model: gemma2 # Mô hình AI (có thể đổi thành mistral, gemma2, v.v.)
           temperature: 0.7
       embedding:
         options:
-          model: nomic-embed-text  # Mô hình embedding cho vector search
+          model: nomic-embed-text # Mô hình embedding cho vector search
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: none  # ddl-auto was originally set to update, now explicitly none
+      ddl-auto: none # ddl-auto was originally set to update, now explicitly none
     properties:
       hibernate:
         format_sql: true
@@ -41,14 +40,12 @@ spring:
   # spring.autoconfigure.exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
 
   flyway:
-    enabled: true
+    enabled: false
     locations: classpath:db/migration
 
   docker:
     compose:
       enabled: false
-
-
 
 logging:
   level:
@@ -58,10 +55,10 @@ logging:
           jdbc:
             bind: trace
       springframework:
-        web: DEBUG  # Log incoming HTTP requests and mappings
+        web: DEBUG # Log incoming HTTP requests and mappings
         web.servlet.DispatcherServlet: DEBUG
         web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: DEBUG
-        security: DEBUG  # Log security decisions
+        security: DEBUG # Log security decisions
         security.web.FilterChainProxy: DEBUG
       flywaydb: DEBUG
 

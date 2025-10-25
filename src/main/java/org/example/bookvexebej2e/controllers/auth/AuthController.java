@@ -3,10 +3,7 @@ package org.example.bookvexebej2e.controllers.auth;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.bookvexebej2e.models.dto.auth.AuthResponse;
-import org.example.bookvexebej2e.models.dto.auth.LoginRequest;
-import org.example.bookvexebej2e.models.dto.auth.PasswordResetConfirmRequest;
-import org.example.bookvexebej2e.models.dto.auth.PasswordResetRequest;
+import org.example.bookvexebej2e.models.dto.auth.*;
 import org.example.bookvexebej2e.services.auth.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +32,16 @@ public class AuthController {
         authService.logout(token);
         return ResponseEntity.ok()
             .build();
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(
+        @Valid @RequestBody ChangePasswordRequest request,
+        @RequestHeader("Authorization") String authorizationHeader
+    ) {
+        String token = authorizationHeader.substring(7);
+        authService.changePassword(token, request);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/password-reset/request")
