@@ -7,7 +7,7 @@ import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = { CarTypeMapper.class, CarSeatMapper.class })
 public interface CarMapper {
 
     CarResponse toResponse(CarDbModel entity);
