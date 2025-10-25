@@ -61,25 +61,6 @@ public class RoleServiceImpl implements RoleService {
         entity.setCode(createDto.getCode());
         entity.setName(createDto.getName());
         entity.setDescription(createDto.getDescription());
-        List<RolePermissionDbModel> permissions = createDto.getRolePermissionCreates()
-                .stream()
-                .map(dto -> {
-                    RolePermissionDbModel perm = new RolePermissionDbModel();
-                    perm.setModule(dto.getModule());
-                    perm.setIsCanCreate(dto.getIsCanCreate());
-                    perm.setIsCanRead(dto.getIsCanRead());
-                    perm.setIsCanUpdate(dto.getIsCanUpdate());
-                    perm.setIsCanDelete(dto.getIsCanDelete());
-                    perm.setIsCanActivate(dto.getIsCanActivate());
-                    perm.setIsCanDeactivate(dto.getIsCanDeactivate());
-                    perm.setIsCanImport(dto.getIsCanImport());
-                    perm.setIsCanExport(dto.getIsCanExport());
-                    perm.setRole(entity);
-                    return perm;
-                })
-                .collect(Collectors.toList());
-
-        entity.setRolePermissions(permissions);
         RoleDbModel savedEntity = roleRepository.save(entity);
         return roleMapper.toResponse(savedEntity);
     }
@@ -93,30 +74,6 @@ public class RoleServiceImpl implements RoleService {
         entity.setName(updateDto.getName());
         entity.setDescription(updateDto.getDescription());
 
-        // Xóa toàn bộ quyền cũ (nhờ orphanRemoval = true)
-        entity.getRolePermissions().clear();
-
-        // Tạo lại danh sách quyền mới
-        List<RolePermissionDbModel> newPermissions = updateDto.getRolePermissionUpdates()
-                .stream()
-                .map(dto -> {
-                    RolePermissionDbModel perm = new RolePermissionDbModel();
-                    perm.setModule(dto.getModule());
-                    perm.setIsCanCreate(dto.getIsCanCreate());
-                    perm.setIsCanRead(dto.getIsCanRead());
-                    perm.setIsCanUpdate(dto.getIsCanUpdate());
-                    perm.setIsCanDelete(dto.getIsCanDelete());
-                    perm.setIsCanActivate(dto.getIsCanActivate());
-                    perm.setIsCanDeactivate(dto.getIsCanDeactivate());
-                    perm.setIsCanImport(dto.getIsCanImport());
-                    perm.setIsCanExport(dto.getIsCanExport());
-                    perm.setRole(entity); // Quan trọng
-                    return perm;
-                })
-                .collect(Collectors.toList());
-
-        // Gán danh sách mới
-        entity.setRolePermissions(newPermissions);
 
         // Lưu lại toàn bộ
         RoleDbModel updatedEntity = roleRepository.save(entity);
