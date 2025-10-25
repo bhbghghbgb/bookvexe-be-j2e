@@ -4,7 +4,7 @@ security:
 
 spring:
   profiles:
-    active: dev, ai-enabled
+    active: dev
 
   application:
     name: bookvexe-be-j2e
@@ -14,8 +14,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/bookvexedb_j2e
-    username: postgres
-    password: root
+    username: root
+    password: nopass
   ai:
     ollama:
       base-url: http://localhost:11434 # URL của Ollama server (mặc định)
