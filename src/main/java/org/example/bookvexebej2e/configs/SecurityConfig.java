@@ -86,7 +86,7 @@ public class SecurityConfig {
                         // Permit public/auth/swagger/root
 
                         .requestMatchers("/swagger/**", "/swagger/v1/**", "/", "/hello", "/auth/**",
-                                "/swagger-ui/**", "/v3/api-docs/**", "/error", "/dev/*")
+                                "/swagger-ui/**", "/v3/api-docs/**", "/error", "/dev/*", "/api/chat/*")
                         .permitAll()
                         // Require ADMIN role for /admin/**
                         .requestMatchers("/admin/**")

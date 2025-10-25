@@ -1,15 +1,19 @@
 package org.example.bookvexebej2e.models.constant;
 
+import lombok.Data;
+
 import java.util.ArrayList;
 import java.util.List;
-
+@Data
 public class Module {
 
-    public class ModuleDto {
+    @Data
+    public static class ModuleDto {
         public String code;
         public String name;
         public String description;
         public String urlPageView;
+
         private Boolean isCanRead = true;
         private Boolean isCanCreate = true;
         private Boolean isCanUpdate = true;
@@ -31,7 +35,8 @@ public class Module {
         result.add(create("BOOKING", "Quản lý đặt xe", "Quản lý đơn đặt vé xe của khách hàng", "/booking"));
         result.add(create("PAYMENT", "Quản lý giao dịch", "Quản lý các giao dịch và thanh toán", "/transaction"));
         result.add(create("PAYMENT_METHOD", "Quản lý phương thức thanh toán", "Quản lý các hình thức thanh toán", "/payment-method"));
-        result.add(create("ROLE", "Quản lý vai trò", "Quản lý quyền hạn và phân quyền hệ thống", "/role"));
+        result.add(create("ROLE", "Quản lý vai trò", "Quản lý vai trò trong hệ thống", "/role"));
+        result.add(create("PERMISSION", "Phân quyền", "Phân quyền", "/permission"));
 
         return result;
     }

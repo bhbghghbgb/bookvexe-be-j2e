@@ -8,6 +8,6 @@ public enum PermissionAction {
     ACTIVATE,
     DEACTIVATE,
     IMPORT,
-    EXPORT
+    EXPORT,
 }
 
