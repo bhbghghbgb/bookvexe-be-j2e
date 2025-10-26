@@ -11,15 +11,12 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface RouteMapper {
 
-    // --- ADMIN / BACKOFFICE ---
     RouteResponse toResponse(RouteDbModel entity);
 
     RouteSelectResponse toSelectResponse(RouteDbModel entity);
 
-    // --- USER SIDE ---
     RouteUserResponse toUserResponse(RouteDbModel entity);
 
-    // --- AFTER MAPPING HOOK ---
     @AfterMapping
     default void setPermissions(@MappingTarget RouteResponse response, RouteDbModel entity) {
         if (response != null && entity != null) {
