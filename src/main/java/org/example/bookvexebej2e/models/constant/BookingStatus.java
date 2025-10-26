@@ -9,6 +9,5 @@ public class BookingStatus {
     public static final String CANCELLED = "cancelled";
 
     private BookingStatus() {
-        // Utility class
     }
 }

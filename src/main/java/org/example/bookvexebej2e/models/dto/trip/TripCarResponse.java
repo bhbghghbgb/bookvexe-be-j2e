@@ -4,16 +4,18 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.example.bookvexebej2e.models.dto.base.BasePermissionResponse;
 import org.example.bookvexebej2e.models.dto.car.CarResponse;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.example.bookvexebej2e.models.dto.base.BasePermissionResponse;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class TripCarResponse extends BasePermissionResponse {
     private UUID id;
+    private UUID tripId;
+    private UUID carId;
     private CarResponse car;
     private BigDecimal price;
     private Integer availableSeats;
