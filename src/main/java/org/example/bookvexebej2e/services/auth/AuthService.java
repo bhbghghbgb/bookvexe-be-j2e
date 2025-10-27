@@ -34,11 +34,20 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         Optional<UserDbModel> userOptional;
+
         if (Boolean.TRUE.equals(request.getLoginAsAdmin())) {
+            // Admin login with username
             userOptional = userRepository.findAdminByUsernameAndNotDeleted(request.getUsername());
         } else {
+            // Customer login with phone number (which is the username)
             userOptional = userRepository.findByUsernameAndNotDeleted(request.getUsername());
+
+            // Additional check: ensure the user is a customer and has the phone set as username
+            if (userOptional.isPresent() && userOptional.get().getCustomer() == null) {
+                throw new UnauthorizedException("Invalid credentials");
+            }
         }
+
         UserDbModel user = userOptional
             .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
 
@@ -51,33 +60,33 @@ public class AuthService {
 
     @Transactional
     public AuthResponse processOAuth2Login(OAuth2User oauth2User) {
-        // 1. Extract Claims
         String googleId = oauth2User.getAttribute("sub");
         String email = oauth2User.getAttribute("email");
         String name = oauth2User.getAttribute("name");
 
         if (googleId == null) {
-            throw new RuntimeException("Google OAuth2 mailfunction");
+            throw new RuntimeException("Google OAuth2 malfunction");
         }
 
         if (email == null) {
             throw new RuntimeException("Email not provided by Google OAuth2");
         }
 
-        // Use the email as the unique username
-        String username = email;
-
-        // Check for existing UserDbModel linked to this email/username
-        Optional<UserDbModel> existingUserOpt = userRepository.findByUsernameAndNotDeleted(username);
+        // Check for existing UserDbModel linked to this google account
+        Optional<UserDbModel> existingUserOpt = userRepository.findByGoogleAccountAndIsDeletedFalse(googleId);
         UserDbModel user;
 
         if (existingUserOpt.isPresent()) {
             user = existingUserOpt.get();
 
             // Update user information if needed
-            if (user.getIsGoogle() && !googleId.equals(user.getGoogleAccount())) {
-                user.setGoogleAccount(googleId);
-                userRepository.save(user);
+            if (!email.equals(user.getCustomer().getEmail())) {
+                user.getCustomer().setEmail(email);
+                customerRepository.save(user.getCustomer());
+            }
+            if (name != null && !name.equals(user.getCustomer().getName())) {
+                user.getCustomer().setName(name);
+                customerRepository.save(user.getCustomer());
             }
         } else {
             // Create new customer and user
@@ -85,15 +94,15 @@ public class AuthService {
             customer.setCode("GGL_" + googleId);
             customer.setName(name != null ? name : "Google User");
             customer.setEmail(email);
-            customer.setPhone(null); // No phone from Google
+            customer.setPhone(null); // No phone from Google - user must set this
             customer.setDescription("Auto-created via Google OAuth2");
-            customer.setCustomerType(null); // No customer type for OAuth2 users
+            customer.setCustomerType(null);
 
             CustomerDbModel savedCustomer = customerRepository.save(customer);
 
             user = new UserDbModel();
-            user.setUsername(username);
-            user.setPassword(null); // No password for Google account
+            user.setUsername(null); // Set to null initially - user must set phone as username
+            user.setPassword(null); // No password for Google account initially
             user.setIsGoogle(true);
             user.setGoogleAccount(googleId);
             user.setCustomer(savedCustomer);
@@ -104,7 +113,7 @@ public class AuthService {
             savedCustomer.setUser(savedUser);
             customerRepository.save(savedCustomer);
 
-            log.info("New Customer and User created via Google OAuth2: {}", username);
+            log.info("New Customer and User created via Google OAuth2: {}", email);
         }
 
         return issueJwt(user);

@@ -1,13 +1,17 @@
 package org.example.bookvexebej2e.services.user;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.configs.SecurityUtils;
+import org.example.bookvexebej2e.exceptions.BadRequestException;
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.UserMapper;
 import org.example.bookvexebej2e.models.db.CustomerDbModel;
 import org.example.bookvexebej2e.models.db.EmployeeDbModel;
 import org.example.bookvexebej2e.models.db.UserDbModel;
+import org.example.bookvexebej2e.models.dto.auth.CustomerProfileUpdate;
 import org.example.bookvexebej2e.models.dto.user.*;
 import org.example.bookvexebej2e.repositories.customer.CustomerRepository;
 import org.example.bookvexebej2e.repositories.employee.EmployeeRepository;
@@ -126,6 +130,95 @@ public class UserServiceImpl implements UserService {
 
         UserDbModel updatedEntity = userRepository.save(entity);
         return userMapper.toResponse(updatedEntity);
+    }
+
+    @Transactional
+    public UserResponse updateCustomerProfile(UUID userId, CustomerProfileUpdate updateDto) {
+        UserDbModel user = userRepository.findById(userId)
+            .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        if (user.getCustomer() == null) {
+            throw new BadRequestException("User is not a customer");
+        }
+
+        CustomerDbModel customer = user.getCustomer();
+
+        // Check if phone is being changed and if it's already taken
+        if (updateDto.getPhone() != null && !updateDto.getPhone().equals(customer.getPhone())) {
+            boolean phoneExists = customerRepository.existsByPhoneAndIsDeletedFalse(updateDto.getPhone());
+            if (phoneExists) {
+                throw new BadRequestException("Phone number already in use");
+            }
+            customer.setPhone(updateDto.getPhone());
+
+            // Also update username to phone for login
+            user.setUsername(updateDto.getPhone());
+        }
+
+        // Update other fields
+        if (updateDto.getName() != null) {
+            customer.setName(updateDto.getName());
+        }
+
+        if (updateDto.getEmail() != null) {
+            customer.setEmail(updateDto.getEmail());
+        }
+
+        // Update password if provided
+        if (updateDto.getPassword() != null && !updateDto.getPassword().trim().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(updateDto.getPassword()));
+        }
+
+        customerRepository.save(customer);
+        userRepository.save(user);
+
+        return userMapper.toResponse(user);
+    }
+
+    @Transactional
+    public UserResponse setupCustomerCredentials(UUID userId, CustomerProfileUpdate setupDto) {
+        UserDbModel user = userRepository.findById(userId)
+            .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        if (user.getCustomer() == null) {
+            throw new BadRequestException("User is not a customer");
+        }
+
+        CustomerDbModel customer = user.getCustomer();
+
+        // Validate that phone is provided (will be used as username)
+        if (setupDto.getPhone() == null || setupDto.getPhone().trim().isEmpty()) {
+            throw new BadRequestException("Phone number is required");
+        }
+
+        // Check if phone is already taken
+        boolean phoneExists = customerRepository.existsByPhoneAndIsDeletedFalse(setupDto.getPhone());
+        if (phoneExists) {
+            throw new BadRequestException("Phone number already in use");
+        }
+
+        // Validate that password is provided
+        if (setupDto.getPassword() == null || setupDto.getPassword().trim().isEmpty()) {
+            throw new BadRequestException("Password is required");
+        }
+
+        // Update customer information
+        customer.setPhone(setupDto.getPhone());
+        if (setupDto.getName() != null) {
+            customer.setName(setupDto.getName());
+        }
+        if (setupDto.getEmail() != null) {
+            customer.setEmail(setupDto.getEmail());
+        }
+
+        // Setup username and password
+        user.setUsername(setupDto.getPhone());
+        user.setPassword(passwordEncoder.encode(setupDto.getPassword()));
+
+        customerRepository.save(customer);
+        userRepository.save(user);
+
+        return userMapper.toResponse(user);
     }
 
     @Override

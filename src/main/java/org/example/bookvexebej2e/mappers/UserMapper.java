@@ -23,7 +23,7 @@ public abstract class UserMapper {
     protected RoleMapper roleMapper;
 
     @Mapping(target = "roles", expression = "java(mapRoles(entity.getRoleUsers()))")
-    public abstract UserResponse toResponse(UserDbModel entity);
+    @Mapping(target = "hasPassword", expression = "java(entity.getPassword() != null && !entity.getPassword().isEmpty())")    public abstract UserResponse toResponse(UserDbModel entity);
 
     public abstract UserSelectResponse toSelectResponse(UserDbModel entity);
 
