@@ -1,18 +1,13 @@
 package org.example.bookvexebej2e.services.employee;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
+import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.EmployeeMapper;
 import org.example.bookvexebej2e.models.db.EmployeeDbModel;
 import org.example.bookvexebej2e.models.db.UserDbModel;
-import org.example.bookvexebej2e.models.dto.employee.EmployeeCreate;
-import org.example.bookvexebej2e.models.dto.employee.EmployeeQuery;
-import org.example.bookvexebej2e.models.dto.employee.EmployeeResponse;
-import org.example.bookvexebej2e.models.dto.employee.EmployeeSelectResponse;
-import org.example.bookvexebej2e.models.dto.employee.EmployeeUpdate;
+import org.example.bookvexebej2e.models.dto.employee.*;
 import org.example.bookvexebej2e.repositories.employee.EmployeeRepository;
 import org.example.bookvexebej2e.repositories.user.UserRepository;
 import org.springframework.data.domain.Page;
@@ -22,9 +17,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import jakarta.persistence.criteria.Predicate;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -135,7 +130,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     private Specification<EmployeeDbModel> buildSpecification(EmployeeQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getCode() != null && !query.getCode()
                     .isEmpty()) {
@@ -156,6 +150,10 @@ public class EmployeeServiceImpl implements EmployeeService {
                     .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("phone")), "%" + query.getPhone()
                         .toLowerCase() + "%"));
+            }
+
+            if (query.getIsDeleted() != null) {
+                predicates.add(cb.equal(root.get("isDeleted"), query.getIsDeleted()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
