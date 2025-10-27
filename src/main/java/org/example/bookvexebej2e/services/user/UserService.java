@@ -1,5 +1,6 @@
 package org.example.bookvexebej2e.services.user;
 
+import org.example.bookvexebej2e.models.dto.auth.CustomerProfileUpdate;
 import org.example.bookvexebej2e.models.dto.user.*;
 import org.springframework.data.domain.Page;
 
@@ -28,4 +29,8 @@ public interface UserService {
     List<UserSelectResponse> findAllForSelect();
 
     Page<UserSelectResponse> findAllForSelect(UserQuery query);
+
+    UserResponse setupCustomerCredentials(UUID userId, CustomerProfileUpdate setupDto);
+
+    UserResponse updateCustomerProfile(UUID userId, CustomerProfileUpdate updateDto);
 }

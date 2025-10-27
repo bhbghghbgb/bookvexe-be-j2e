@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @ToString
 public class UserDbModel extends BaseModel {
-    @Column(length = 255, name = "username", unique = true)
+    @Column(length = 255, name = "username", unique = true, nullable = true)
     private String username;
 
     @Column(length = 255, name = "password")

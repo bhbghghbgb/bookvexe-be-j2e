@@ -16,6 +16,7 @@ import java.util.UUID;
 public class UserResponse extends BasePermissionResponse {
     private UUID id;
     private String username;
+    private Boolean hasPassword;
     private Boolean isGoogle;
     private Boolean isAdmin;
     private String googleAccount;
