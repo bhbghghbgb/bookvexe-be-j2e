@@ -14,4 +14,5 @@ public class CustomerQuery extends BasePageableQuery {
     private String email;
     private String phone;
     private UUID customerTypeId;
+    private Boolean isDeleted;
 }

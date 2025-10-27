@@ -148,7 +148,6 @@ public class CustomerServiceImpl implements CustomerService {
     private Specification<CustomerDbModel> buildSpecification(CustomerQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getCode() != null && !query.getCode()
                     .isEmpty()) {
@@ -173,6 +172,10 @@ public class CustomerServiceImpl implements CustomerService {
             if (query.getCustomerTypeId() != null) {
                 predicates.add(cb.equal(root.get("customerType")
                         .get("id"), query.getCustomerTypeId()));
+            }
+
+            if (query.getIsDeleted() != null) {
+                predicates.add(cb.equal(root.get("isDeleted"), query.getIsDeleted()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
