@@ -11,4 +11,5 @@ public class EmployeeQuery extends BasePageableQuery {
     private String name;
     private String email;
     private String phone;
+    private Boolean isDeleted;
 }
