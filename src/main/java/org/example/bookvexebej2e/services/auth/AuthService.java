@@ -233,16 +233,17 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        // Check if user already exists
+        // Check if user already exists with this email as username
         if (userRepository.findByUsernameAndNotDeleted(request.getEmail()).isPresent()) {
             throw new RuntimeException("User with this email already exists");
         }
 
-        // Check if customer with this email or phone already exists
+        // Check if customer with this email already exists
         if (customerRepository.findByEmailAndIsDeletedFalse(request.getEmail()).isPresent()) {
             throw new RuntimeException("Customer with this email already exists");
         }
 
+        // Check if customer with this phone already exists
         if (customerRepository.findByPhoneAndIsDeletedFalse(request.getPhone()).isPresent()) {
             throw new RuntimeException("Customer with this phone already exists");
         }
@@ -253,14 +254,14 @@ public class AuthService {
         customer.setName(request.getName());
         customer.setEmail(request.getEmail());
         customer.setPhone(request.getPhone());
-//        customer.setDescription(request.getDescription());
+        customer.setDescription("Registered via website");
         customer.setCustomerType(null); // No customer type for new registrations
 
         CustomerDbModel savedCustomer = customerRepository.save(customer);
 
         // Create user
         UserDbModel user = new UserDbModel();
-        user.setUsername(request.getEmail());
+        user.setUsername(request.getPhone()); // Use phone as username for login
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setIsGoogle(false);
         user.setGoogleAccount(null);
