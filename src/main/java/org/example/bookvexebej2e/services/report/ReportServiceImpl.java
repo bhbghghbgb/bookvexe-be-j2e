@@ -58,8 +58,8 @@ public class ReportServiceImpl implements ReportService {
         Expression<String> dateExpr = cb.function("TO_CHAR", String.class, p.get("paidAt"), cb.literal("YYYY-MM-DD"));
 
         List<Predicate> predicates = new ArrayList<>();
-        // not deleted
-        predicates.add(cb.isFalse(p.get("isDeleted")));
+        // not deleted (treat NULL as not-deleted too)
+        predicates.add(cb.or(cb.isFalse(p.get("isDeleted")), cb.isNull(p.get("isDeleted"))));
 
         // status default SUCCESS if not provided
         if (filter.getStatus() != null && !filter.getStatus().isEmpty()) {
@@ -110,7 +110,7 @@ public class ReportServiceImpl implements ReportService {
         Join<?, ?> m = p.join("method");
 
         List<Predicate> predicates = new ArrayList<>();
-        predicates.add(cb.isFalse(p.get("isDeleted")));
+        predicates.add(cb.or(cb.isFalse(p.get("isDeleted")), cb.isNull(p.get("isDeleted"))));
         if (filter.getStatus() != null && !filter.getStatus().isEmpty()) {
             predicates.add(cb.equal(p.get("status"), filter.getStatus()));
         } else {
@@ -150,7 +150,7 @@ public class ReportServiceImpl implements ReportService {
         Join<?, ?> r = t.join("route");
 
         List<Predicate> predicates = new ArrayList<>();
-        predicates.add(cb.isFalse(b.get("isDeleted")));
+        predicates.add(cb.or(cb.isFalse(b.get("isDeleted")), cb.isNull(b.get("isDeleted"))));
         if (filter.getStartDate() != null && filter.getEndDate() != null) {
             predicates.add(cb.between(b.get("createdDate"), startOfDay(filter.getStartDate()), endOfDay(filter.getEndDate())));
         }
@@ -189,7 +189,7 @@ public class ReportServiceImpl implements ReportService {
         Join<?, ?> r = t.join("route");
 
         List<Predicate> predicates = new ArrayList<>();
-        predicates.add(cb.isFalse(b.get("isDeleted")));
+        predicates.add(cb.or(cb.isFalse(b.get("isDeleted")), cb.isNull(b.get("isDeleted"))));
         if (filter.getStartDate() != null && filter.getEndDate() != null) {
             predicates.add(cb.between(b.get("createdDate"), startOfDay(filter.getStartDate()), endOfDay(filter.getEndDate())));
         }
@@ -201,8 +201,8 @@ public class ReportServiceImpl implements ReportService {
             predicates.add(cb.equal(c.get("customerType").get("id"), filter.getCustomerTypeId()));
         }
 
-        Expression<Long> cancelled = cb.sum(cb.<Long>selectCase().when(cb.equal(b.get("bookingStatus"), "CANCELLED"), 1L).otherwise(0L));
-        Expression<Long> success = cb.sum(cb.<Long>selectCase().when(b.get("bookingStatus").in("CONFIRMED", "PAID", "COMPLETED"), 1L).otherwise(0L));
+        Expression<Long> cancelled = cb.sum(cb.<Long>selectCase().when(cb.equal(b.get("bookingStatus"), "cancelled"), 1L).otherwise(0L));
+        Expression<Long> success = cb.sum(cb.<Long>selectCase().when(cb.notEqual(b.get("bookingStatus"), "cancelled"), 1L).otherwise(0L));
         Expression<String> routeName = cb.concat(cb.concat(r.get("startLocation"), " \u2192 "), r.get("endLocation"));
 
         cq.multiselect(routeName, cancelled, success)
@@ -229,7 +229,7 @@ public class ReportServiceImpl implements ReportService {
         Join<?, ?> t = b.join("trip");
 
         List<Predicate> predicates = new ArrayList<>();
-        predicates.add(cb.isFalse(b.get("isDeleted")));
+        predicates.add(cb.or(cb.isFalse(b.get("isDeleted")), cb.isNull(b.get("isDeleted"))));
         if (filter.getStartDate() != null && filter.getEndDate() != null) {
             predicates.add(cb.between(t.get("departureTime"), startOfDay(filter.getStartDate()), endOfDay(filter.getEndDate())));
         }
@@ -244,7 +244,7 @@ public class ReportServiceImpl implements ReportService {
             predicates.add(cb.exists(sub));
         }
 
-        Expression<Object> statusLabel = cb.selectCase().when(cb.equal(b.get("bookingStatus"), "CANCELLED"), "Bị hủy").otherwise("Đã chạy");
+        Expression<Object> statusLabel = cb.selectCase().when(cb.equal(b.get("bookingStatus"), "cancelled"), "Bị hủy").otherwise("Đã chạy");
         cq.multiselect(statusLabel, cb.count(b.get("id")))
           .where(predicates.toArray(new Predicate[0]))
           .groupBy(statusLabel);
@@ -268,7 +268,7 @@ public class ReportServiceImpl implements ReportService {
         Join<?, ?> t = b.join("trip");
 
         List<Predicate> predicates = new ArrayList<>();
-        predicates.add(cb.isFalse(b.get("isDeleted")));
+        predicates.add(cb.or(cb.isFalse(b.get("isDeleted")), cb.isNull(b.get("isDeleted"))));
         if (filter.getStartDate() != null && filter.getEndDate() != null) {
             predicates.add(cb.between(t.get("departureTime"), startOfDay(filter.getStartDate()), endOfDay(filter.getEndDate())));
         }
@@ -283,8 +283,8 @@ public class ReportServiceImpl implements ReportService {
         }
 
         Expression<String> dateExpr = cb.function("TO_CHAR", String.class, t.get("departureTime"), cb.literal("YYYY-MM-DD"));
-        Expression<Long> cancelled = cb.sum(cb.<Long>selectCase().when(cb.equal(b.get("bookingStatus"), "CANCELLED"), 1L).otherwise(0L));
-        Expression<Long> completed = cb.sum(cb.<Long>selectCase().when(cb.notEqual(b.get("bookingStatus"), "CANCELLED"), 1L).otherwise(0L));
+        Expression<Long> cancelled = cb.sum(cb.<Long>selectCase().when(cb.equal(b.get("bookingStatus"), "cancelled"), 1L).otherwise(0L));
+        Expression<Long> completed = cb.sum(cb.<Long>selectCase().when(cb.notEqual(b.get("bookingStatus"), "cancelled"), 1L).otherwise(0L));
 
         cq.multiselect(dateExpr, cancelled, completed)
           .where(predicates.toArray(new Predicate[0]))
