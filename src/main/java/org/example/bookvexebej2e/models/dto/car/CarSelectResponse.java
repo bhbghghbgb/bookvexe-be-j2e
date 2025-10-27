@@ -11,4 +11,5 @@ public class CarSelectResponse {
     private String code;
     private String licensePlate;
     private List<CarSeatSelectResponse> carSeats;
+    private CarTypeSelectResponse carType;
 }

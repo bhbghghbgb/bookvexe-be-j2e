@@ -17,4 +17,13 @@ public interface BookingUserRepository extends BaseRepository<BookingDbModel> {
 
     // Lấy 1 booking cụ thể chưa bị xóa
     Optional<BookingDbModel> findByIdAndIsDeletedFalse(UUID id);
+
+    // Tìm booking theo code
+    Optional<BookingDbModel> findByCodeAndIsDeletedFalse(String code);
+
+    // Tìm booking theo số điện thoại khách hàng
+    List<BookingDbModel> findByCustomer_PhoneAndIsDeletedFalse(String phone);
+
+    // Tìm booking theo tên khách hàng (chứa)
+    List<BookingDbModel> findByCustomer_NameContainingIgnoreCaseAndIsDeletedFalse(String name);
 }

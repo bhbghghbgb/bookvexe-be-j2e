@@ -102,11 +102,11 @@ public class BookingServiceImpl implements BookingService {
         entity.setTrip(trip);
 
         TripStopDbModel pickupStop = tripStopRepository.findById(createDto.getPickupStopId())
-                .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, createDto.getPickupStopId()));
+                .orElseThrow(() -> new ResourceNotFoundException(TripStopDbModel.class, createDto.getPickupStopId()));
         entity.setPickupStop(pickupStop);
 
         TripStopDbModel dropoffStop = tripStopRepository.findById(createDto.getDropoffStopId())
-                .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, createDto.getDropoffStopId()));
+                .orElseThrow(() -> new ResourceNotFoundException(TripStopDbModel.class, createDto.getDropoffStopId()));
         entity.setDropoffStop(dropoffStop);
 
         BookingDbModel savedEntity = bookingRepository.save(entity);

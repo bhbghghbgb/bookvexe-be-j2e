@@ -16,6 +16,7 @@ import org.example.bookvexebej2e.models.db.TripStopDbModel;
 import org.example.bookvexebej2e.models.db.UserDbModel;
 import org.example.bookvexebej2e.models.dto.booking.BookingQuery;
 import org.example.bookvexebej2e.models.dto.booking.BookingResponse;
+import org.example.bookvexebej2e.models.dto.booking.BookingSearchRequest;
 import org.example.bookvexebej2e.models.dto.booking.BookingSeatCreate;
 import org.example.bookvexebej2e.models.dto.booking.BookingUserCreate;
 import org.example.bookvexebej2e.repositories.booking.BookingSeatRepository;
@@ -33,6 +34,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.criteria.Predicate;
@@ -51,14 +53,100 @@ public class BookingUserServiceImpl implements BookingUserService {
     private final TripStopRepository tripStopRepository;
     private final CarSeatRepository carSeatRepository;
     private final BookingUserMapper bookingUserMapper;
+    private final PasswordEncoder passwordEncoder; // ✅ Thêm encoder
 
+    /**
+     * Search booking by code, phone, or name
+     */
+    @Override
+    public BookingResponse searchBooking(BookingSearchRequest searchRequest) {
+        if ((searchRequest.getBookingCode() == null || searchRequest.getBookingCode().trim().isEmpty()) &&
+                (searchRequest.getCustomerName() == null || searchRequest.getCustomerName().trim().isEmpty()) &&
+                (searchRequest.getCustomerPhone() == null || searchRequest.getCustomerPhone().trim().isEmpty())) {
+            throw new IllegalArgumentException("At least one search criterion must be provided");
+        }
+
+        BookingDbModel booking = null;
+
+        // CASE 1: Search by booking code
+        if (searchRequest.getBookingCode() != null && !searchRequest.getBookingCode().trim().isEmpty()) {
+            booking = bookingUserRepository.findByCodeAndIsDeletedFalse(searchRequest.getBookingCode().trim())
+                    .orElse(null);
+
+            if (booking != null) {
+                if (searchRequest.getCustomerName() != null &&
+                        !searchRequest.getCustomerName().trim().isEmpty() &&
+                        !booking.getCustomer().getName().equalsIgnoreCase(searchRequest.getCustomerName().trim())) {
+                    throw new IllegalArgumentException(
+                            "Booking not found: code matches but customer name does not match");
+                }
+
+                if (searchRequest.getCustomerPhone() != null &&
+                        !searchRequest.getCustomerPhone().trim().isEmpty() &&
+                        !booking.getCustomer().getPhone().equals(searchRequest.getCustomerPhone().trim())) {
+                    throw new IllegalArgumentException(
+                            "Booking not found: code matches but customer phone does not match");
+                }
+
+                return bookingUserMapper.toResponse(booking);
+            } else {
+                throw new IllegalArgumentException("Booking not found with code: " + searchRequest.getBookingCode());
+            }
+        }
+
+        // CASE 2: Search by phone (and name optional)
+        if (searchRequest.getCustomerPhone() != null && !searchRequest.getCustomerPhone().trim().isEmpty()) {
+            List<BookingDbModel> bookingsByPhone = bookingUserRepository
+                    .findByCustomer_PhoneAndIsDeletedFalse(searchRequest.getCustomerPhone().trim());
+
+            if (!bookingsByPhone.isEmpty()) {
+                if (searchRequest.getCustomerName() != null && !searchRequest.getCustomerName().trim().isEmpty()) {
+                    booking = bookingsByPhone.stream()
+                            .filter(b -> b.getCustomer().getName()
+                                    .equalsIgnoreCase(searchRequest.getCustomerName().trim()))
+                            .findFirst().orElse(null);
+
+                    if (booking == null) {
+                        throw new IllegalArgumentException("Booking not found with phone " +
+                                searchRequest.getCustomerPhone() + " and name " + searchRequest.getCustomerName());
+                    }
+                } else {
+                    booking = bookingsByPhone.get(0);
+                }
+                return bookingUserMapper.toResponse(booking);
+            } else {
+                throw new IllegalArgumentException("Booking not found with phone: " + searchRequest.getCustomerPhone());
+            }
+        }
+
+        // CASE 3: Search by name only
+        if (searchRequest.getCustomerName() != null && !searchRequest.getCustomerName().trim().isEmpty()) {
+            List<BookingDbModel> bookingsByName = bookingUserRepository
+                    .findByCustomer_NameContainingIgnoreCaseAndIsDeletedFalse(
+                            searchRequest.getCustomerName().trim());
+
+            if (!bookingsByName.isEmpty()) {
+                booking = bookingsByName.get(0);
+                return bookingUserMapper.toResponse(booking);
+            } else {
+                throw new IllegalArgumentException(
+                        "Booking not found with customer name: " + searchRequest.getCustomerName());
+            }
+        }
+
+        throw new IllegalArgumentException("Booking not found with provided search criteria");
+    }
+
+    /**
+     * Create new booking (and create customer if needed)
+     */
     @Transactional
     @Override
     public BookingResponse createBooking(BookingUserCreate createDto) {
-        // 1. Tìm hoặc tạo Customer
+        // 1. Find or create customer
         CustomerDbModel customer = findOrCreateCustomer(createDto);
 
-        // 2. Validate Trip và Stops
+        // 2. Validate trip and stops
         TripDbModel trip = tripRepository.findById(createDto.getTripId())
                 .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, createDto.getTripId()));
 
@@ -68,7 +156,7 @@ public class BookingUserServiceImpl implements BookingUserService {
         TripStopDbModel dropoffStop = tripStopRepository.findById(createDto.getDropoffStopId())
                 .orElseThrow(() -> new ResourceNotFoundException(TripStopDbModel.class, createDto.getDropoffStopId()));
 
-        // 3. Tạo Booking
+        // 3. Create booking
         BookingDbModel booking = new BookingDbModel();
         booking.setCode(generateBookingCode());
         booking.setType(createDto.getType());
@@ -81,7 +169,7 @@ public class BookingUserServiceImpl implements BookingUserService {
 
         BookingDbModel savedBooking = bookingUserRepository.save(booking);
 
-        // 4. Tạo BookingSeats
+        // 4. Create booking seats
         if (createDto.getBookingSeats() != null && !createDto.getBookingSeats().isEmpty()) {
             List<BookingSeatDbModel> bookingSeats = new ArrayList<>();
             for (BookingSeatCreate seatCreate : createDto.getBookingSeats()) {
@@ -104,27 +192,28 @@ public class BookingUserServiceImpl implements BookingUserService {
         return bookingUserMapper.toResponse(savedBooking);
     }
 
+    /**
+     * Get all bookings of the current customer (non-paged)
+     */
     @Override
     public List<BookingResponse> getMyBookings() {
         CustomerDbModel customer = getCurrentCustomer();
         List<BookingDbModel> bookings = bookingUserRepository.findByCustomerAndIsDeletedFalse(customer);
-        return bookings.stream()
-                .map(bookingUserMapper::toResponse)
-                .toList();
+        return bookings.stream().map(bookingUserMapper::toResponse).toList();
     }
 
+    /**
+     * Get paginated bookings of the current customer
+     */
     @Override
     public Page<BookingResponse> getMyBookings(BookingQuery query) {
         CustomerDbModel customer = getCurrentCustomer();
 
         Specification<BookingDbModel> spec = (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-
-            // Filter by current customer
             predicates.add(cb.equal(root.get("customer").get("id"), customer.getId()));
             predicates.add(cb.equal(root.get("isDeleted"), false));
 
-            // Additional filters from query
             if (query.getCode() != null && !query.getCode().isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("code")), "%" + query.getCode().toLowerCase() + "%"));
             }
@@ -151,7 +240,6 @@ public class BookingUserServiceImpl implements BookingUserService {
         BookingDbModel booking = bookingUserRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, id));
 
-        // Verify the booking belongs to current customer
         CustomerDbModel customer = getCurrentCustomer();
         if (!booking.getCustomer().getId().equals(customer.getId())) {
             throw new AccessDeniedException("You don't have permission to access this booking");
@@ -160,19 +248,20 @@ public class BookingUserServiceImpl implements BookingUserService {
         return bookingUserMapper.toResponse(booking);
     }
 
+    /**
+     * Cancel booking if allowed
+     */
     @Transactional
     @Override
     public BookingResponse cancelBooking(UUID id) {
         BookingDbModel booking = bookingUserRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, id));
 
-        // Verify the booking belongs to current customer
         CustomerDbModel customer = getCurrentCustomer();
         if (!booking.getCustomer().getId().equals(customer.getId())) {
             throw new AccessDeniedException("You don't have permission to cancel this booking");
         }
 
-        // Check if booking can be cancelled
         if (BookingStatus.COMPLETED.equals(booking.getBookingStatus()) ||
                 BookingStatus.CANCELLED.equals(booking.getBookingStatus())) {
             throw new IllegalStateException("Cannot cancel a booking that is already completed or cancelled");
@@ -180,23 +269,23 @@ public class BookingUserServiceImpl implements BookingUserService {
 
         booking.setBookingStatus(BookingStatus.CANCELLED);
         BookingDbModel updatedBooking = bookingUserRepository.save(booking);
-
         return bookingUserMapper.toResponse(updatedBooking);
     }
 
+    /**
+     * Confirm payment for booking
+     */
     @Transactional
     @Override
     public BookingResponse confirmPayment(UUID id) {
         BookingDbModel booking = bookingUserRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, id));
 
-        // Verify the booking belongs to current customer
         CustomerDbModel customer = getCurrentCustomer();
         if (!booking.getCustomer().getId().equals(customer.getId())) {
             throw new AccessDeniedException("You don't have permission to access this booking");
         }
 
-        // Update booking status after payment
         if (BookingStatus.NEW.equals(booking.getBookingStatus()) ||
                 BookingStatus.AWAIT_PAYMENT.equals(booking.getBookingStatus())) {
             booking.setBookingStatus(BookingStatus.AWAIT_GO);
@@ -206,7 +295,7 @@ public class BookingUserServiceImpl implements BookingUserService {
         return bookingUserMapper.toResponse(updatedBooking);
     }
 
-    // Helper methods
+    // ========================= Helper methods =========================
 
     private CustomerDbModel findOrCreateCustomer(BookingUserCreate createDto) {
         return customerRepository.findByPhoneAndIsDeletedFalse(createDto.getCustomerPhone())
@@ -226,14 +315,13 @@ public class BookingUserServiceImpl implements BookingUserService {
 
         UserDbModel user = new UserDbModel();
         user.setUsername(createDto.getCustomerPhone());
-        user.setPassword("123456"); // Should be hashed in production
+        user.setPassword(passwordEncoder.encode("123456")); // ✅ Hash password
         user.setIsGoogle(false);
         user.setIsAdmin(false);
         user.setCustomer(savedCustomer);
         user.setIsDeleted(false);
 
         userRepository.save(user);
-
         return savedCustomer;
     }
 
