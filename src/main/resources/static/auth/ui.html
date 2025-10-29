@@ -115,9 +115,9 @@
         <h3>Login</h3>
         <form id="loginFormElement">
             <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required value="user">
+            <input type="text" id="username" name="username" required value="admin">
             <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required value="password">
+            <input type="password" id="password" name="password" required value="admin">
             <button type="submit" class="login-btn">Log In</button>
             <p id="loginMessage" class="error"></p>
         </form>
@@ -182,6 +182,18 @@
     // State variables
     let currentRefreshToken = null;
 
+    // WebSocket State
+    const WS_URL = 'http://' + window.location.host + '/ws';
+    let stompClient = null;
+    let currentUserId = null;
+
+    const wsStatus = document.getElementById('wsStatus');
+    const wsLog = document.getElementById('websocketLog');
+    const wsConnectBtn = document.getElementById('wsConnectBtn');
+    const wsDisconnectBtn = document.getElementById('wsDisconnectBtn');
+    const createTestNotificationBtn = document.getElementById('createTestNotificationBtn');
+    const testNotificationMessage = document.getElementById('testNotificationMessage');
+
     // Utility to decode JWT payload (base64)
     function decodeJwt(token) {
         try {
@@ -194,6 +206,23 @@
         } catch (e) {
             return {error: "Invalid Token Format"};
         }
+    }
+
+    // Updated log function with milliseconds
+    function logToWs(message, color = 'white') {
+        const now = new Date();
+        const time = now.toLocaleTimeString('en-US', { hour12: false, second: '2-digit', minute: '2-digit', hour: '2-digit' })
+            + '.'
+            + String(now.getMilliseconds()).padStart(3, '0');
+        wsLog.innerHTML += `<span style="color: ${color};">[${time}] ${message}</span><br/>`;
+        wsLog.scrollTop = wsLog.scrollHeight; // Auto-scroll
+    }
+
+    function updateWsButtons(isConnected) {
+        wsStatus.textContent = isConnected ? 'Connected' : 'Disconnected';
+        wsStatus.style.color = isConnected ? 'green' : 'gray';
+        wsConnectBtn.disabled = isConnected;
+        wsDisconnectBtn.disabled = !isConnected;
     }
 
     // Utility to update the UI with tokens and payload
@@ -214,17 +243,30 @@
             statusMessage.textContent = "Successfully logged in / token refreshed.";
             statusMessage.className = "";
             displayDiv.style.display = 'block';
+
+            // Set currentUserId from the 'sub' field
+            currentUserId = payload.sub;
         } else {
             decodedPayload.textContent = "N/A";
             statusMessage.textContent = "Please log in.";
             statusMessage.className = "error";
             displayDiv.style.display = 'none';
+            currentUserId = null;
         }
 
         if (accessToken) {
             fetchMeData(accessToken);
         } else {
             document.getElementById('meDataValue').textContent = "N/A (Access Token Missing)";
+        }
+
+        // WebSocket reconnection logic with token changes
+        if (stompClient && stompClient.connected) {
+            disconnectWebsocket();
+        }
+        if (accessToken) {
+            // Give a small delay to ensure cleanup completes before connecting again
+            setTimeout(connectWebsocket, 500);
         }
     }
 
@@ -254,9 +296,6 @@
             console.error('Me Data Error:', error);
         }
     }
-
-    // And ensure that the existing LOGIN and REFRESH handlers call updateTokenDisplay(data.accessToken, data.refreshToken)
-    // upon success, which will then trigger fetchMeData().
 
     // --- Form Submission Handlers ---
 
@@ -347,30 +386,6 @@
 
     // --- WEBSOCKET LOGIC ---
 
-    const WS_URL = 'http://' + window.location.host + '/ws';
-    let stompClient = null;
-    let currentUserId = null; // Store user ID retrieved from decoded token
-
-    const wsStatus = document.getElementById('wsStatus');
-    const wsLog = document.getElementById('websocketLog');
-    const wsConnectBtn = document.getElementById('wsConnectBtn');
-    const wsDisconnectBtn = document.getElementById('wsDisconnectBtn');
-    const createTestNotificationBtn = document.getElementById('createTestNotificationBtn');
-    const testNotificationMessage = document.getElementById('testNotificationMessage');
-
-    function logToWs(message, color = 'white') {
-        const time = new Date().toLocaleTimeString();
-        wsLog.innerHTML += `<span style="color: ${color};">[${time}] ${message}</span><br/>`;
-        wsLog.scrollTop = wsLog.scrollHeight; // Auto-scroll
-    }
-
-    function updateWsButtons(isConnected) {
-        wsStatus.textContent = isConnected ? 'Connected' : 'Disconnected';
-        wsStatus.style.color = isConnected ? 'green' : 'gray';
-        wsConnectBtn.disabled = isConnected;
-        wsDisconnectBtn.disabled = !isConnected;
-    }
-
     function connectWebsocket() {
         const accessToken = document.getElementById('accessTokenValue').textContent;
         if (!accessToken || accessToken === 'N/A') {
@@ -378,34 +393,30 @@
             return;
         }
 
-        // 1. Get User ID from Decoded Payload for logging/reference
-        try {
-            const payload = decodeJwt(accessToken);
-            currentUserId = payload.sub; // Assuming 'sub' contains the UUID userId
-        } catch (e) {
-            logToWs('Could not decode user ID from token payload.', 'red');
+        // We rely on updateTokenDisplay to set currentUserId
+        if (!currentUserId) {
+            logToWs('Connection failed: Could not determine User ID from token payload.', 'red');
             return;
         }
 
-
-        // 2. Initialize SockJS and STOMP
+        // Initialize SockJS and STOMP
         logToWs('Attempting to connect to ' + WS_URL + '...', 'yellow');
         const socket = new SockJS(WS_URL);
         stompClient = Stomp.over(socket);
 
-        // 3. Connect with JWT Header
+        // Connect with JWT Header
         stompClient.connect({
             'Authorization': 'Bearer ' + accessToken
         }, function (frame) {
-            logToWs('STOMP Connection successful. Frame: ' + frame, 'lime');
+            logToWs('STOMP Connection successful. User ID: ' + currentUserId, 'lime');
             updateWsButtons(true);
 
-            // 4. Subscribe to the private user queue
+            // Subscribe to the private user queue
             const destination = '/user/queue/notifications';
             stompClient.subscribe(destination, function (message) {
                 logToWs('<<< RECEIVED MESSAGE: ' + message.body, 'cyan');
                 // Prompt to refetch user data if needed
-                fetchMeData(accessToken);
+                // fetchMeData(accessToken);
             });
             logToWs('Subscribed to private queue: ' + destination, 'lime');
             logToWs('Test the endpoint by sending a notification via Spring service!', 'yellow');
@@ -430,7 +441,7 @@
     async function createTestNotification() {
         const accessToken = document.getElementById('accessTokenValue').textContent;
         if (!accessToken || accessToken === 'N/A') {
-            alert("Access Token is required. Please log in first.");
+            logToWs("Access Token is required. Please log in first.", 'red');
             return;
         }
 
@@ -456,10 +467,13 @@
                 throw new Error(data.message || `Request failed with status: ${response.status}`);
             }
 
-            testNotificationMessage.textContent = `Success! Notification created (ID: ${data.id}). Check WebSocket messages above.`;
+            // SUCCESS: Log the message to the WS console instead of just the notification message
+            logToWs(`REST Success! Notification created (ID: ${data.id}). Awaiting WebSocket Ping.`, 'yellow');
+            testNotificationMessage.textContent = `Success! Notification ID: ${data.id}.`;
             testNotificationMessage.style.color = 'green';
 
         } catch (error) {
+            logToWs(`Error creating notification: ${error.message}`, 'red');
             testNotificationMessage.textContent = `Error creating notification: ${error.message}`;
             testNotificationMessage.style.color = 'red';
             console.error('Test Notification Error:', error);
@@ -478,24 +492,6 @@
     document.addEventListener('DOMContentLoaded', () => {
         // ... Existing initialization logic ...
     });
-
-    // We modify updateTokenDisplay to also disconnect/reconnect the WS if tokens change
-    // Original updateTokenDisplay function (override to include WS logic)
-    const originalUpdateTokenDisplay = updateTokenDisplay;
-    updateTokenDisplay = function(accessToken, refreshToken) {
-        // Call original function first
-        originalUpdateTokenDisplay(accessToken, refreshToken);
-
-        // Custom WS logic after token update
-        if (stompClient && stompClient.connected) {
-            disconnectWebsocket();
-        }
-        if (accessToken) {
-            // Give a small delay to ensure cleanup completes before connecting again
-            setTimeout(connectWebsocket, 500);
-        }
-    }
-
 </script>
 </body>
 </html>

@@ -10,11 +10,13 @@ import org.example.bookvexebej2e.models.dto.notification.NotificationResponse;
 import org.example.bookvexebej2e.models.dto.notification.NotificationUserQuery;
 import org.example.bookvexebej2e.services.notification.NotificationService;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 @RestController
@@ -22,12 +24,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class NotificationUserController {
 
+    private final Environment environment;
     private final NotificationService notificationService;
     private final SecurityUtils securityUtils;
     private final NotificationQueryMapper queryMapper;
-
-    // Inject the admin controller to call its create method internally
-    private final NotificationController notificationController;
 
     private UUID getCurrentUserId() {
         UserDbModel user = securityUtils.getCurrentUserEntity();
@@ -98,17 +98,20 @@ public class NotificationUserController {
     @Profile("dev")
     @PostMapping("/test-create")
     public ResponseEntity<NotificationResponse> createDebugNotification() {
+        if (!Arrays.asList(environment.getActiveProfiles()).contains("dev")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         UUID userId = getCurrentUserId();
 
         // Fixed values for testing
-        String typeCode = "TEST_TYPE"; // Must exist in NotificationTypeDbModel
         String title = "WebSocket Test Ping";
         String message = "Message received at " + java.time.LocalDateTime.now() + " (User: " + userId + ")";
 
         // Call the enhanced service method with shouldSave = false
         NotificationResponse response = notificationService.sendNotification(
             userId,
-            typeCode,
+            null,
             title,
             message,
             null,       // bookingId
@@ -119,14 +122,5 @@ public class NotificationUserController {
         );
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
-
-    /**
-     * Fallback for POST /notifications/test-create when profile is not 'dev'.
-     */
-    @Profile("!dev")
-    @PostMapping("/test-create")
-    public ResponseEntity<Void> createDebugNotificationForbidden() {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 }
