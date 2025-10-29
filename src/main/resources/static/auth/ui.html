@@ -87,6 +87,24 @@
             color: #d9534f;
             font-weight: bold;
         }
+
+        #websocketConsole {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #007bff;
+            border-radius: 6px;
+        }
+
+        #websocketLog {
+            height: 150px;
+            overflow-y: scroll;
+            background-color: #333;
+            color: #eee;
+            font-size: 0.9em;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -137,7 +155,26 @@
         </div>
     </div>
 </div>
+<div class="container">
+    <div id="websocketConsole">
+        <h3>WebSocket Notification Tester</h3>
+        <p>Status: <span id="wsStatus" style="font-weight: bold; color: gray;">Disconnected</span></p>
 
+        <button id="wsConnectBtn" class="login-btn" style="background-color: #007bff;">Connect to WS</button>
+        <button id="wsDisconnectBtn" style="background-color: #d9534f; margin-left: 10px;" disabled>Disconnect</button>
+
+        <hr style="border-top: 1px solid #ccc; margin: 10px 0;">
+
+        <button id="createTestNotificationBtn" style="background-color: #5cb85c;">
+            3. Create Test Notification (REST + WS Test)
+        </button>
+        <p id="testNotificationMessage" style="margin-top: 5px; font-size: 0.9em;"></p>
+        <h4>Messages from Server (User Queue):</h4>
+        <div id="websocketLog">Awaiting connection...</div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 <script>
     const API_LOGIN_URL = '/auth/login';
     const API_REFRESH_URL = '/auth/refresh';
@@ -307,6 +344,157 @@
             }
         });
     });
+
+    // --- WEBSOCKET LOGIC ---
+
+    const WS_URL = 'http://' + window.location.host + '/ws';
+    let stompClient = null;
+    let currentUserId = null; // Store user ID retrieved from decoded token
+
+    const wsStatus = document.getElementById('wsStatus');
+    const wsLog = document.getElementById('websocketLog');
+    const wsConnectBtn = document.getElementById('wsConnectBtn');
+    const wsDisconnectBtn = document.getElementById('wsDisconnectBtn');
+    const createTestNotificationBtn = document.getElementById('createTestNotificationBtn');
+    const testNotificationMessage = document.getElementById('testNotificationMessage');
+
+    function logToWs(message, color = 'white') {
+        const time = new Date().toLocaleTimeString();
+        wsLog.innerHTML += `<span style="color: ${color};">[${time}] ${message}</span><br/>`;
+        wsLog.scrollTop = wsLog.scrollHeight; // Auto-scroll
+    }
+
+    function updateWsButtons(isConnected) {
+        wsStatus.textContent = isConnected ? 'Connected' : 'Disconnected';
+        wsStatus.style.color = isConnected ? 'green' : 'gray';
+        wsConnectBtn.disabled = isConnected;
+        wsDisconnectBtn.disabled = !isConnected;
+    }
+
+    function connectWebsocket() {
+        const accessToken = document.getElementById('accessTokenValue').textContent;
+        if (!accessToken || accessToken === 'N/A') {
+            logToWs('Connection failed: Access Token is missing. Please log in first.', 'red');
+            return;
+        }
+
+        // 1. Get User ID from Decoded Payload for logging/reference
+        try {
+            const payload = decodeJwt(accessToken);
+            currentUserId = payload.sub; // Assuming 'sub' contains the UUID userId
+        } catch (e) {
+            logToWs('Could not decode user ID from token payload.', 'red');
+            return;
+        }
+
+
+        // 2. Initialize SockJS and STOMP
+        logToWs('Attempting to connect to ' + WS_URL + '...', 'yellow');
+        const socket = new SockJS(WS_URL);
+        stompClient = Stomp.over(socket);
+
+        // 3. Connect with JWT Header
+        stompClient.connect({
+            'Authorization': 'Bearer ' + accessToken
+        }, function (frame) {
+            logToWs('STOMP Connection successful. Frame: ' + frame, 'lime');
+            updateWsButtons(true);
+
+            // 4. Subscribe to the private user queue
+            const destination = '/user/queue/notifications';
+            stompClient.subscribe(destination, function (message) {
+                logToWs('<<< RECEIVED MESSAGE: ' + message.body, 'cyan');
+                // Prompt to refetch user data if needed
+                fetchMeData(accessToken);
+            });
+            logToWs('Subscribed to private queue: ' + destination, 'lime');
+            logToWs('Test the endpoint by sending a notification via Spring service!', 'yellow');
+
+        }, function (error) {
+            logToWs('STOMP Error: ' + error, 'red');
+            updateWsButtons(false);
+            // Re-enable connect button if connection fails
+            wsConnectBtn.disabled = false;
+        });
+    }
+
+    function disconnectWebsocket() {
+        if (stompClient !== null) {
+            stompClient.disconnect(function() {
+                logToWs('Disconnected.', 'orange');
+                updateWsButtons(false);
+            });
+        }
+    }
+
+    async function createTestNotification() {
+        const accessToken = document.getElementById('accessTokenValue').textContent;
+        if (!accessToken || accessToken === 'N/A') {
+            alert("Access Token is required. Please log in first.");
+            return;
+        }
+
+        testNotificationMessage.textContent = 'Sending test notification request...';
+
+        try {
+            const response = await fetch('/notifications/test-create', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Content-Type': 'application/json'
+                }
+                // No body needed as DTO is constructed on the server
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                // Handle 403 Forbidden specifically if profile isn't 'dev'
+                if (response.status === 403) {
+                    throw new Error("Forbidden: 'dev' profile is not active on the server.");
+                }
+                throw new Error(data.message || `Request failed with status: ${response.status}`);
+            }
+
+            testNotificationMessage.textContent = `Success! Notification created (ID: ${data.id}). Check WebSocket messages above.`;
+            testNotificationMessage.style.color = 'green';
+
+        } catch (error) {
+            testNotificationMessage.textContent = `Error creating notification: ${error.message}`;
+            testNotificationMessage.style.color = 'red';
+            console.error('Test Notification Error:', error);
+        }
+    }
+
+    // --- Wire up WebSocket buttons ---
+    wsConnectBtn.addEventListener('click', connectWebsocket);
+    wsDisconnectBtn.addEventListener('click', disconnectWebsocket);
+    createTestNotificationBtn.addEventListener('click', createTestNotification);
+
+    // --- CRITICAL: Ensure WebSocket disconnects on page unload ---
+    window.addEventListener('beforeunload', disconnectWebsocket);
+
+    // Initial check (ensure existing token logic still works)
+    document.addEventListener('DOMContentLoaded', () => {
+        // ... Existing initialization logic ...
+    });
+
+    // We modify updateTokenDisplay to also disconnect/reconnect the WS if tokens change
+    // Original updateTokenDisplay function (override to include WS logic)
+    const originalUpdateTokenDisplay = updateTokenDisplay;
+    updateTokenDisplay = function(accessToken, refreshToken) {
+        // Call original function first
+        originalUpdateTokenDisplay(accessToken, refreshToken);
+
+        // Custom WS logic after token update
+        if (stompClient && stompClient.connected) {
+            disconnectWebsocket();
+        }
+        if (accessToken) {
+            // Give a small delay to ensure cleanup completes before connecting again
+            setTimeout(connectWebsocket, 500);
+        }
+    }
 
 </script>
 </body>
