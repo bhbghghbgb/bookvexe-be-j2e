@@ -13,4 +13,5 @@ public class CarQuery extends BasePageableQuery {
     private UUID carTypeId;
     private String code;
     private String licensePlate;
+    private Boolean isDeleted;
 }

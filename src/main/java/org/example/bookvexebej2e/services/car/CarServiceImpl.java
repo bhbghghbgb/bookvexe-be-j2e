@@ -157,6 +157,8 @@ public class CarServiceImpl implements CarService {
             List<Predicate> predicates = new ArrayList<>();
             // Remove the isDeleted filter to show all records including deleted ones
 
+            if (query.getIsDeleted() != null) predicates.add(cb.equal(root.get("isDeleted"), query.getIsDeleted()));
+
             if (query.getCarTypeId() != null) {
                 predicates.add(cb.equal(root.get("carType")
                         .get("id"), query.getCarTypeId()));

@@ -1,17 +1,25 @@
 package org.example.bookvexebej2e.models.dto.trip;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import lombok.Data;
-
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class TripUpdate {
     private UUID routeId;
+
+    private List<UUID> carIds;
+
     private LocalDateTime departureTime;
+
     private BigDecimal price;
+
     private Integer availableSeats;
-    private List<UUID> carIds; // Danh sách ID các xe được chọn cho trip
 }

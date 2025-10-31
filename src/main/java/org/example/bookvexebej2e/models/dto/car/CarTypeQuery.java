@@ -9,4 +9,5 @@ import org.example.bookvexebej2e.models.dto.base.BasePageableQuery;
 public class CarTypeQuery extends BasePageableQuery {
     private String code;
     private String name;
+    private Boolean isDeleted;
 }
