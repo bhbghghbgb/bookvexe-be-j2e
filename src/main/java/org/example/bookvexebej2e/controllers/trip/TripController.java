@@ -52,34 +52,33 @@ public class TripController {
         return ResponseEntity.ok(tripService.create(createDto));
     }
 
-    @PutMapping("/{id}")
+    @PostMapping("/{id}")
     @RequirePermission(module = ModuleCode.TRIP, action = PermissionAction.UPDATE)
     public ResponseEntity<TripResponse> update(@PathVariable UUID id, @RequestBody TripUpdate updateDto) {
         return ResponseEntity.ok(tripService.update(id, updateDto));
     }
 
+
+
     @DeleteMapping("/{id}")
     @RequirePermission(module = ModuleCode.TRIP, action = PermissionAction.DELETE)
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         tripService.delete(id);
-        return ResponseEntity.ok()
-                .build();
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/activate/{id}")
     @RequirePermission(module = ModuleCode.TRIP, action = PermissionAction.ACTIVATE)
     public ResponseEntity<Void> activate(@PathVariable UUID id) {
         tripService.activate(id);
-        return ResponseEntity.ok()
-                .build();
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/deactivate/{id}")
     @RequirePermission(module = ModuleCode.TRIP, action = PermissionAction.DEACTIVATE)
     public ResponseEntity<Void> deactivate(@PathVariable UUID id) {
         tripService.deactivate(id);
-        return ResponseEntity.ok()
-                .build();
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/select")
@@ -98,5 +97,4 @@ public class TripController {
     public ResponseEntity<Page<TripSelectResponse>> findAllForSelect2(@RequestBody TripQuery query) {
         return ResponseEntity.ok(tripService.findAllForSelect(query));
     }
-
 }

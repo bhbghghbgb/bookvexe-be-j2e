@@ -118,6 +118,7 @@ public class CustomerTypeServiceImpl implements CustomerTypeService {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             // Remove the isDeleted filter to show all records including deleted ones
+            if (query.getIsDeleted() != null) predicates.add(cb.equal(root.get("isDeleted"), query.getIsDeleted()));
 
             if (query.getCode() != null && !query.getCode()
                     .isEmpty()) {
