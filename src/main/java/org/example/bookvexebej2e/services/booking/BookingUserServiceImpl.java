@@ -295,6 +295,21 @@ public class BookingUserServiceImpl implements BookingUserService {
         return bookingUserMapper.toResponse(updatedBooking);
     }
 
+    @Transactional
+    @Override
+    public BookingResponse confirmPaymentGuest(UUID id) {
+        BookingDbModel booking = bookingUserRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, id));
+
+        if (BookingStatus.NEW.equals(booking.getBookingStatus()) ||
+                BookingStatus.AWAIT_PAYMENT.equals(booking.getBookingStatus())) {
+            booking.setBookingStatus(BookingStatus.AWAIT_GO);
+        }
+
+        BookingDbModel updatedBooking = bookingUserRepository.save(booking);
+        return bookingUserMapper.toResponse(updatedBooking);
+    }
+
     // ========================= Helper methods =========================
 
     private CustomerDbModel findOrCreateCustomer(BookingUserCreate createDto) {
