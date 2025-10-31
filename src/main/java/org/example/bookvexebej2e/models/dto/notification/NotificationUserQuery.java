@@ -8,8 +8,7 @@ import java.util.UUID;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class NotificationQuery extends BasePageableQuery {
-    private UUID userId;
+public class NotificationUserQuery extends BasePageableQuery {
     private UUID bookingId;
     private UUID tripId;
     private UUID typeId;

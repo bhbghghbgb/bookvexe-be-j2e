@@ -18,15 +18,15 @@ public class NotificationDbModel extends BaseModel {
     private UserDbModel user;
 
     @ManyToOne
-    @JoinColumn(name = "bookingId")
+    @JoinColumn(name = "bookingId", nullable = true)
     private BookingDbModel booking;
 
     @ManyToOne
-    @JoinColumn(name = "tripId")
+    @JoinColumn(name = "tripId", nullable = true)
     private TripDbModel trip;
 
     @ManyToOne
-    @JoinColumn(name = "typeId")
+    @JoinColumn(name = "typeId", nullable = true)
     private NotificationTypeDbModel type;
 
     @Column(length = 20, name = "channel")
@@ -43,4 +43,7 @@ public class NotificationDbModel extends BaseModel {
 
     @Column(name = "sentAt")
     private LocalDateTime sentAt;
+
+    @Column(name = "isRead")
+    private Boolean isRead = false;
 }

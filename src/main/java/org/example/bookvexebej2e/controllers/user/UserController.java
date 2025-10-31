@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.controllers.user;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.bookvexebej2e.configs.AuthUserDetails;
 import org.example.bookvexebej2e.models.dto.auth.CustomerProfileUpdate;
 import org.example.bookvexebej2e.models.dto.user.UserResponse;
 import org.example.bookvexebej2e.services.user.UserService;
@@ -18,9 +19,17 @@ public class UserController {
 
     private final UserService userService;
 
+    private UUID getAuthenticatedUserId(Authentication authentication) {
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof AuthUserDetails authUserDetails) {
+            return authUserDetails.getUserId();
+        }
+        throw new IllegalStateException("Could not determine user ID from authentication principal.");
+    }
+
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getCurrentUser(Authentication authentication) {
-        UUID userId = (UUID) authentication.getPrincipal();
+        UUID userId = getAuthenticatedUserId(authentication);
         UserResponse user = userService.findById(userId);
         return ResponseEntity.ok(user);
     }
@@ -30,7 +39,7 @@ public class UserController {
         @Valid @RequestBody CustomerProfileUpdate updateDto,
         Authentication authentication
     ) {
-        UUID userId = (UUID) authentication.getPrincipal();
+        UUID userId = getAuthenticatedUserId(authentication);
         UserResponse updatedUser = userService.updateCustomerProfile(userId, updateDto);
         return ResponseEntity.ok(updatedUser);
     }
@@ -40,7 +49,7 @@ public class UserController {
         @Valid @RequestBody CustomerProfileUpdate setupDto,
         Authentication authentication
     ) {
-        UUID userId = (UUID) authentication.getPrincipal();
+        UUID userId = getAuthenticatedUserId(authentication);
         UserResponse updatedUser = userService.setupCustomerCredentials(userId, setupDto);
         return ResponseEntity.ok(updatedUser);
     }

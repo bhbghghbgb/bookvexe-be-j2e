@@ -10,6 +10,7 @@ import java.util.UUID;
 
 // Interface for methods requiring custom implementation (like NULL/FALSE checks)
 public interface BaseRepositoryCustom<T extends BaseModel> {
+    Optional<T> findById(String id);
 
     // Abstract declaration of custom methods
     Optional<T> findByIdAndNotDeleted(UUID id);
