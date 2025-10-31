@@ -41,6 +41,11 @@ public interface BookingUserService {
     BookingResponse confirmPayment(UUID id);
 
     /**
+     * Xác nhận thanh toán booking dành cho khách (không yêu cầu đăng nhập)
+     */
+    BookingResponse confirmPaymentGuest(UUID id);
+
+    /**
      * Tìm kiếm booking theo mã booking, tên và số điện thoại khách hàng
      */
     BookingResponse searchBooking(BookingSearchRequest searchRequest);
