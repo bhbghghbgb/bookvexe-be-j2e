@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PaymentMethodRepository extends BaseRepository<PaymentMethodDbModel> {
+    java.util.Optional<PaymentMethodDbModel> findByCode(String code);
 }

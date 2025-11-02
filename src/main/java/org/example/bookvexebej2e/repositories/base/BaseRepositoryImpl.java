@@ -44,6 +44,11 @@ public class BaseRepositoryImpl<T extends BaseModel> extends SimpleJpaRepository
     // --- Implementation of BaseRepositoryCustom methods ---
 
     @Override
+    public Optional<T> findById(String id) {
+        return findById(UUID.fromString(id));
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Optional<T> findByIdAndNotDeleted(UUID id) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();

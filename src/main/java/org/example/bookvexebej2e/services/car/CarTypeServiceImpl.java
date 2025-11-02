@@ -48,7 +48,7 @@ public class CarTypeServiceImpl implements CarTypeService {
 
     @Override
     public CarTypeResponse findById(UUID id) {
-        CarTypeDbModel entity = carTypeRepository.findByIdAndNotDeleted(id)
+        CarTypeDbModel entity = carTypeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(CarTypeDbModel.class, id));
         return carTypeMapper.toResponse(entity);
     }
@@ -121,6 +121,8 @@ public class CarTypeServiceImpl implements CarTypeService {
             List<Predicate> predicates = new ArrayList<>();
             // Remove the isDeleted filter to show all records including deleted ones
 
+            // Thử với tên cột chính xác - có thể là "is_deleted" hoặc "isDeleted"
+            if (query.getIsDeleted() != null) predicates.add(cb.equal(root.get("isDeleted"), query.getIsDeleted()));
             if (query.getCode() != null && !query.getCode()
                     .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("code")), "%" + query.getCode()
