@@ -149,10 +149,6 @@ public class CustomerServiceImpl implements CustomerService {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            if (query.getIsDeleted() != null) predicates.add(cb.equal(root.get("isDeleted"), query.getIsDeleted()));
-
-            if (query.getIsDeleted() != null) predicates.add(cb.equal(root.get("isDeleted"), query.getIsDeleted()));
-
             if (query.getCode() != null && !query.getCode()
                     .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("code")), "%" + query.getCode()
