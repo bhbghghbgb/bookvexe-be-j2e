@@ -3,8 +3,10 @@ package org.example.bookvexebej2e.models.dto.employee;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.example.bookvexebej2e.models.dto.base.BasePermissionResponse;
+import org.example.bookvexebej2e.models.dto.role.RoleResponse;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -19,6 +21,7 @@ public class EmployeeResponse extends BasePermissionResponse {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private Boolean isDeleted;
+    private List<RoleResponse> roles;
 
     public EmployeeResponse() {
         super();
