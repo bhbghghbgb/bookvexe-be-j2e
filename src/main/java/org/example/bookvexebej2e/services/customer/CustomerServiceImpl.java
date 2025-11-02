@@ -151,6 +151,8 @@ public class CustomerServiceImpl implements CustomerService {
 
             if (query.getIsDeleted() != null) predicates.add(cb.equal(root.get("isDeleted"), query.getIsDeleted()));
 
+            if (query.getIsDeleted() != null) predicates.add(cb.equal(root.get("isDeleted"), query.getIsDeleted()));
+
             if (query.getCode() != null && !query.getCode()
                     .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("code")), "%" + query.getCode()
