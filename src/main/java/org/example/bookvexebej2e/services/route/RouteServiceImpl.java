@@ -119,17 +119,56 @@ public class RouteServiceImpl implements RouteService {
     private Specification<RouteDbModel> buildSpecification(RouteQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            // Remove the isDeleted filter to show all records including deleted ones
 
-            if (query.getStartLocation() != null && !query.getStartLocation()
-                    .isEmpty()) {
-                predicates.add(cb.like(cb.lower(root.get("startLocation")), "%" + query.getStartLocation()
-                        .toLowerCase() + "%"));
+            // Filter by isDeleted status
+            if (query.getIsDeleted() != null) {
+                predicates.add(cb.equal(root.get("isDeleted"), query.getIsDeleted()));
             }
-            if (query.getEndLocation() != null && !query.getEndLocation()
-                    .isEmpty()) {
-                predicates.add(cb.like(cb.lower(root.get("endLocation")), "%" + query.getEndLocation()
-                        .toLowerCase() + "%"));
+
+            // Filter by start location (partial match, case-insensitive)
+            if (query.getStartLocation() != null && !query.getStartLocation().trim().isEmpty()) {
+                predicates.add(cb.like(
+                        cb.lower(root.get("startLocation")),
+                        "%" + query.getStartLocation().trim().toLowerCase() + "%"
+                ));
+            }
+
+            // Filter by end location (partial match, case-insensitive)
+            if (query.getEndLocation() != null && !query.getEndLocation().trim().isEmpty()) {
+                predicates.add(cb.like(
+                        cb.lower(root.get("endLocation")),
+                        "%" + query.getEndLocation().trim().toLowerCase() + "%"
+                ));
+            }
+
+            // Filter by distance range
+            if (query.getMinDistanceKm() != null && query.getMinDistanceKm() > 0) {
+                predicates.add(cb.greaterThanOrEqualTo(
+                        root.get("distanceKm"),
+                        query.getMinDistanceKm()
+                ));
+            }
+
+            if (query.getMaxDistanceKm() != null && query.getMaxDistanceKm() > 0) {
+                predicates.add(cb.lessThanOrEqualTo(
+                        root.get("distanceKm"),
+                        query.getMaxDistanceKm()
+                ));
+            }
+
+            // Filter by estimated duration range
+            if (query.getMinEstimatedDuration() != null && query.getMinEstimatedDuration() > 0) {
+                predicates.add(cb.greaterThanOrEqualTo(
+                        root.get("estimatedDuration"),
+                        query.getMinEstimatedDuration()
+                ));
+            }
+
+            if (query.getMaxEstimatedDuration() != null && query.getMaxEstimatedDuration() > 0) {
+                predicates.add(cb.lessThanOrEqualTo(
+                        root.get("estimatedDuration"),
+                        query.getMaxEstimatedDuration()
+                ));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

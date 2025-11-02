@@ -1,5 +1,6 @@
 package org.example.bookvexebej2e.services.trip;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,10 +41,18 @@ public class TripUserServiceImpl implements TripUserService {
 
         List<TripDbModel> trips = tripUserRepository.findAll((root, criteriaQuery, cb) -> {
             var predicates = new ArrayList<jakarta.persistence.criteria.Predicate>();
+
+            // Lọc chỉ lấy chuyến xe chưa bị xóa
             predicates.add(cb.or(
                     cb.isFalse(root.get("isDeleted")),
                     cb.isNull(root.get("isDeleted"))));
+
+            // Lọc chỉ lấy chuyến xe có thời gian khởi hành sau thời gian hiện tại
+            LocalDateTime now = LocalDateTime.now();
+            predicates.add(cb.greaterThan(root.get("departureTime"), now));
+
             var routeJoin = root.join("route");
+
             if (startLocation != null && !startLocation.trim().isEmpty()) {
                 String normalized = removeVietnameseAccents(startLocation.trim().toLowerCase());
                 predicates.add(cb.or(
@@ -65,6 +74,7 @@ public class TripUserServiceImpl implements TripUserService {
                                 cb.lower(cb.trim(routeJoin.get("endLocation"))),
                                 "%" + endLocation.trim().toLowerCase() + "%")));
             }
+
             if (departureTime != null) {
                 var startOfDay = departureTime.toLocalDate().atStartOfDay();
                 var endOfDay = departureTime.toLocalDate().atTime(23, 59, 59);
@@ -76,6 +86,7 @@ public class TripUserServiceImpl implements TripUserService {
 
             return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
         });
+
         for (TripDbModel trip : trips) {
             enrichTripWithBookingData(trip);
         }
