@@ -47,6 +47,20 @@ spring:
     compose:
       enabled: false
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: YOUR_GMAIL_ADDRESS@gmail.com # Replace with your Gmail email
+    password: YOUR_GENERATED_APP_PASSWORD # Replace with your 16-character App Password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: smtp.gmail.com
+
 logging:
   level:
     org:
@@ -72,3 +86,7 @@ app:
       ms: 86400000 # 24 hours
     refresh-expiration:
       ms: 604800000 # 7 days
+
+  # The email address that will appear as the sender
+  email:
+    sender: YOUR_GMAIL_ADDRESS@gmail.com

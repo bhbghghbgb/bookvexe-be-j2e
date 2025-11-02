@@ -23,6 +23,7 @@ public class NotificationResponse extends BasePermissionResponse {
     private String message;
     private Boolean isSent;
     private LocalDateTime sentAt;
+    private Boolean isRead;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private Boolean isDeleted;
