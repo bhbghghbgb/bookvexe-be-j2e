@@ -16,11 +16,13 @@ import org.example.bookvexebej2e.repositories.trip.TripRepository;
 import org.example.bookvexebej2e.repositories.user.UserRepository;
 import org.example.bookvexebej2e.services.external.MailingService;
 import org.example.bookvexebej2e.services.external.WebSocketService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
