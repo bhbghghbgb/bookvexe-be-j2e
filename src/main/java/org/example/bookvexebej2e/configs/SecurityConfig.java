@@ -68,7 +68,8 @@ public class SecurityConfig {
         ObjectProvider<ClientRegistrationRepository> clientRegistrations) throws Exception {
         http
             // CORS and CSRF Configuration
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            // CORS is handled by API Gateway, so we disable it here to avoid conflicts
+            .cors(AbstractHttpConfigurer::disable)
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             // EXPLICITLY SET THE ENTRY POINT TO RETURN 401 ON AUTH FAILURE
@@ -126,7 +127,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Collections.singletonList("*")); // Allow all origins
+        config.setAllowedOrigins(Collections.singletonList("http://localhost:8080")); // Allow all origins
         config.setAllowedMethods(Collections.singletonList("*")); // Allow all HTTP methods
         config.setAllowedHeaders(Collections.singletonList("*")); // Allow all headers
         config.setAllowCredentials(false); // Disallow credentials (standard for stateless JWT APIs)
