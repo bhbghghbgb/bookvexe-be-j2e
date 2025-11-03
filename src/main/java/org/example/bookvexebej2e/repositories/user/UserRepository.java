@@ -36,4 +36,7 @@ public interface UserRepository extends BaseRepository<UserDbModel> {
     Set<String> findUserRolesString(@Param("userId") UUID userId);
 
     Optional<UserDbModel> findByGoogleAccountAndIsDeletedFalse(String googleId);
+
+    @Query("SELECT u FROM UserDbModel u WHERE u.employee.id = :employeeId")
+    Optional<UserDbModel> findByEmployeeId(@Param("employeeId") UUID employeeId);
 }

@@ -1,26 +1,21 @@
 package org.example.bookvexebej2e.services.notification;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
+import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.example.bookvexebej2e.exceptions.ForbiddenException;
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.NotificationMapper;
-import org.example.bookvexebej2e.models.db.BookingDbModel;
-import org.example.bookvexebej2e.models.db.NotificationDbModel;
-import org.example.bookvexebej2e.models.db.NotificationTypeDbModel;
-import org.example.bookvexebej2e.models.db.TripDbModel;
-import org.example.bookvexebej2e.models.db.UserDbModel;
-import org.example.bookvexebej2e.models.dto.notification.NotificationCreate;
-import org.example.bookvexebej2e.models.dto.notification.NotificationQuery;
-import org.example.bookvexebej2e.models.dto.notification.NotificationResponse;
-import org.example.bookvexebej2e.models.dto.notification.NotificationSelectResponse;
-import org.example.bookvexebej2e.models.dto.notification.NotificationUpdate;
+import org.example.bookvexebej2e.models.db.*;
+import org.example.bookvexebej2e.models.dto.notification.*;
 import org.example.bookvexebej2e.repositories.booking.BookingRepository;
 import org.example.bookvexebej2e.repositories.notification.NotificationRepository;
 import org.example.bookvexebej2e.repositories.notification.NotificationTypeRepository;
 import org.example.bookvexebej2e.repositories.trip.TripRepository;
 import org.example.bookvexebej2e.repositories.user.UserRepository;
+import org.example.bookvexebej2e.services.external.MailingService;
+import org.example.bookvexebej2e.services.external.WebSocketService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,11 +23,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
@@ -40,6 +38,8 @@ public class NotificationServiceImpl implements NotificationService {
     private final TripRepository tripRepository;
     private final NotificationTypeRepository notificationTypeRepository;
     private final UserRepository userRepository;
+    private final MailingService mailingService;
+    private final WebSocketService webSocketService;
     private final NotificationMapper notificationMapper;
 
     @Override
@@ -175,6 +175,173 @@ public class NotificationServiceImpl implements NotificationService {
         return entities.map(notificationMapper::toSelectResponse);
     }
 
+    /**
+     * High-level service method to send a notification, optionally saving it to the database
+     * and always pushing it via WebSocket and email (if requested).
+     */
+    @Transactional
+    public NotificationResponse sendNotification(
+        UUID userId, String typeCode, String title, String message,
+        UUID bookingId, UUID tripId, String channel,
+        Boolean sendEmail, Boolean shouldSave) {
+
+        NotificationDbModel entity;
+
+        if (Boolean.TRUE.equals(shouldSave)) {
+            // 1. Save Notification (Persistence)
+            entity = saveNotification(userId, typeCode, title, message, bookingId, tripId, channel);
+            log.info("Notification saved and sent to user {}. ID: {}", userId, entity.getId());
+        } else {
+            // 1b. Create unsaved entity for response and logging (No Persistence)
+            entity = createUnsavedNotification(userId, typeCode, title, message, bookingId, tripId, channel);
+            log.info("DEBUG Notification created (unsaved) and sent to user {}.", userId);
+        }
+
+        // 2. Send Email if requested
+        if (Boolean.TRUE.equals(sendEmail)) {
+            mailingService.sendEmailToUser(userId, title, message);
+        }
+
+        // 3. Ping Frontend via WebSocket
+        webSocketService.notifyUser(userId, "NEW_NOTIFICATION");
+
+        // Return the response DTO, which is mapped from the saved or unsaved entity
+        return notificationMapper.toResponse(entity);
+    }
+
+    // Helper for unsaved response
+    private NotificationDbModel createUnsavedNotification(
+        UUID userId, String typeCode, String title, String message,
+        UUID bookingId, UUID tripId, String channel) {
+
+        NotificationDbModel entity = new NotificationDbModel();
+        entity.setId(UUID.randomUUID()); // Give it a temporary ID
+        entity.setChannel(channel);
+        entity.setTitle(title);
+        entity.setMessage(message);
+        entity.setIsRead(false);
+        entity.setIsSent(true);
+        entity.setSentAt(LocalDateTime.now());
+        entity.setCreatedDate(LocalDateTime.now());
+        entity.setUpdatedDate(LocalDateTime.now());
+        entity.setCreatedBy(userId);
+        entity.setUpdatedBy(userId);
+
+        if (typeCode != null && !typeCode.trim().isEmpty()) {
+            NotificationTypeDbModel type = notificationTypeRepository.findByCode(typeCode)
+                .orElseThrow(() -> new ResourceNotFoundException(NotificationTypeDbModel.class, typeCode));
+            entity.setType(type);
+        }
+
+        if (bookingId != null) {
+            BookingDbModel booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, bookingId));
+            entity.setBooking(booking);
+        }
+
+        if (tripId != null) {
+            TripDbModel trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, tripId));
+            entity.setTrip(trip);
+        }
+
+        return entity;
+    }
+
+    /**
+     * Saves the notification entity to the database.
+     */
+    private NotificationDbModel saveNotification(
+        UUID userId, String typeCode, String title, String message,
+        UUID bookingId, UUID tripId, String channel) {
+
+        UserDbModel user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, userId));
+
+        NotificationDbModel entity = new NotificationDbModel();
+        entity.setUser(user);
+        entity.setChannel(channel != null ? channel : "APP");
+        entity.setTitle(title);
+        entity.setMessage(message);
+        entity.setIsRead(false);
+        entity.setIsSent(true);
+        entity.setSentAt(LocalDateTime.now());
+
+        if (typeCode != null && !typeCode.trim().isEmpty()) {
+            NotificationTypeDbModel type = notificationTypeRepository.findByCode(typeCode)
+                .orElseThrow(() -> new ResourceNotFoundException(NotificationTypeDbModel.class, typeCode));
+            entity.setType(type);
+        }
+
+        if (bookingId != null) {
+            BookingDbModel booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, bookingId));
+            entity.setBooking(booking);
+        }
+
+        if (tripId != null) {
+            TripDbModel trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, tripId));
+            entity.setTrip(trip);
+        }
+
+        return notificationRepository.save(entity);
+    }
+
+    @Override
+    public Page<NotificationResponse> getMyNotifications(UUID userId, NotificationQuery query) {
+        Specification<NotificationDbModel> spec = buildSpecification(query);
+        Pageable pageable = buildPageable(query);
+        Page<NotificationDbModel> entities = notificationRepository.findAll(spec, pageable);
+        return entities.map(notificationMapper::toResponse);
+    }
+
+    @Override
+    @Transactional
+    public void markNotificationAsRead(UUID notificationId, UUID userId) {
+        NotificationDbModel entity = notificationRepository.findByIdAndNotDeleted(notificationId)
+            .orElseThrow(() -> new ResourceNotFoundException(NotificationDbModel.class, notificationId));
+
+        // Security check: only the owner can mark as read
+        if (!entity.getUser().getId().equals(userId)) {
+            throw new ForbiddenException("You do not have permission to modify this notification.");
+        }
+
+        entity.setIsRead(true);
+        notificationRepository.save(entity);
+
+        // Ping frontend to update unread count
+        webSocketService.notifyUser(userId, "READ_NOTIFICATION");
+    }
+
+    @Override
+    @Transactional
+    public void deleteNotification(UUID notificationId, UUID userId) {
+        NotificationDbModel entity = notificationRepository.findByIdAndNotDeleted(notificationId)
+            .orElseThrow(() -> new ResourceNotFoundException(NotificationDbModel.class, notificationId));
+
+        // Security check: only the owner can delete
+        if (!entity.getUser().getId().equals(userId)) {
+            throw new ForbiddenException("You do not have permission to delete this notification.");
+        }
+
+        notificationRepository.softDeleteById(notificationId);
+
+        // Ping frontend to remove notification from list
+        webSocketService.notifyUser(userId, "DELETED_NOTIFICATION");
+    }
+
+    @Override
+    public int countUnreadNotifications(UUID userId) {
+        return (int) notificationRepository.count(
+            (root, cq, cb) -> cb.and(
+                cb.equal(root.get("user").get("id"), userId),
+                cb.isFalse(root.get("isRead")),
+                cb.isFalse(root.get("isDeleted"))
+            )
+        );
+    }
+
     private Specification<NotificationDbModel> buildSpecification(NotificationQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -202,6 +369,9 @@ public class NotificationServiceImpl implements NotificationService {
             }
             if (query.getIsSent() != null) {
                 predicates.add(cb.equal(root.get("isSent"), query.getIsSent()));
+            }
+            if (query.getIsRead() != null) {
+                predicates.add(cb.equal(root.get("isRead"), query.getIsRead()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

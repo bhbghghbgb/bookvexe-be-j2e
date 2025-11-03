@@ -5,11 +5,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.example.bookvexebej2e.services.auth.AuthUserDetailsService;
-import org.example.bookvexebej2e.services.auth.TokenService;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -19,11 +18,10 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtUtils jwtUtils;
-    private final AuthUserDetailsService userDetailsService;
-    private final TokenService tokenService;
+    private final JwtAuthenticationProvider authenticationProvider; // USE THE PROVIDER
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -31,30 +29,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = parseJwt(request);
             if (jwt != null) {
-                // 1. Validate signature, format, and expiration
-                if (jwtUtils.validateToken(jwt)) {
 
-                    // Validate the token type (must be 'ACCESS') against the database
-                    if (tokenService.validateTokenIsValid(jwt, "ACCESS")) {
-                        String username = jwtUtils.getUsernameFromToken(jwt);
+                // 1. Use the centralized provider to validate and get the Authentication token
+                Authentication authentication = authenticationProvider.getAuthentication(jwt);
 
-                        // Proceed with setting Security Context
-                        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                        SecurityContextHolder.getContext()
-                            .setAuthentication(authentication);
-                    } else {
-                        // Token is valid but wrong type (e.g., REFRESH) or revoked
-                        logger.warn("JWT is valid but is not an ACCESS token or has been revoked.");
-                        // DO NOT throw exception here, just let it pass without authentication
+                if (authentication != null) {
+                    // 2. Set request details and put into Security Context
+                    if (authentication instanceof AbstractAuthenticationToken abstractAuth) {
+                        // Set web details for tracing (applies to both JwtAuthenticationToken and others)
+                        abstractAuth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     }
+
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                } else {
+                    // Token was invalid, expired, wrong type, or revoked (handled inside provider)
+                    log.warn("JWT rejected (invalid, expired, or revoked).");
                 }
             }
         } catch (Exception e) {
-            logger.error("Cannot set user authentication: {}", e);
+            log.error("Cannot set user authentication: {}", e.getMessage());
         }
 
         filterChain.doFilter(request, response);
@@ -66,7 +60,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
             return headerAuth.substring(7);
         }
-
         return null;
     }
 }
