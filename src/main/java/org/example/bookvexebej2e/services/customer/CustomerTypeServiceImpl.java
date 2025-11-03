@@ -1,17 +1,11 @@
 package org.example.bookvexebej2e.services.customer;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.CustomerTypeMapper;
 import org.example.bookvexebej2e.models.db.CustomerTypeDbModel;
-import org.example.bookvexebej2e.models.dto.customer.CustomerTypeCreate;
-import org.example.bookvexebej2e.models.dto.customer.CustomerTypeQuery;
-import org.example.bookvexebej2e.models.dto.customer.CustomerTypeResponse;
-import org.example.bookvexebej2e.models.dto.customer.CustomerTypeSelectResponse;
-import org.example.bookvexebej2e.models.dto.customer.CustomerTypeUpdate;
+import org.example.bookvexebej2e.models.dto.customer.*;
 import org.example.bookvexebej2e.repositories.customer.CustomerTypeRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,8 +14,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -117,8 +112,6 @@ public class CustomerTypeServiceImpl implements CustomerTypeService {
     private Specification<CustomerTypeDbModel> buildSpecification(CustomerTypeQuery query) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            // Remove the isDeleted filter to show all records including deleted ones
-            if (query.getIsDeleted() != null) predicates.add(cb.equal(root.get("isDeleted"), query.getIsDeleted()));
 
             if (query.getCode() != null && !query.getCode()
                     .isEmpty()) {
@@ -129,6 +122,10 @@ public class CustomerTypeServiceImpl implements CustomerTypeService {
                     .isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("name")), "%" + query.getName()
                         .toLowerCase() + "%"));
+            }
+
+            if (query.getIsDeleted() != null) {
+                predicates.add(cb.equal(root.get("isDeleted"), query.getIsDeleted()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

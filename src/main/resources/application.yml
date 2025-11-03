@@ -47,6 +47,20 @@ spring:
     compose:
       enabled: false
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: YOUR_GMAIL_ADDRESS@gmail.com # Replace with your Gmail email
+    password: YOUR_GENERATED_APP_PASSWORD # Replace with your 16-character App Password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: smtp.gmail.com
+
 logging:
   level:
     org:
@@ -80,3 +94,7 @@ vnpay:
   returnUrl: https://renee-arumlike-azariah.ngrok-free.dev/api/vnpay-return
   ipnUrl: https://renee-arumlike-azariah.ngrok-free.dev/api/vnpay-ipn
   frontendReturnUrl: http://localhost:5173/payment/vnpay-return
+
+  # The email address that will appear as the sender
+  email:
+    sender: YOUR_GMAIL_ADDRESS@gmail.com
