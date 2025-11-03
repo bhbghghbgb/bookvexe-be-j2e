@@ -15,7 +15,6 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@ConditionalOnBean(JavaMailSender.class)
 public class MailingService {
 
     private final UserRepository userRepository;
