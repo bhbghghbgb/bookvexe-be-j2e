@@ -1,6 +1,4 @@
 spring:
-  profiles:
-    active: dev
   application:
     name: bookvexe-be-j2e
   config:
