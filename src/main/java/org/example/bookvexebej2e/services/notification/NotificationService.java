@@ -1,11 +1,12 @@
 package org.example.bookvexebej2e.services.notification;
 
 import org.example.bookvexebej2e.models.dto.notification.*;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.data.domain.Page;
+import org.springframework.mail.javamail.JavaMailSender;
 
 import java.util.List;
 import java.util.UUID;
-
 public interface NotificationService {
     List<NotificationResponse> findAll();
 
