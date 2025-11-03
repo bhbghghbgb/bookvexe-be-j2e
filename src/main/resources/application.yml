@@ -14,8 +14,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/bookvexedb_j2e
-    username: postgres
-    password: ""
+    username: root
+    password: nopass
   ai:
     ollama:
       base-url: http://localhost:11434 # URL của Ollama server (mặc định)
@@ -87,6 +87,10 @@ app:
     refresh-expiration:
       ms: 604800000 # 7 days
 
+  # The email address that will appear as the sender
+  email:
+    sender: YOUR_GMAIL_ADDRESS@gmail.com
+
 vnpay:
   tmnCode: Q1IN2L3L
   hashSecret: K2TVGW712204XAV8CRRO5G83CK1MDYT4
@@ -94,7 +98,3 @@ vnpay:
   returnUrl: https://renee-arumlike-azariah.ngrok-free.dev/api/vnpay-return
   ipnUrl: https://renee-arumlike-azariah.ngrok-free.dev/api/vnpay-ipn
   frontendReturnUrl: http://localhost:5173/payment/vnpay-return
-
-  # The email address that will appear as the sender
-  email:
-    sender: YOUR_GMAIL_ADDRESS@gmail.com
