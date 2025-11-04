@@ -7,6 +7,7 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ public class MailConsumer {
 
     private final JobLauncher jobLauncher;
     private final Job sendMailJob;
-    private final List<MailKafkaDTO> mailQueue = new ArrayList<>();
+    private final List<MailKafkaDTO> mailQueue;
 
     @KafkaListener(topics = "mail-topic", groupId = "mail_group")
     public void consume(MailKafkaDTO kafkaDTO) {
@@ -30,7 +31,7 @@ public class MailConsumer {
     }
 
     // Chạy định kỳ để xử lý queue và khởi chạy Batch Job
-    // (Trong thực tế, có thể dùng @Scheduled hoặc một cơ chế trigger khác)
+    @Scheduled(fixedRate = 60000) // every 60 seconds
     public void triggerMailBatch() {
         if (!mailQueue.isEmpty()) {
             try {
