@@ -2,6 +2,10 @@ package com.bookvexe.mailservice.batch;
 
 import com.bookvexe.mailservice.dto.MailKafkaDTO;
 import jakarta.mail.internet.MimeMessage;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -19,9 +23,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Configuration
 @RequiredArgsConstructor
 public class SpringBatchConfig {
@@ -30,22 +31,24 @@ public class SpringBatchConfig {
     private final TemplateEngine templateEngine;
     private final List<MailKafkaDTO> mailQueue = new ArrayList<>(); // Shared queue
 
+    @Value("${mail.dry-run:false}")
+    private boolean dryRun;
+
     @Bean
     public Job sendMailJob(JobRepository jobRepository, Step sendMailStep) {
-        return new JobBuilder("sendMailJob", jobRepository)
-                .flow(sendMailStep)
-                .end()
-                .build();
+        return new JobBuilder("sendMailJob", jobRepository).flow(sendMailStep)
+            .end()
+            .build();
     }
 
     @Bean
     public Step sendMailStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
-        return new StepBuilder("sendMailStep", jobRepository)
-                .<MailKafkaDTO, MimeMessage>chunk(10, transactionManager) // Process 10 emails per batch
-                .reader(mailItemReader())
-                .processor(mailItemProcessor())
-                .writer(mailItemWriter())
-                .build();
+        return new StepBuilder("sendMailStep", jobRepository).<MailKafkaDTO, MimeMessage>chunk(10,
+                transactionManager) // Process 10 emails per batch
+            .reader(mailItemReader())
+            .processor(mailItemProcessor())
+            .writer(mailItemWriter())
+            .build();
     }
 
     @Bean
@@ -82,7 +85,12 @@ public class SpringBatchConfig {
     public ItemWriter<MimeMessage> mailItemWriter() {
         return items -> {
             for (MimeMessage message : items) {
-                mailSender.send(message);
+                if (dryRun) {
+                    log.info("[Dry-Run] Skipping send: {}", message.getSubject());
+                } else {
+                    mailSender.send(message);
+                    log.info("Sent email: {}", message.getSubject());
+                }
             }
         };
     }
@@ -92,4 +100,3 @@ public class SpringBatchConfig {
         return mailQueue;
     }
 }
-
