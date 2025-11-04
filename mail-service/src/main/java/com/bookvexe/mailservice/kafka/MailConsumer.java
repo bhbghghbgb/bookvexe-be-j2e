@@ -35,9 +35,8 @@ public class MailConsumer {
     public void triggerMailBatch() {
         if (!mailQueue.isEmpty()) {
             try {
-                jobLauncher.run(sendMailJob, new JobParametersBuilder()
-                        .addLong("time", System.currentTimeMillis())
-                        .toJobParameters());
+                jobLauncher.run(sendMailJob, new JobParametersBuilder().addLong("time", System.currentTimeMillis())
+                    .toJobParameters());
             } catch (Exception e) {
                 log.error("Error launching mail batch job", e);
             }
