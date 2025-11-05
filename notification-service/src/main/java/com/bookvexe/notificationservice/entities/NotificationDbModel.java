@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "notifications")
@@ -13,17 +14,20 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @ToString
 public class NotificationDbModel extends BaseModel {
-    @ManyToOne
-    @JoinColumn(name = "userId")
-    private UserDbModel user;
+//    @ManyToOne
+//    @JoinColumn(name = "userId")
+   @Column(name = "userId")
+    private UUID user;
 
-    @ManyToOne
-    @JoinColumn(name = "bookingId", nullable = true)
-    private BookingDbModel booking;
+//    @ManyToOne
+//    @JoinColumn(name = "bookingId", nullable = true)
+    @Column(name = "bookingId", nullable = true)
+    private UUID booking;
 
-    @ManyToOne
-    @JoinColumn(name = "tripId", nullable = true)
-    private TripDbModel trip;
+//    @ManyToOne
+//    @JoinColumn(name = "tripId", nullable = true)
+    @Column(name = "tripId", nullable = true)
+    private UUID trip;
 
     @ManyToOne
     @JoinColumn(name = "typeId", nullable = true)

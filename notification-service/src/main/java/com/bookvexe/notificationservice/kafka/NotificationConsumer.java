@@ -14,24 +14,36 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class NotificationConsumer {
 
-    private final NotificationRepository notificationRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
     @KafkaListener(topics = "notification-topic", groupId = "notification_group")
     public void consume(NotificationKafkaDTO kafkaDTO) {
         log.info("Received notification from Kafka: {}", kafkaDTO);
+
         try {
-            NotificationDbModel notification = new NotificationDbModel();
-            notification.setUser(kafkaDTO.getUserId());
-            notification.setMessage(kafkaDTO.getMessage());
-            notification.setIsRead(false);
+            // Send to userId-based destination
+            String userIdDest = "/topic/notifications/" + kafkaDTO.getUserId();
+            messagingTemplate.convertAndSend(userIdDest, kafkaDTO);
+            log.info("Sent to WebSocket: {}", userIdDest);
 
-            NotificationDbModel savedNotification = notificationRepository.save(notification);
+            // Optionally send to other identifiers
+            if (kafkaDTO.getUsername() != null) {
+                String usernameDest = "/topic/notifications/" + kafkaDTO.getUsername();
+                messagingTemplate.convertAndSend(usernameDest, kafkaDTO);
+                log.info("Sent to WebSocket: {}", usernameDest);
+            }
 
-            // Gửi thông báo real-time tới user cụ thể qua WebSocket
-            String userDestination = "/topic/notifications/" + savedNotification.getUser();
-            messagingTemplate.convertAndSend(userDestination, savedNotification);
-            log.info("Sent notification to WebSocket destination: {}", userDestination);
+            if (kafkaDTO.getEmail() != null) {
+                String emailDest = "/topic/notifications/" + kafkaDTO.getEmail();
+                messagingTemplate.convertAndSend(emailDest, kafkaDTO);
+                log.info("Sent to WebSocket: {}", emailDest);
+            }
+
+            if (kafkaDTO.getPhone() != null) {
+                String phoneDest = "/topic/notifications/" + kafkaDTO.getPhone();
+                messagingTemplate.convertAndSend(phoneDest, kafkaDTO);
+                log.info("Sent to WebSocket: {}", phoneDest);
+            }
 
         } catch (Exception e) {
             log.error("Error processing notification from Kafka", e);
