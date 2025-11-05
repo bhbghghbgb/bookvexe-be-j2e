@@ -1,7 +1,7 @@
 package com.bookvexe.notificationservice.kafka;
 
 import com.bookvexe.notificationservice.dto.NotificationKafkaDTO;
-import com.bookvexe.notificationservice.entities.Notification;
+import com.bookvexe.notificationservice.entities.NotificationDbModel;
 import com.bookvexe.notificationservice.repositories.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,17 +21,15 @@ public class NotificationConsumer {
     public void consume(NotificationKafkaDTO kafkaDTO) {
         log.info("Received notification from Kafka: {}", kafkaDTO);
         try {
-            Notification notification = new Notification();
-            notification.setUserId(kafkaDTO.getUserId());
+            NotificationDbModel notification = new NotificationDbModel();
+            notification.setUser(kafkaDTO.getUserId());
             notification.setMessage(kafkaDTO.getMessage());
-            notification.setType(kafkaDTO.getType());
-            notification.setLink(kafkaDTO.getLink());
             notification.setIsRead(false);
 
-            Notification savedNotification = notificationRepository.save(notification);
+            NotificationDbModel savedNotification = notificationRepository.save(notification);
 
             // Gửi thông báo real-time tới user cụ thể qua WebSocket
-            String userDestination = "/topic/notifications/" + savedNotification.getUserId();
+            String userDestination = "/topic/notifications/" + savedNotification.getUser();
             messagingTemplate.convertAndSend(userDestination, savedNotification);
             log.info("Sent notification to WebSocket destination: {}", userDestination);
 

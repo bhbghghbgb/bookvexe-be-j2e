@@ -1,6 +1,6 @@
 package com.bookvexe.notificationservice.controllers;
 
-import com.bookvexe.notificationservice.entities.Notification;
+import com.bookvexe.notificationservice.entities.NotificationDbModel;
 import com.bookvexe.notificationservice.services.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/notification-service-api")
@@ -20,21 +21,21 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @GetMapping("/notifications")
-    public ResponseEntity<List<Notification>> getNotifications(@RequestParam Long userId) {
-        List<Notification> notifications = notificationService.getNotificationsByUserId(userId);
+    public ResponseEntity<List<NotificationDbModel>> getNotifications(@RequestParam UUID userId) {
+        List<NotificationDbModel> notifications = notificationService.getNotificationsByUserId(userId);
         return ResponseEntity.ok(notifications);
     }
 
     @GetMapping("/notifications/unread-count")
-    public ResponseEntity<Map<String, Long>> getUnreadCount(@RequestParam Long userId) {
+    public ResponseEntity<Map<String, Long>> getUnreadCount(@RequestParam UUID userId) {
         Long count = notificationService.getUnreadCount(userId);
         return ResponseEntity.ok(Map.of("count", count));
     }
 
     @PostMapping("/notifications/{id}/read")
     public ResponseEntity<Map<String, String>> markAsRead(
-            @PathVariable Long id, 
-            @RequestParam Long userId) {
+            @PathVariable UUID id,
+            @RequestParam UUID userId) {
         boolean success = notificationService.markAsRead(id, userId);
         if (success) {
             return ResponseEntity.ok(Map.of("message", "Notification marked as read"));
@@ -45,8 +46,8 @@ public class NotificationController {
 
     @DeleteMapping("/notifications/{id}")
     public ResponseEntity<Map<String, String>> deleteNotification(
-            @PathVariable Long id, 
-            @RequestParam Long userId) {
+            @PathVariable UUID id,
+            @RequestParam UUID userId) {
         boolean success = notificationService.deleteNotification(id, userId);
         if (success) {
             return ResponseEntity.ok(Map.of("message", "Notification deleted successfully"));

@@ -1,6 +1,6 @@
 package com.bookvexe.notificationservice.services;
 
-import com.bookvexe.notificationservice.entities.Notification;
+import com.bookvexe.notificationservice.entities.NotificationDbModel;
 import com.bookvexe.notificationservice.repositories.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -16,20 +17,20 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
 
-    public List<Notification> getNotificationsByUserId(Long userId) {
+    public List<NotificationDbModel> getNotificationsByUserId(UUID userId) {
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }
 
-    public Long getUnreadCount(Long userId) {
+    public Long getUnreadCount(UUID userId) {
         return notificationRepository.countUnreadByUserId(userId);
     }
 
-    public boolean markAsRead(Long notificationId, Long userId) {
-        Optional<Notification> notificationOpt = notificationRepository.findById(notificationId);
+    public boolean markAsRead(UUID notificationId, UUID userId) {
+        Optional<NotificationDbModel> notificationOpt = notificationRepository.findById(notificationId);
         if (notificationOpt.isPresent()) {
-            Notification notification = notificationOpt.get();
+            NotificationDbModel notification = notificationOpt.get();
             // Kiểm tra xem notification có thuộc về user này không
-            if (notification.getUserId().equals(userId)) {
+            if (notification.getUser().equals(userId)) {
                 notification.setIsRead(true);
                 notificationRepository.save(notification);
                 return true;
@@ -38,12 +39,12 @@ public class NotificationService {
         return false;
     }
 
-    public boolean deleteNotification(Long notificationId, Long userId) {
-        Optional<Notification> notificationOpt = notificationRepository.findById(notificationId);
+    public boolean deleteNotification(UUID notificationId, UUID userId) {
+        Optional<NotificationDbModel> notificationOpt = notificationRepository.findById(notificationId);
         if (notificationOpt.isPresent()) {
-            Notification notification = notificationOpt.get();
+            NotificationDbModel notification = notificationOpt.get();
             // Kiểm tra xem notification có thuộc về user này không
-            if (notification.getUserId().equals(userId)) {
+            if (notification.getUser().equals(userId)) {
                 notificationRepository.delete(notification);
                 return true;
             }
