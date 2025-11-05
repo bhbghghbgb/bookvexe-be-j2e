@@ -98,5 +98,4 @@ public class RouteController {
     public ResponseEntity<Page<RouteSelectResponse>> findAllForSelect2(@RequestBody RouteQuery query) {
         return ResponseEntity.ok(routeService.findAllForSelect(query));
     }
-
 }
