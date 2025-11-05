@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.example.bookvexebej2e.mappers.TripUserMapper;
+import org.example.bookvexebej2e.models.constant.SeatStatus;
 import org.example.bookvexebej2e.models.db.BookingSeatDbModel;
 import org.example.bookvexebej2e.models.db.CarSeatDbModel;
 import org.example.bookvexebej2e.models.db.TripCarDbModel;
@@ -124,9 +125,11 @@ public class TripUserServiceImpl implements TripUserService {
             predicates.add(cb.or(
                     cb.isFalse(root.get("booking").get("isDeleted")),
                     cb.isNull(root.get("booking").get("isDeleted"))));
-            predicates.add(cb.and(
-                    cb.isNotNull(root.get("status")),
-                    cb.notEqual(root.get("status"), "cancelled")));
+
+            // Only consider BOOKED seats as unavailable
+            // RESERVED seats (from bookings in AWAIT_PAYMENT) should be handled by seat
+            // holds
+            predicates.add(cb.equal(root.get("status"), SeatStatus.BOOKED));
 
             return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
         });

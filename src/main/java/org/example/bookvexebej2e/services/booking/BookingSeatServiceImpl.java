@@ -8,6 +8,8 @@ import java.util.UUID;
 
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.BookingSeatMapper;
+import org.example.bookvexebej2e.models.constant.BookingStatus;
+import org.example.bookvexebej2e.models.constant.SeatStatus;
 import org.example.bookvexebej2e.models.db.BookingDbModel;
 import org.example.bookvexebej2e.models.db.BookingSeatDbModel;
 import org.example.bookvexebej2e.models.db.CarSeatDbModel;
@@ -64,10 +66,8 @@ public class BookingSeatServiceImpl implements BookingSeatService {
     @Override
     public BookingSeatResponse create(BookingSeatCreate createDto) {
         BookingSeatDbModel entity = new BookingSeatDbModel();
-        entity.setStatus(createDto.getStatus());
-        entity.setPrice(createDto.getPrice());
 
-        // Resolve booking relationship
+        // Resolve booking relationship first to determine appropriate seat status
         BookingDbModel booking = bookingRepository.findById(createDto.getBookingId())
                 .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, createDto.getBookingId()));
         entity.setBooking(booking);
@@ -76,6 +76,24 @@ public class BookingSeatServiceImpl implements BookingSeatService {
         CarSeatDbModel seat = carSeatRepository.findById(createDto.getSeatId())
                 .orElseThrow(() -> new ResourceNotFoundException(CarSeatDbModel.class, createDto.getSeatId()));
         entity.setSeat(seat);
+
+        // Set seat status based on booking status
+        if (createDto.getStatus() != null) {
+            entity.setStatus(createDto.getStatus());
+        } else {
+            // Auto-determine status based on booking status
+            if (BookingStatus.AWAIT_PAYMENT.equals(booking.getBookingStatus())) {
+                entity.setStatus(SeatStatus.RESERVED);
+            } else if (BookingStatus.AWAIT_GO.equals(booking.getBookingStatus()) ||
+                    BookingStatus.DEPARTING.equals(booking.getBookingStatus()) ||
+                    BookingStatus.COMPLETED.equals(booking.getBookingStatus())) {
+                entity.setStatus(SeatStatus.BOOKED);
+            } else {
+                entity.setStatus(SeatStatus.RESERVED); // Default
+            }
+        }
+
+        entity.setPrice(createDto.getPrice());
 
         // Auto-generate code based on booking code + ddmmyyyy
         String bookingSeatCode = generateBookingSeatCode(booking.getCode());
