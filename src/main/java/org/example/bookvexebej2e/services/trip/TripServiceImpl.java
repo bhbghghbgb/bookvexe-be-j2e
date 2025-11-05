@@ -224,8 +224,23 @@ public class TripServiceImpl implements TripService {
                 predicates.add(cb.equal(root.get("route").get("id"), query.getRouteId()));
             }
 
-            if (query.getDepartureTime() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("departureTime"), query.getDepartureTime()));
+            // Support both single departureTime and date range
+            if (query.getDepartureTimeFrom() != null && query.getDepartureTimeTo() != null) {
+                // Date range filter
+                predicates.add(cb.between(root.get("departureTime"), 
+                    query.getDepartureTimeFrom(), query.getDepartureTimeTo()));
+            } else if (query.getDepartureTimeFrom() != null) {
+                // From date only
+                predicates.add(cb.greaterThanOrEqualTo(root.get("departureTime"), 
+                    query.getDepartureTimeFrom()));
+            } else if (query.getDepartureTimeTo() != null) {
+                // To date only
+                predicates.add(cb.lessThanOrEqualTo(root.get("departureTime"), 
+                    query.getDepartureTimeTo()));
+            } else if (query.getDepartureTime() != null) {
+                // Backward compatibility: single departureTime means >= that time
+                predicates.add(cb.greaterThanOrEqualTo(root.get("departureTime"), 
+                    query.getDepartureTime()));
             }
 
             if (query.getPrice() != null) {
