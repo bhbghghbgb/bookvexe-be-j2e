@@ -1,7 +1,7 @@
 package org.example.bookvexebej2e.configs;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Arrays;
+
 import org.example.bookvexebej2e.services.auth.AuthUserDetailsService;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +23,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Collections;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @RequiredArgsConstructor
@@ -38,7 +39,6 @@ public class SecurityConfig {
 
     @Value("${security.admin.allow-all:false}")
     private boolean allowAllAdminAccess;
-
 
     /**
      * Defines the authentication mechanism using DAO (Database Access Object)
@@ -65,55 +65,57 @@ public class SecurityConfig {
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
-        ObjectProvider<ClientRegistrationRepository> clientRegistrations) throws Exception {
+            ObjectProvider<ClientRegistrationRepository> clientRegistrations) throws Exception {
         http
-            // CORS and CSRF Configuration
-            // CORS is handled by API Gateway, so we disable it here to avoid conflicts
-            .cors(AbstractHttpConfigurer::disable)
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            // EXPLICITLY SET THE ENTRY POINT TO RETURN 401 ON AUTH FAILURE
-            .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(unauthorizedHandler))
+                // CORS and CSRF Configuration
+                // ✅ ENABLE CORS instead of disabling it
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // EXPLICITLY SET THE ENTRY POINT TO RETURN 401 ON AUTH FAILURE
+                .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(unauthorizedHandler))
 
-            // 1. CONDITIONAL AUTHORIZATION LOGIC
-            .authorizeHttpRequests(authz -> {
-                if (allowAllAdminAccess) {
-                    // DEV MODE: Allow ALL requests (authenticated or not)
-                    authz.requestMatchers("/**")
-                        .permitAll();
-                } else {
-                    // PROD MODE: Standard authorization rules
-                    authz
-                        // Permit public/auth/swagger/root
+                // 1. CONDITIONAL AUTHORIZATION LOGIC
+                .authorizeHttpRequests(authz -> {
+                    if (allowAllAdminAccess) {
+                        // DEV MODE: Allow ALL requests (authenticated or not)
+                        authz.requestMatchers("/**")
+                                .permitAll();
+                    } else {
+                        // PROD MODE: Standard authorization rules
+                        authz
+                                // Permit public/auth/swagger/root
 
-                        .requestMatchers("/swagger/**", "/swagger/v1/**", "/", "/hello", "/auth/**",
-                                "/swagger-ui/**", "/v3/api-docs/**", "/error", "/dev/*", "/api/chat/*",
-                                "/api/v1/routes/**", "/api/v1/trips/**")
-                        .permitAll()
-                        // Require ADMIN role for /admin/**
-                        .requestMatchers("/admin/**")
-                        .hasRole("ADMIN")
-                        // All others require authentication
-                        .anyRequest()
-                        .authenticated();
-                }
-            })
+                                .requestMatchers("/swagger/**", "/swagger/v1/**", "/", "/hello", "/auth/**",
+                                        "/swagger-ui/**", "/v3/api-docs/**", "/error", "/dev/*", "/api/chat/*",
+                                        "/api/v1/routes/**", "/api/v1/trips/**")
+                                .permitAll()
+                                // Require ADMIN role for /admin/**
+                                .requestMatchers("/admin/**")
+                                .hasRole("ADMIN")
+                                // All others require authentication
+                                .anyRequest()
+                                .authenticated();
+                    }
+                })
 
-            // 5. Configure OAuth2 Login (using modern lambda syntax)
-            //            .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/auth/oauth2/success")
-            //                .failureUrl("/auth/oauth2/failure"))
+                // 5. Configure OAuth2 Login (using modern lambda syntax)
+                // .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/auth/oauth2/success")
+                // .failureUrl("/auth/oauth2/failure"))
 
-            // 6. Set the authentication provider
-            .authenticationProvider(authenticationProvider())
+                // 6. Set the authentication provider
+                .authenticationProvider(authenticationProvider())
 
-            // 7. Add the custom JWT filter BEFORE the standard UsernamePasswordAuthenticationFilter
-            // This ensures JWT processing happens before Spring tries to look for form data/session.
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                // 7. Add the custom JWT filter BEFORE the standard
+                // UsernamePasswordAuthenticationFilter
+                // This ensures JWT processing happens before Spring tries to look for form
+                // data/session.
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         // Only enable oauth2Login if OAuth2 clients are present
         if (clientRegistrations.getIfAvailable() != null) {
             http.oauth2Login(oauth2 -> oauth2.successHandler(oauth2SuccessHandler)
-                .failureUrl("/auth/oauth2/failure"));
+                    .failureUrl("/auth/oauth2/failure"));
             log.info("OAuth2 login enabled (client registrations found).");
         } else {
             log.warn("OAuth2 login disabled (no client registrations found).");
@@ -123,25 +125,46 @@ public class SecurityConfig {
     }
 
     /**
-     * Defines the global CORS configuration allowing all requests.
+     * Defines the global CORS configuration allowing requests from frontend.
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Collections.singletonList("http://localhost:8080")); // Allow all origins
-        config.setAllowedMethods(Collections.singletonList("*")); // Allow all HTTP methods
-        config.setAllowedHeaders(Collections.singletonList("*")); // Allow all headers
-        config.setAllowCredentials(false); // Disallow credentials (standard for stateless JWT APIs)
+
+        // ✅ Allow frontend URLs
+        config.setAllowedOrigins(Arrays.asList(
+                "http://localhost:5174", // Vite default
+                "http://localhost:5173", // Vite alternative
+                "http://localhost:3000", // React/Next.js
+                "http://localhost:8080" // Your current config
+        ));
+
+        // ✅ Allow all HTTP methods
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+
+        // ✅ Allow all headers
+        config.setAllowedHeaders(Arrays.asList("*"));
+
+        // ✅ Allow credentials (for cookies, JWT in headers)
+        config.setAllowCredentials(true);
+
+        // ✅ Expose headers
+        config.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
+
+        // ✅ Max age for preflight
+        config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
     }
 
-    //    // Custom converter to map Keycloak roles
-    //    private Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter() {
-    //        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-    //        converter.setJwtGrantedAuthoritiesConverter(new KeycloakJwtGrantedAuthoritiesConverter());
-    //        return converter;
-    //    }
+    // // Custom converter to map Keycloak roles
+    // private Converter<Jwt, AbstractAuthenticationToken>
+    // jwtAuthenticationConverter() {
+    // JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+    // converter.setJwtGrantedAuthoritiesConverter(new
+    // KeycloakJwtGrantedAuthoritiesConverter());
+    // return converter;
+    // }
 }

@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.BookingUserMapper;
 import org.example.bookvexebej2e.models.constant.BookingStatus;
+import org.example.bookvexebej2e.models.constant.SeatStatus;
 import org.example.bookvexebej2e.models.db.BookingDbModel;
 import org.example.bookvexebej2e.models.db.BookingSeatDbModel;
 import org.example.bookvexebej2e.models.db.CarSeatDbModel;
@@ -156,7 +157,7 @@ public class BookingUserServiceImpl implements BookingUserService {
         TripStopDbModel dropoffStop = tripStopRepository.findById(createDto.getDropoffStopId())
                 .orElseThrow(() -> new ResourceNotFoundException(TripStopDbModel.class, createDto.getDropoffStopId()));
 
-        // 3. Create booking
+        // 3. Create booking with AWAIT_PAYMENT status (seats are held, not booked yet)
         BookingDbModel booking = new BookingDbModel();
         booking.setCode(generateBookingCode());
         booking.setType(createDto.getType());
@@ -164,12 +165,12 @@ public class BookingUserServiceImpl implements BookingUserService {
         booking.setTrip(trip);
         booking.setPickupStop(pickupStop);
         booking.setDropoffStop(dropoffStop);
-        booking.setBookingStatus(BookingStatus.NEW);
+        booking.setBookingStatus(BookingStatus.AWAIT_PAYMENT); // Change from NEW to AWAIT_PAYMENT
         booking.setTotalPrice(createDto.getTotalPrice());
 
         BookingDbModel savedBooking = bookingUserRepository.save(booking);
 
-        // 4. Create booking seats
+        // 4. Create booking seats with RESERVED status (not BOOKED yet)
         if (createDto.getBookingSeats() != null && !createDto.getBookingSeats().isEmpty()) {
             List<BookingSeatDbModel> bookingSeats = new ArrayList<>();
             for (BookingSeatCreate seatCreate : createDto.getBookingSeats()) {
@@ -180,7 +181,7 @@ public class BookingUserServiceImpl implements BookingUserService {
                 bookingSeat.setCode(generateBookingSeatCode());
                 bookingSeat.setBooking(savedBooking);
                 bookingSeat.setSeat(seat);
-                bookingSeat.setStatus(seatCreate.getStatus());
+                bookingSeat.setStatus(SeatStatus.RESERVED); // Use RESERVED instead of BOOKED
                 bookingSeat.setPrice(seatCreate.getPrice());
 
                 bookingSeats.add(bookingSeat);
@@ -286,9 +287,22 @@ public class BookingUserServiceImpl implements BookingUserService {
             throw new AccessDeniedException("You don't have permission to access this booking");
         }
 
-        if (BookingStatus.NEW.equals(booking.getBookingStatus()) ||
-                BookingStatus.AWAIT_PAYMENT.equals(booking.getBookingStatus())) {
+        // Only allow payment confirmation for AWAIT_PAYMENT status
+        if (BookingStatus.AWAIT_PAYMENT.equals(booking.getBookingStatus())) {
             booking.setBookingStatus(BookingStatus.AWAIT_GO);
+
+            // Update booking seats status from RESERVED to BOOKED
+            if (booking.getBookingSeats() != null && !booking.getBookingSeats().isEmpty()) {
+                for (BookingSeatDbModel bookingSeat : booking.getBookingSeats()) {
+                    if (SeatStatus.RESERVED.equals(bookingSeat.getStatus())) {
+                        bookingSeat.setStatus(SeatStatus.BOOKED);
+                    }
+                }
+                bookingSeatRepository.saveAll(booking.getBookingSeats());
+            }
+
+            // Release seat holds for this booking since payment is confirmed
+            // TODO: Integrate with SeatHoldService to release holds
         }
 
         BookingDbModel updatedBooking = bookingUserRepository.save(booking);
@@ -301,9 +315,19 @@ public class BookingUserServiceImpl implements BookingUserService {
         BookingDbModel booking = bookingUserRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, id));
 
-        if (BookingStatus.NEW.equals(booking.getBookingStatus()) ||
-                BookingStatus.AWAIT_PAYMENT.equals(booking.getBookingStatus())) {
+        // Only allow payment confirmation for AWAIT_PAYMENT status
+        if (BookingStatus.AWAIT_PAYMENT.equals(booking.getBookingStatus())) {
             booking.setBookingStatus(BookingStatus.AWAIT_GO);
+
+            // Update booking seats status from RESERVED to BOOKED
+            if (booking.getBookingSeats() != null && !booking.getBookingSeats().isEmpty()) {
+                for (BookingSeatDbModel bookingSeat : booking.getBookingSeats()) {
+                    if (SeatStatus.RESERVED.equals(bookingSeat.getStatus())) {
+                        bookingSeat.setStatus(SeatStatus.BOOKED);
+                    }
+                }
+                bookingSeatRepository.saveAll(booking.getBookingSeats());
+            }
         }
 
         BookingDbModel updatedBooking = bookingUserRepository.save(booking);

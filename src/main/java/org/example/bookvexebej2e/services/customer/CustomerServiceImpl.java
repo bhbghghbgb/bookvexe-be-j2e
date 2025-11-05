@@ -1,14 +1,19 @@
 package org.example.bookvexebej2e.services.customer;
 
-import jakarta.persistence.criteria.Predicate;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.CustomerMapper;
 import org.example.bookvexebej2e.models.db.CustomerDbModel;
 import org.example.bookvexebej2e.models.db.CustomerTypeDbModel;
 import org.example.bookvexebej2e.models.db.UserDbModel;
-import org.example.bookvexebej2e.models.dto.customer.*;
+import org.example.bookvexebej2e.models.dto.customer.CustomerCreate;
+import org.example.bookvexebej2e.models.dto.customer.CustomerQuery;
+import org.example.bookvexebej2e.models.dto.customer.CustomerResponse;
+import org.example.bookvexebej2e.models.dto.customer.CustomerSelectResponse;
+import org.example.bookvexebej2e.models.dto.customer.CustomerUpdate;
 import org.example.bookvexebej2e.repositories.customer.CustomerRepository;
 import org.example.bookvexebej2e.repositories.customer.CustomerTypeRepository;
 import org.example.bookvexebej2e.repositories.user.UserRepository;
@@ -17,11 +22,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +37,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
     private final CustomerTypeRepository customerTypeRepository;
     private final CustomerMapper customerMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public List<CustomerResponse> findAll() {
@@ -67,8 +74,9 @@ public class CustomerServiceImpl implements CustomerService {
 
         if (createDto.getCustomerTypeId() != null) {
             CustomerTypeDbModel customerType = customerTypeRepository.findById(createDto.getCustomerTypeId())
-                .orElseThrow(
-                    () -> new ResourceNotFoundException(CustomerTypeDbModel.class, createDto.getCustomerTypeId()));
+                    .orElseThrow(
+                            () -> new ResourceNotFoundException(CustomerTypeDbModel.class,
+                                    createDto.getCustomerTypeId()));
             entity.setCustomerType(customerType);
         }
 
@@ -76,7 +84,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         UserDbModel userEntity = new UserDbModel();
         userEntity.setUsername(entity.getPhone());
-        userEntity.setPassword("123456");
+        userEntity.setPassword(passwordEncoder.encode("123456"));
         userEntity.setIsGoogle(false);
         userEntity.setCustomer(savedEntity);
 
