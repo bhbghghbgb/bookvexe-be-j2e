@@ -24,9 +24,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -46,8 +44,8 @@ public class NotificationServiceImpl implements NotificationService {
     public List<NotificationResponse> findAll() {
         List<NotificationDbModel> entities = notificationRepository.findAllNotDeleted();
         return entities.stream()
-                .map(notificationMapper::toResponse)
-                .toList();
+            .map(notificationMapper::toResponse)
+            .toList();
     }
 
     @Override
@@ -61,7 +59,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public NotificationResponse findById(UUID id) {
         NotificationDbModel entity = notificationRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new ResourceNotFoundException(NotificationDbModel.class, id));
+            .orElseThrow(() -> new ResourceNotFoundException(NotificationDbModel.class, id));
         return notificationMapper.toResponse(entity);
     }
 
@@ -75,23 +73,23 @@ public class NotificationServiceImpl implements NotificationService {
         entity.setSentAt(createDto.getSentAt());
 
         UserDbModel user = userRepository.findById(createDto.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, createDto.getUserId()));
+            .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, createDto.getUserId()));
         entity.setUser(user);
 
         if (createDto.getBookingId() != null) {
             BookingDbModel booking = bookingRepository.findById(createDto.getBookingId())
-                    .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, createDto.getBookingId()));
+                .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, createDto.getBookingId()));
             entity.setBooking(booking);
         }
 
         if (createDto.getTripId() != null) {
             TripDbModel trip = tripRepository.findById(createDto.getTripId())
-                    .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, createDto.getTripId()));
+                .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, createDto.getTripId()));
             entity.setTrip(trip);
         }
 
         NotificationTypeDbModel type = notificationTypeRepository.findById(createDto.getTypeId())
-                .orElseThrow(() -> new ResourceNotFoundException(NotificationTypeDbModel.class, createDto.getTypeId()));
+            .orElseThrow(() -> new ResourceNotFoundException(NotificationTypeDbModel.class, createDto.getTypeId()));
         entity.setType(type);
 
         NotificationDbModel savedEntity = notificationRepository.save(entity);
@@ -101,7 +99,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public NotificationResponse update(UUID id, NotificationUpdate updateDto) {
         NotificationDbModel entity = notificationRepository.findByIdAndNotDeleted(id)
-                .orElseThrow(() -> new ResourceNotFoundException(NotificationDbModel.class, id));
+            .orElseThrow(() -> new ResourceNotFoundException(NotificationDbModel.class, id));
 
         entity.setChannel(updateDto.getChannel());
         entity.setTitle(updateDto.getTitle());
@@ -111,26 +109,25 @@ public class NotificationServiceImpl implements NotificationService {
 
         if (updateDto.getUserId() != null) {
             UserDbModel user = userRepository.findById(updateDto.getUserId())
-                    .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, updateDto.getUserId()));
+                .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, updateDto.getUserId()));
             entity.setUser(user);
         }
 
         if (updateDto.getBookingId() != null) {
             BookingDbModel booking = bookingRepository.findById(updateDto.getBookingId())
-                    .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, updateDto.getBookingId()));
+                .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, updateDto.getBookingId()));
             entity.setBooking(booking);
         }
 
         if (updateDto.getTripId() != null) {
             TripDbModel trip = tripRepository.findById(updateDto.getTripId())
-                    .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, updateDto.getTripId()));
+                .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, updateDto.getTripId()));
             entity.setTrip(trip);
         }
 
         if (updateDto.getTypeId() != null) {
             NotificationTypeDbModel type = notificationTypeRepository.findById(updateDto.getTypeId())
-                    .orElseThrow(
-                            () -> new ResourceNotFoundException(NotificationTypeDbModel.class, updateDto.getTypeId()));
+                .orElseThrow(() -> new ResourceNotFoundException(NotificationTypeDbModel.class, updateDto.getTypeId()));
             entity.setType(type);
         }
 
@@ -146,7 +143,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void activate(UUID id) {
         NotificationDbModel entity = notificationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(NotificationDbModel.class, id));
+            .orElseThrow(() -> new ResourceNotFoundException(NotificationDbModel.class, id));
         entity.setIsDeleted(false);
         notificationRepository.save(entity);
     }
@@ -154,7 +151,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void deactivate(UUID id) {
         NotificationDbModel entity = notificationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(NotificationDbModel.class, id));
+            .orElseThrow(() -> new ResourceNotFoundException(NotificationDbModel.class, id));
         entity.setIsDeleted(true);
         notificationRepository.save(entity);
     }
@@ -163,8 +160,8 @@ public class NotificationServiceImpl implements NotificationService {
     public List<NotificationSelectResponse> findAllForSelect() {
         List<NotificationDbModel> entities = notificationRepository.findAllNotDeleted();
         return entities.stream()
-                .map(notificationMapper::toSelectResponse)
-                .toList();
+            .map(notificationMapper::toSelectResponse)
+            .toList();
     }
 
     @Override
@@ -180,10 +177,8 @@ public class NotificationServiceImpl implements NotificationService {
      * and always pushing it via WebSocket and email (if requested).
      */
     @Transactional
-    public NotificationResponse sendNotification(
-        UUID userId, String typeCode, String title, String message,
-        UUID bookingId, UUID tripId, String channel,
-        Boolean sendEmail, Boolean shouldSave) {
+    public NotificationResponse sendNotification(UUID userId, String typeCode, String title, String message,
+        UUID bookingId, UUID tripId, String channel, Boolean sendEmail, Boolean shouldSave) {
 
         NotificationDbModel entity;
 
@@ -196,7 +191,7 @@ public class NotificationServiceImpl implements NotificationService {
             entity = createUnsavedNotification(userId, typeCode, title, message, bookingId, tripId, channel);
             log.info("DEBUG Notification created (unsaved) and sent to user {}.", userId);
         }
-
+        // TODO: change to kafka --> notification & mail service
         // 2. Send Email if requested
         if (Boolean.TRUE.equals(sendEmail)) {
             mailingService.sendEmailToUser(userId, title, message);
@@ -210,8 +205,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     // Helper for unsaved response
-    private NotificationDbModel createUnsavedNotification(
-        UUID userId, String typeCode, String title, String message,
+    private NotificationDbModel createUnsavedNotification(UUID userId, String typeCode, String title, String message,
         UUID bookingId, UUID tripId, String channel) {
 
         NotificationDbModel entity = new NotificationDbModel();
@@ -227,7 +221,8 @@ public class NotificationServiceImpl implements NotificationService {
         entity.setCreatedBy(userId);
         entity.setUpdatedBy(userId);
 
-        if (typeCode != null && !typeCode.trim().isEmpty()) {
+        if (typeCode != null && !typeCode.trim()
+            .isEmpty()) {
             NotificationTypeDbModel type = notificationTypeRepository.findByCode(typeCode)
                 .orElseThrow(() -> new ResourceNotFoundException(NotificationTypeDbModel.class, typeCode));
             entity.setType(type);
@@ -251,12 +246,21 @@ public class NotificationServiceImpl implements NotificationService {
     /**
      * Saves the notification entity to the database.
      */
-    private NotificationDbModel saveNotification(
-        UUID userId, String typeCode, String title, String message,
+    private NotificationDbModel saveNotification(UUID userId, String typeCode, String title, String message,
         UUID bookingId, UUID tripId, String channel) {
 
         UserDbModel user = userRepository.findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, userId));
+
+        if (Objects.equals(typeCode, "TYPE_DEPARTURE_REMINDER")) {
+            Optional<NotificationDbModel> existing = notificationRepository.findExistingReminder(userId, bookingId,
+                tripId, typeCode);
+
+            if (existing.isPresent()) {
+                log.info("Notification already sent for user={}, booking={}, trip={}", userId, bookingId, tripId);
+                return existing.get();
+            }
+        }
 
         NotificationDbModel entity = new NotificationDbModel();
         entity.setUser(user);
@@ -267,7 +271,8 @@ public class NotificationServiceImpl implements NotificationService {
         entity.setIsSent(true);
         entity.setSentAt(LocalDateTime.now());
 
-        if (typeCode != null && !typeCode.trim().isEmpty()) {
+        if (typeCode != null && !typeCode.trim()
+            .isEmpty()) {
             NotificationTypeDbModel type = notificationTypeRepository.findByCode(typeCode)
                 .orElseThrow(() -> new ResourceNotFoundException(NotificationTypeDbModel.class, typeCode));
             entity.setType(type);
@@ -303,7 +308,9 @@ public class NotificationServiceImpl implements NotificationService {
             .orElseThrow(() -> new ResourceNotFoundException(NotificationDbModel.class, notificationId));
 
         // Security check: only the owner can mark as read
-        if (!entity.getUser().getId().equals(userId)) {
+        if (!entity.getUser()
+            .getId()
+            .equals(userId)) {
             throw new ForbiddenException("You do not have permission to modify this notification.");
         }
 
@@ -321,7 +328,9 @@ public class NotificationServiceImpl implements NotificationService {
             .orElseThrow(() -> new ResourceNotFoundException(NotificationDbModel.class, notificationId));
 
         // Security check: only the owner can delete
-        if (!entity.getUser().getId().equals(userId)) {
+        if (!entity.getUser()
+            .getId()
+            .equals(userId)) {
             throw new ForbiddenException("You do not have permission to delete this notification.");
         }
 
@@ -333,13 +342,8 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public int countUnreadNotifications(UUID userId) {
-        return (int) notificationRepository.count(
-            (root, cq, cb) -> cb.and(
-                cb.equal(root.get("user").get("id"), userId),
-                cb.isFalse(root.get("isRead")),
-                cb.isFalse(root.get("isDeleted"))
-            )
-        );
+        return (int) notificationRepository.count((root, cq, cb) -> cb.and(cb.equal(root.get("user")
+            .get("id"), userId), cb.isFalse(root.get("isRead")), cb.isFalse(root.get("isDeleted"))));
     }
 
     private Specification<NotificationDbModel> buildSpecification(NotificationQuery query) {
@@ -349,22 +353,22 @@ public class NotificationServiceImpl implements NotificationService {
 
             if (query.getUserId() != null) {
                 predicates.add(cb.equal(root.get("user")
-                        .get("id"), query.getUserId()));
+                    .get("id"), query.getUserId()));
             }
             if (query.getBookingId() != null) {
                 predicates.add(cb.equal(root.get("booking")
-                        .get("id"), query.getBookingId()));
+                    .get("id"), query.getBookingId()));
             }
             if (query.getTripId() != null) {
                 predicates.add(cb.equal(root.get("trip")
-                        .get("id"), query.getTripId()));
+                    .get("id"), query.getTripId()));
             }
             if (query.getTypeId() != null) {
                 predicates.add(cb.equal(root.get("type")
-                        .get("id"), query.getTypeId()));
+                    .get("id"), query.getTypeId()));
             }
             if (query.getChannel() != null && !query.getChannel()
-                    .isEmpty()) {
+                .isEmpty()) {
                 predicates.add(cb.equal(root.get("channel"), query.getChannel()));
             }
             if (query.getIsSent() != null) {
