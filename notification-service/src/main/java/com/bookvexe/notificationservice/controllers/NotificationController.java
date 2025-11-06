@@ -15,7 +15,7 @@ import java.util.UUID;
 @RequestMapping("/notification-service-api")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = "*") // Cần cấu hình lại cho môi trường production
+@CrossOrigin(origins = "*")
 public class NotificationController {
 
     private final NotificationService notificationService;
