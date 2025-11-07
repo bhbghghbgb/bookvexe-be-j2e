@@ -4,6 +4,7 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Strings;
 import org.example.bookvexebej2e.exceptions.ForbiddenException;
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.NotificationMapper;
@@ -24,7 +25,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -280,7 +284,7 @@ public class NotificationServiceImpl implements NotificationService {
         UserDbModel user = userRepository.findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, userId));
 
-        if (Objects.equals(typeCode, "TYPE_DEPARTURE_REMINDER")) {
+        if (Strings.CI.contains(typeCode, "DEPARTURE") && Strings.CI.contains(typeCode, "REMINDER")) {
             Optional<NotificationDbModel> existing = notificationRepository.findExistingReminder(userId, bookingId,
                 tripId, typeCode);
 
