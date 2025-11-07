@@ -174,11 +174,34 @@ public class NotificationServiceImpl implements NotificationService {
 
     /**
      * High-level service method to send a notification, optionally saving it to the database
-     * and always pushing it via WebSocket and email (if requested).
+     * and always pushing it via WebSocket and email (if requested), resolved from userId.
      */
     @Transactional
     public NotificationResponse sendNotification(UUID userId, String typeCode, String title, String message,
         UUID bookingId, UUID tripId, String channel, Boolean sendEmail, Boolean shouldSave) {
+
+        return sendNotificationInternal(userId, null, typeCode, title, message, bookingId, tripId, channel, sendEmail,
+            shouldSave);
+    }
+
+    /**
+     * Overload method that allows specifying an explicit email address for sending the email
+     * notification, bypassing the lookup from the userId.
+     */
+    @Transactional
+    public NotificationResponse sendNotification(UUID userId, String toEmail, String typeCode, String title,
+        String message, UUID bookingId, UUID tripId, String channel, Boolean sendEmail, Boolean shouldSave) {
+
+        return sendNotificationInternal(userId, toEmail, typeCode, title, message, bookingId, tripId, channel,
+            sendEmail, shouldSave);
+    }
+
+    // -------------------------------------------------------------
+    // Internal Method to Avoid Code Repetition
+    // -------------------------------------------------------------
+
+    private NotificationResponse sendNotificationInternal(UUID userId, String toEmail, String typeCode, String title,
+        String message, UUID bookingId, UUID tripId, String channel, Boolean sendEmail, Boolean shouldSave) {
 
         NotificationDbModel entity;
 
@@ -194,13 +217,18 @@ public class NotificationServiceImpl implements NotificationService {
 
         // 2. Send Email if requested
         if (Boolean.TRUE.equals(sendEmail)) {
-            mailingService.sendEmailToUser(userId, title, message);
+            if (toEmail != null && !toEmail.isBlank()) {
+                // Use explicit email if provided
+                mailingService.sendEmail(toEmail, title, message);
+            } else {
+                // Fallback to user ID lookup
+                mailingService.sendEmailToUser(userId, title, message);
+            }
         }
 
         // 3. Ping Frontend via WebSocket
         webSocketService.notifyUser(userId, "NEW_NOTIFICATION");
 
-        // Return the response DTO, which is mapped from the saved or unsaved entity
         return notificationMapper.toResponse(entity);
     }
 
