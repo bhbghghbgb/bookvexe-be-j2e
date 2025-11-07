@@ -5,7 +5,10 @@ import org.example.bookvexebej2e.services.auth.TokenService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -31,22 +34,34 @@ public class JwtAuthenticationProvider {
         }
 
         // 2. Parse token and get the user identifier
-        String username = jwtUtils.getUsernameFromToken(token);
+        String identifier = jwtUtils.getUsernameFromToken(token);
+
+        UserDetails userDetails = null;
 
         try {
-            // Load UserDetails
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            AuthUserDetails authUserDetails = (AuthUserDetails) userDetails;
+            // Try loading by username
+            userDetails = userDetailsService.loadUserByUsername(identifier);
+        } catch (UsernameNotFoundException e) {
+            // If not found, try loading by UUID
+            try {
+                UUID id = jwtUtils.getUserIdFromToken(token);
+                userDetails = userDetailsService.loadUserByUsername(id.toString());
+            } catch (IllegalArgumentException | UsernameNotFoundException ignored) {
+                // Not a valid UUID or user not found by ID
+                return null;
+            }
+        }
 
-            // 4. Create the Custom Authentication Token
-            return new JwtAuthenticationToken(
-                authUserDetails,
-                authUserDetails.getAuthorities()
-            );
-
-        } catch (Exception e) {
-            // Token is structurally valid but user not found/disabled
+        if (userDetails == null) {
             return null;
         }
+
+        AuthUserDetails authUserDetails = (AuthUserDetails) userDetails;
+
+        // 4. Create the Custom Authentication Token
+        return new JwtAuthenticationToken(
+            authUserDetails,
+            authUserDetails.getAuthorities()
+        );
     }
 }
