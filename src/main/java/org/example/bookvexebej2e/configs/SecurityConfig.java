@@ -1,7 +1,7 @@
 package org.example.bookvexebej2e.configs;
 
-import java.util.Arrays;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.bookvexebej2e.services.auth.AuthUserDetailsService;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,8 +23,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Collections;
 
 @Configuration
 @RequiredArgsConstructor
@@ -39,6 +38,7 @@ public class SecurityConfig {
 
     @Value("${security.admin.allow-all:false}")
     private boolean allowAllAdminAccess;
+
 
     /**
      * Defines the authentication mechanism using DAO (Database Access Object)
@@ -65,11 +65,11 @@ public class SecurityConfig {
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
-            ObjectProvider<ClientRegistrationRepository> clientRegistrations) throws Exception {
+                                           ObjectProvider<ClientRegistrationRepository> clientRegistrations) throws Exception {
         http
                 // CORS and CSRF Configuration
-                // ✅ ENABLE CORS instead of disabling it
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // CORS is handled by API Gateway, so we disable it here to avoid conflicts
+                .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // EXPLICITLY SET THE ENTRY POINT TO RETURN 401 ON AUTH FAILURE
@@ -100,16 +100,14 @@ public class SecurityConfig {
                 })
 
                 // 5. Configure OAuth2 Login (using modern lambda syntax)
-                // .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/auth/oauth2/success")
-                // .failureUrl("/auth/oauth2/failure"))
+                //            .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/auth/oauth2/success")
+                //                .failureUrl("/auth/oauth2/failure"))
 
                 // 6. Set the authentication provider
                 .authenticationProvider(authenticationProvider())
 
-                // 7. Add the custom JWT filter BEFORE the standard
-                // UsernamePasswordAuthenticationFilter
-                // This ensures JWT processing happens before Spring tries to look for form
-                // data/session.
+                // 7. Add the custom JWT filter BEFORE the standard UsernamePasswordAuthenticationFilter
+                // This ensures JWT processing happens before Spring tries to look for form data/session.
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         // Only enable oauth2Login if OAuth2 clients are present
@@ -125,46 +123,25 @@ public class SecurityConfig {
     }
 
     /**
-     * Defines the global CORS configuration allowing requests from frontend.
+     * Defines the global CORS configuration allowing all requests.
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-
-        // ✅ Allow frontend URLs
-        config.setAllowedOrigins(Arrays.asList(
-                "http://localhost:5174", // Vite default
-                "http://localhost:5173", // Vite alternative
-                "http://localhost:3000", // React/Next.js
-                "http://localhost:8080" // Your current config
-        ));
-
-        // ✅ Allow all HTTP methods
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-
-        // ✅ Allow all headers
-        config.setAllowedHeaders(Arrays.asList("*"));
-
-        // ✅ Allow credentials (for cookies, JWT in headers)
-        config.setAllowCredentials(true);
-
-        // ✅ Expose headers
-        config.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
-
-        // ✅ Max age for preflight
-        config.setMaxAge(3600L);
+        config.setAllowedOrigins(Collections.singletonList("http://localhost:8080")); // Allow all origins
+        config.setAllowedMethods(Collections.singletonList("*")); // Allow all HTTP methods
+        config.setAllowedHeaders(Collections.singletonList("*")); // Allow all headers
+        config.setAllowCredentials(false); // Disallow credentials (standard for stateless JWT APIs)
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
     }
 
-    // // Custom converter to map Keycloak roles
-    // private Converter<Jwt, AbstractAuthenticationToken>
-    // jwtAuthenticationConverter() {
-    // JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-    // converter.setJwtGrantedAuthoritiesConverter(new
-    // KeycloakJwtGrantedAuthoritiesConverter());
-    // return converter;
-    // }
+    //    // Custom converter to map Keycloak roles
+    //    private Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter() {
+    //        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+    //        converter.setJwtGrantedAuthoritiesConverter(new KeycloakJwtGrantedAuthoritiesConverter());
+    //        return converter;
+    //    }
 }
