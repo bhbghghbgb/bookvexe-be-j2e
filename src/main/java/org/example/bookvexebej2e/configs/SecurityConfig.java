@@ -23,6 +23,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 @Configuration
@@ -68,8 +69,7 @@ public class SecurityConfig {
                                            ObjectProvider<ClientRegistrationRepository> clientRegistrations) throws Exception {
         http
                 // CORS and CSRF Configuration
-                // CORS is handled by API Gateway, so we disable it here to avoid conflicts
-                .cors(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // EXPLICITLY SET THE ENTRY POINT TO RETURN 401 ON AUTH FAILURE
@@ -128,10 +128,16 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Collections.singletonList("http://localhost:8080")); // Allow all origins
-        config.setAllowedMethods(Collections.singletonList("*")); // Allow all HTTP methods
-        config.setAllowedHeaders(Collections.singletonList("*")); // Allow all headers
-        config.setAllowCredentials(false); // Disallow credentials (standard for stateless JWT APIs)
+        config.setAllowedOrigins(Arrays.asList(
+            "http://localhost:5173",  // BMS User
+            "http://localhost:5174",  // BMS Admin
+            "http://localhost:8080"
+        )); 
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        config.setAllowedHeaders(Arrays.asList("*"));
+        config.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
