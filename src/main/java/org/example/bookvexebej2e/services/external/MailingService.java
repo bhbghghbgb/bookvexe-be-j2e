@@ -29,7 +29,7 @@ public class MailingService {
     /**
      * Lower-level function to send an email using Spring's JavaMailSender (configured for SMTP).
      */
-    public void sendEmail(String toEmail, String subject, String body) {
+    public void sendEmailFallback(String toEmail, String subject, String body) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(senderEmail);
@@ -45,23 +45,41 @@ public class MailingService {
         }
     }
 
-    private void sendEmailByKafkaProducer(String toEmail, String subject, String body) {
-        kafkaProducerService.sendMail(new MailKafkaDTO(toEmail, subject, body, null, new HashMap<>() {
-        }));
-        log.info("Successfully sent email request to mail service through kafka. To: {}, Subject: {}", toEmail,
+    /**
+     * High-level function to send an email using a specific email address (override).
+     * This is useful for testing or explicit email addresses not linked to a UserDbModel.
+     */
+    public void sendEmail(String toEmail, String subject, String body) {
+        sendMailRequestToKafka(toEmail, subject, body);
+    }
+
+    /**
+     * Internal method to send an email request via Kafka.
+     * This is the single point of contact for the external Mail Service.
+     */
+    private void sendMailRequestToKafka(String toEmail, String subject, String body) {
+        if (toEmail == null || toEmail.isBlank()) {
+            log.warn("Attempted to send mail with empty recipient. Subject: {}", subject);
+            return;
+        }
+
+        kafkaProducerService.sendMail(new MailKafkaDTO(toEmail, subject, body, null, // templateName
+            new HashMap<>() // templateModel
+        ));
+        log.info("Successfully sent email request to mail service through Kafka. To: {}, Subject: {}", toEmail,
             subject);
     }
 
     /**
      * High-level function to send an email to a UserDbModel (Employee/Customer).
+     * The email address is resolved from the UserDbModel.
      */
     public void sendEmailToUser(UUID userId, String subject, String body) {
         userRepository.findById(userId)
             .ifPresentOrElse(user -> {
                 String email = getUserEmail(user);
                 if (email != null) {
-                    //                    sendEmail(email, subject, body);
-                    sendEmailByKafkaProducer(email, subject, body);
+                    sendMailRequestToKafka(email, subject, body);
                 } else {
                     log.warn("User {} has no associated email address (Customer/Employee) for sending.", userId);
                 }
