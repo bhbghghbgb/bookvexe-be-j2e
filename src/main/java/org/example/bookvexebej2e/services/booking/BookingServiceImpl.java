@@ -1,27 +1,19 @@
 package org.example.bookvexebej2e.services.booking;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.BookingMapper;
 import org.example.bookvexebej2e.models.constant.BookingStatus;
-import org.example.bookvexebej2e.models.db.BookingDbModel;
-import org.example.bookvexebej2e.models.db.CustomerDbModel;
-import org.example.bookvexebej2e.models.db.TripDbModel;
-import org.example.bookvexebej2e.models.db.TripStopDbModel;
-import org.example.bookvexebej2e.models.dto.booking.BookingCreate;
-import org.example.bookvexebej2e.models.dto.booking.BookingQuery;
-import org.example.bookvexebej2e.models.dto.booking.BookingResponse;
-import org.example.bookvexebej2e.models.dto.booking.BookingSeatCreate;
-import org.example.bookvexebej2e.models.dto.booking.BookingSelectResponse;
-import org.example.bookvexebej2e.models.dto.booking.BookingUpdate;
+import org.example.bookvexebej2e.models.db.*;
+import org.example.bookvexebej2e.models.dto.booking.*;
 import org.example.bookvexebej2e.repositories.booking.BookingRepository;
 import org.example.bookvexebej2e.repositories.customer.CustomerRepository;
 import org.example.bookvexebej2e.repositories.trip.TripRepository;
 import org.example.bookvexebej2e.repositories.trip.TripStopRepository;
+import org.example.bookvexebej2e.repositories.user.UserRepository;
+import org.example.bookvexebej2e.services.notification.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,17 +21,22 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
     private final CustomerRepository customerRepository;
     private final TripRepository tripRepository;
     private final TripStopRepository tripStopRepository;
+    private final UserRepository userRepository;
+    private final NotificationService notificationService;
     private final BookingSeatService bookingSeatService;
     private final BookingMapper bookingMapper;
 
@@ -117,6 +114,29 @@ public class BookingServiceImpl implements BookingService {
                 seatDto.setBookingId(savedEntity.getId()); // Inject booking ID
                 bookingSeatService.create(seatDto); // Reuse service logic
             }
+        }
+
+        // Send notification for new booking
+        try {
+            UUID userId = userRepository.findByCustomerId(savedEntity.getCustomer()
+                    .getId())
+                .orElseThrow().getId();
+            String message = String.format("Đặt chỗ %s đã được tạo thành công. Trạng thái: %s",
+                savedEntity.getCode(), savedEntity.getBookingStatus());
+
+            notificationService.sendNotification(
+                userId,
+                "TYPE_BOOKING_CREATED",
+                "Đặt chỗ mới",
+                message,
+                savedEntity.getId(),
+                savedEntity.getTrip().getId(),
+                "CHANNEL_BOOKING",
+                true, // sendEmail
+                true  // shouldSave
+            );
+        } catch (Exception e) {
+            log.warn("Failed to send notification for booking creation: {}", e.getMessage());
         }
 
         return bookingMapper.toResponse(savedEntity);
@@ -257,6 +277,32 @@ public class BookingServiceImpl implements BookingService {
         }
 
         BookingDbModel savedEntity = bookingRepository.save(entity);
+
+        // Send notification for confirmation
+        try {
+            UUID userId = userRepository.findByCustomerId(savedEntity.getCustomer()
+                    .getId())
+                .orElseThrow().getId();
+            String statusMessage = BookingStatus.AWAIT_PAYMENT.equals(savedEntity.getBookingStatus())
+                ? "chờ thanh toán" : "chờ khởi hành";
+            String message = String.format("Đặt chỗ %s đã được xác nhận. Trạng thái: %s",
+                savedEntity.getCode(), statusMessage);
+
+            notificationService.sendNotification(
+                userId,
+                "TYPE_BOOKING_CONFIRMED",
+                "Xác nhận đặt chỗ",
+                message,
+                savedEntity.getId(),
+                savedEntity.getTrip().getId(),
+                "CHANNEL_BOOKING",
+                true,
+                true
+            );
+        } catch (Exception e) {
+            log.warn("Failed to send notification for booking confirmation: {}", e.getMessage());
+        }
+
         return bookingMapper.toResponse(savedEntity);
     }
 
@@ -277,6 +323,63 @@ public class BookingServiceImpl implements BookingService {
 
         entity.setBookingStatus(BookingStatus.COMPLETED);
         BookingDbModel savedEntity = bookingRepository.save(entity);
+
+        // Send notification for completion
+        try {
+            UUID userId = userRepository.findByCustomerId(savedEntity.getCustomer()
+                    .getId())
+                .orElseThrow().getId();
+            String message = String.format("Chuyến đi cho đặt chỗ %s đã hoàn thành. Cảm ơn bạn đã sử dụng dịch vụ!",
+                savedEntity.getCode());
+
+            notificationService.sendNotification(
+                userId,
+                "TYPE_TRIP_COMPLETED",
+                "Chuyến đi hoàn thành",
+                message,
+                savedEntity.getId(),
+                savedEntity.getTrip().getId(),
+                "CHANNEL_BOOKING",
+                true,
+                true
+            );
+        } catch (Exception e) {
+            log.warn("Failed to send notification for trip completion: {}", e.getMessage());
+        }
+
+        return bookingMapper.toResponse(savedEntity);
+    }
+
+    @Override
+    public BookingResponse cancelBooking(UUID id) {
+        BookingDbModel entity = bookingRepository.findByIdAndNotDeleted(id)
+            .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, id));
+
+        entity.setBookingStatus(BookingStatus.CANCELLED);
+        BookingDbModel savedEntity = bookingRepository.save(entity);
+
+        // Send cancellation notification
+        try {
+            UUID userId = userRepository.findByCustomerId(savedEntity.getCustomer()
+                    .getId())
+                .orElseThrow().getId();
+            String message = String.format("Đặt chỗ %s đã được hủy.", savedEntity.getCode());
+
+            notificationService.sendNotification(
+                userId,
+                "TYPE_BOOKING_CANCELLED",
+                "Hủy đặt chỗ",
+                message,
+                savedEntity.getId(),
+                savedEntity.getTrip().getId(),
+                "CHANNEL_BOOKING",
+                true,
+                true
+            );
+        } catch (Exception e) {
+            log.warn("Failed to send notification for booking cancellation: {}", e.getMessage());
+        }
+
         return bookingMapper.toResponse(savedEntity);
     }
 
