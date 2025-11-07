@@ -191,7 +191,7 @@ public class NotificationServiceImpl implements NotificationService {
             entity = createUnsavedNotification(userId, typeCode, title, message, bookingId, tripId, channel);
             log.info("DEBUG Notification created (unsaved) and sent to user {}.", userId);
         }
-        // TODO: change to kafka --> notification & mail service
+
         // 2. Send Email if requested
         if (Boolean.TRUE.equals(sendEmail)) {
             mailingService.sendEmailToUser(userId, title, message);
