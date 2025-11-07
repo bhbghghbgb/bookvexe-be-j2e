@@ -16,7 +16,14 @@ public class NotificationConsumer {
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    @KafkaListener(topics = "notification-topic", groupId = "notification_group")
+    @KafkaListener(
+        topics = "notification-topic",
+        groupId = "notification_group",
+        properties = {
+            "spring.json.value.default.type:com.bookvexe.notificationservice.dto.NotificationKafkaDTO",
+            "spring.json.trusted.packages:com.bookvexe.notificationservice.dto"
+        }
+    )
     public void consume(NotificationKafkaDTO kafkaDTO) {
         log.info("Received notification from Kafka: {}", kafkaDTO);
 

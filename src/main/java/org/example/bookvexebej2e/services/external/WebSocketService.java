@@ -65,10 +65,10 @@ public class WebSocketService {
     }
 
     public void notifyUser(UUID userId, String eventType) {
-        if (Strings.CI.contains("NOTIFICATION", eventType)) {
+        if (Strings.CI.contains(eventType, "NOTIFICATION")) {
             notifyUserWithKafkaProducer(userId, eventType);
             return;
         }
-        notifyUser(userId, eventType);
+        notifyUserWithOwnWebsocket(userId, eventType);
     }
 }
