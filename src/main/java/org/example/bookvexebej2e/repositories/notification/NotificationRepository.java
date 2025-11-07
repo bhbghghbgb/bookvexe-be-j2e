@@ -18,7 +18,7 @@ public interface NotificationRepository extends BaseRepository<NotificationDbMod
       AND (:bookingId IS NULL OR n.booking.id = :bookingId)
       AND (:tripId IS NULL OR n.trip.id = :tripId)
       AND n.type.code = :typeCode
-    """)
+    """) // NO isDeleted check, finds any record matching the criteria
     Optional<NotificationDbModel> findExistingReminder(
         @Param("userId") UUID userId,
         @Param("bookingId") UUID bookingId,

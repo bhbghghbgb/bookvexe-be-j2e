@@ -3,12 +3,9 @@ package org.example.bookvexebej2e.jobs;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.bookvexebej2e.models.db.BookingDbModel;
-import org.example.bookvexebej2e.models.db.TripDbModel;
 import org.example.bookvexebej2e.models.db.UserDbModel;
-import org.example.bookvexebej2e.models.dto.kafka.NotificationKafkaDTO;
-import org.example.bookvexebej2e.repositories.trip.TripRepository;
+import org.example.bookvexebej2e.repositories.booking.BookingRepository;
 import org.example.bookvexebej2e.repositories.user.UserRepository;
-import org.example.bookvexebej2e.services.kafka.KafkaProducerService;
 import org.example.bookvexebej2e.services.notification.NotificationService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -21,61 +18,63 @@ import java.util.List;
 @Slf4j
 public class TripDepartureReminderJob {
 
-    private final TripRepository tripRepository;
+    private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
-    private final KafkaProducerService kafkaProducerService;
 
-    // Chạy mỗi phút
+    private static final String REMINDER_TYPE_CODE = "TYPE_DEPARTURE_REMINDER";
+
     @Scheduled(cron = "0 * * * * ?")
     public void remindUsersOfUpcomingTrips() {
         log.info("Running trip departure reminder job...");
 
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime reminderWindow = now.plusHours(1); // Gửi lời nhắc cho các chuyến đi trong vòng 1 giờ tới
+        LocalDateTime reminderWindow = now.plusHours(1);
 
-        List<TripDbModel> upcomingTrips = tripRepository.findByDepartureTimeBetween(now, reminderWindow);
+        List<BookingDbModel> unnotifiedBookings = bookingRepository.findBookingsAwaitingReminder(now, reminderWindow,
+            REMINDER_TYPE_CODE);
 
-        if (upcomingTrips.isEmpty()) {
-            log.info("No upcoming trips to remind.");
+        if (unnotifiedBookings.isEmpty()) {
+            log.info("No unnotified bookings found.");
             return;
         }
 
-        log.info("Found {} upcoming trips. Sending reminders...", upcomingTrips.size());
+        log.info("Found {} bookings requiring a reminder. Sending notifications...", unnotifiedBookings.size());
 
-        for (TripDbModel trip : upcomingTrips) {
-            for (BookingDbModel booking : trip.getBookings()) {
-                if (booking.getCustomer() != null) {
-                    NotificationKafkaDTO notificationDto = getNotificationKafkaDTO(trip, booking);
-                    kafkaProducerService.sendNotification(notificationDto);
-                }
+        for (BookingDbModel booking : unnotifiedBookings) {
+            if (booking.getCustomer() == null || booking.getTrip() == null)
+                continue;
+
+            // 1. Resolve User (Necessary for WebSocket/Ownership/Email fallbacks)
+            UserDbModel user = userRepository.findByCustomerId(booking.getCustomer()
+                    .getId())
+                .orElse(null);
+
+            if (user == null) {
+                log.warn("Skipping reminder: UserDbModel not found for Customer ID {}", booking.getCustomer()
+                    .getId());
+                continue;
             }
+
+            // 2. Construct Message
+            String message = String.format("Chuyến đi từ %s đến %s của bạn sắp khởi hành lúc %s.", booking.getTrip()
+                .getRoute()
+                .getStartLocation(), booking.getTrip()
+                .getRoute()
+                .getEndLocation(), booking.getTrip()
+                .getDepartureTime()
+                .toLocalTime());
+
+            String email = booking.getCustomer()
+                .getEmail();
+
+            // 3. Send Notification
+            notificationService.sendNotification(user.getId(), email, // Pass email explicitly for Customer
+                REMINDER_TYPE_CODE, "Sắp khởi hành: Nhắc nhở chuyến đi", message, booking.getId(), booking.getTrip()
+                    .getId(), "CHANNEL_BOOKING", email != null, true // shouldSave
+            );
         }
 
-        log.info("Finished sending reminders for upcoming trips.");
-    }
-
-    private NotificationKafkaDTO getNotificationKafkaDTO(TripDbModel trip, BookingDbModel booking) {
-        String message = String.format("Chuyến đi từ %s đến %s của bạn sắp khởi hành lúc %s.", trip.getRoute()
-            .getStartLocation(), trip.getRoute()
-            .getEndLocation(), trip.getDepartureTime()
-            .toLocalTime());
-
-        UserDbModel user = userRepository.findByCustomerId(booking.getCustomer()
-                .getId())
-            .orElseThrow();
-
-        notificationService.sendNotification(user.getId(), "TYPE_DEPARTURE_REMINDER", message, message, booking.getId(),
-            booking.getTrip()
-                .getId(), "CHANNEL_BOOKING", user.getCustomer()
-                .getEmail() != null, true);
-
-        NotificationKafkaDTO notificationDto = new NotificationKafkaDTO(user.getId(), user.getUsername(),
-            booking.getCustomer()
-                .getEmail(), booking.getCustomer()
-            .getPhone());
-
-        return notificationDto;
+        log.info("Finished sending reminders for unnotified bookings.");
     }
 }
-
