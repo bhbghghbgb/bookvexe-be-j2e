@@ -19,6 +19,9 @@ public interface UserRepository extends BaseRepository<UserDbModel> {
     @Query("SELECT u FROM UserDbModel u WHERE u.username = :username AND (u.isDeleted = false OR u.isDeleted IS NULL)")
     Optional<UserDbModel> findByUsernameAndNotDeleted(@Param("username") String username);
 
+    @Query("SELECT u FROM UserDbModel u WHERE u.id = :id AND (u.isDeleted = false OR u.isDeleted IS NULL)")
+    Optional<UserDbModel> findByIdAndNotDeleted(@Param("id") UUID id);
+
     @Query("""
             SELECT u FROM UserDbModel u
             JOIN u.roleUsers ru
