@@ -12,6 +12,7 @@ import java.util.Map;
 public class MailKafkaDTO {
     private String to;
     private String subject;
+    private String body;
     private String templateName;
     private Map<String, Object> templateModel;
 }
