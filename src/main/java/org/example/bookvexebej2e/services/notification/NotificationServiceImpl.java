@@ -54,7 +54,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Page<NotificationResponse> findAll(NotificationQuery query) {
-        Specification<NotificationDbModel> spec = buildSpecification(query);
+        Specification<NotificationDbModel> spec = buildSpecification(query, null);
         Pageable pageable = buildPageable(query);
         Page<NotificationDbModel> entities = notificationRepository.findAll(spec, pageable);
         return entities.map(notificationMapper::toResponse);
@@ -170,7 +170,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Page<NotificationSelectResponse> findAllForSelect(NotificationQuery query) {
-        Specification<NotificationDbModel> spec = buildSpecification(query);
+        Specification<NotificationDbModel> spec = buildSpecification(query, null);
         Pageable pageable = buildPageable(query);
         Page<NotificationDbModel> entities = notificationRepository.findAll(spec, pageable);
         return entities.map(notificationMapper::toSelectResponse);
@@ -327,7 +327,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Page<NotificationResponse> getMyNotifications(UUID userId, NotificationQuery query) {
-        Specification<NotificationDbModel> spec = buildSpecification(query);
+        Specification<NotificationDbModel> spec = buildSpecification(query, false);
         Pageable pageable = buildPageable(query);
         Page<NotificationDbModel> entities = notificationRepository.findAll(spec, pageable);
         return entities.map(notificationMapper::toResponse);
@@ -378,10 +378,13 @@ public class NotificationServiceImpl implements NotificationService {
             .get("id"), userId), cb.isFalse(root.get("isRead")), cb.isFalse(root.get("isDeleted"))));
     }
 
-    private Specification<NotificationDbModel> buildSpecification(NotificationQuery query) {
+    private Specification<NotificationDbModel> buildSpecification(NotificationQuery query, Boolean isDeletedFilter) {
         return (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            // Remove the isDeleted filter to show all records including deleted ones
+            if (isDeletedFilter != null) {
+                // If isDeletedFilter is provided (true or false), apply it directly.
+                predicates.add(cb.equal(root.get("isDeleted"), isDeletedFilter));
+            }
 
             if (query.getUserId() != null) {
                 predicates.add(cb.equal(root.get("user")
