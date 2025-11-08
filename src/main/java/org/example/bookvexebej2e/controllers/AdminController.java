@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.controllers;
 
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.bookvexebej2e.models.dto.notification.NotificationResponse;
 import org.example.bookvexebej2e.models.dto.user.UserResponse;
 import org.example.bookvexebej2e.services.notification.NotificationService;
@@ -16,6 +17,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
+@Slf4j
 public class AdminController {
 
     private final NotificationService notificationService;
@@ -26,87 +28,52 @@ public class AdminController {
         return Map.of("message", "Hello World");
     }
 
-    /**
-     * Primary test route: Sends a notification to the authenticated user.
-     * TypeCode is defaulted to "TEST_NOTIFICATION".
-     */
     @PostMapping("/test-notification")
-    public Map<String, Object> testNotification(
-        @RequestParam(required = false, defaultValue = "TEST_NOTIFICATION") String typeCode,
-        @RequestParam(required = false, defaultValue = "false") Boolean sendEmail,
-        @RequestParam(required = false) String title,
-        @RequestParam(required = false) String message,
-        @RequestParam(required = false) UUID bookingId,
+    public Map<String, Object> testNotificationUnified(@RequestParam(required = false) UUID userId, // Target user ID
+        // (optional)
+        @RequestParam(required = false) String toEmail, // Email override (optional)
+        @RequestParam(required = false, defaultValue = "TEST_NOTIFICATION") String typeCode, @RequestParam(required =
+            false, defaultValue = "false") Boolean sendEmail, @RequestParam(required = false) String title,
+        @RequestParam(required = false) String message, @RequestParam(required = false) UUID bookingId,
         @RequestParam(required = false) UUID tripId,
-        @RequestParam(required = false, defaultValue = "CHANNEL_TEST") String channel,
+        @RequestParam(required = false, defaultValue = "CHANNEL_TEST") String channel, @RequestParam(required = false
+            , defaultValue = "false") Boolean shouldSave, // Control persistence
         Authentication authentication) {
 
+        UUID authenticatedUserId = getAuthenticatedUserId(authentication);
+        // 1. Determine the target user ID for WebSocket ping/ownership
+        UUID targetUserId = userId != null ? userId : authenticatedUserId;
+
+        // 2. Prepare content
+        String notificationTitle = title != null ? title : "Test Notification - " + typeCode;
+        String notificationMessage = message != null ? message : "Notification Type: " + typeCode + (toEmail != null
+            ? " | Email Override: " + toEmail : "") + " | Time: " + LocalDateTime.now();
+
+        // 3. Determine which method to call
         try {
-            UUID userId = getAuthenticatedUserId(authentication);
+            NotificationResponse response;
+            String emailDetail = "N/A";
 
-            String notificationTitle = title != null ? title : "Test Notification - " + typeCode;
-            String notificationMessage = message != null ? message :
-                "This is a test notification of type: " + typeCode + " sent at: " + LocalDateTime.now();
+            if (Boolean.TRUE.equals(sendEmail) && toEmail != null && !toEmail.isBlank()) {
+                response = notificationService.sendNotification(targetUserId, toEmail, // Use the explicit email
+                    typeCode, notificationTitle, notificationMessage, bookingId, tripId, channel, true,
+                    shouldSave);
+                emailDetail = "Sent to Override: " + toEmail;
 
-            NotificationResponse response = notificationService.sendNotification(
-                userId,
-                typeCode,
-                notificationTitle,
-                notificationMessage,
-                bookingId,
-                tripId,
-                channel,
-                sendEmail,
-                false // shouldSave = false for testing
-            );
+            } else {
+                response = notificationService.sendNotification(targetUserId, typeCode, notificationTitle,
+                    notificationMessage, bookingId, tripId, channel, sendEmail, // Use the parameter value
+                    shouldSave);
+                emailDetail = Boolean.TRUE.equals(sendEmail) ? "Sent via User Lookup" : "Email disabled";
+            }
 
             return Map.of("status", "success", "message", "Notification sent successfully", "notification", response,
-                "details", Map.of("userId", userId, "typeCode", typeCode, "sendEmail", sendEmail, "saved", false));
+                "details",
+                Map.of("targetUserId", targetUserId, "typeCode", typeCode, "sendEmailMode", emailDetail, "savedToDB",
+                    shouldSave));
 
         } catch (Exception e) {
-            return Map.of("status", "error", "message", "Failed to send notification: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Sends a notification to the authenticated user's WebSocket,
-     * but sends the email to a specified override address (useful for Admin testing).
-     */
-    @PostMapping("/test-notification-email-override")
-    public Map<String, Object> testNotificationEmailOverride(
-        @RequestParam String toEmail, // Require the email override
-        @RequestParam(required = false, defaultValue = "TEST_NOTIFICATION") String typeCode,
-        @RequestParam(required = false, defaultValue = "true") Boolean sendEmail, // Default email to true
-        @RequestParam(required = false) String title,
-        @RequestParam(required = false) String message,
-        Authentication authentication) {
-
-        try {
-            // Use authenticated user ID for WebSocket ping/DB record ownership
-            UUID userId = getAuthenticatedUserId(authentication);
-
-            String notificationTitle = title != null ? title : "Override Test - " + typeCode;
-            String notificationMessage = message != null ? message :
-                "This is an email test sent to: " + toEmail + " at: " + LocalDateTime.now();
-
-            NotificationResponse response = notificationService.sendNotification(
-                userId,
-                toEmail, // The email override parameter
-                typeCode,
-                notificationTitle,
-                notificationMessage,
-                null, // bookingId
-                null, // tripId
-                "CHANNEL_EMAIL_TEST",
-                sendEmail,
-                false // shouldSave = false
-            );
-
-            return Map.of("status", "success",
-                "message", "Notification sent successfully. Email sent to: " + toEmail,
-                "notification", response);
-
-        } catch (Exception e) {
+            log.error("Failed to send notification for user {}: {}", targetUserId, e.getMessage(), e);
             return Map.of("status", "error", "message", "Failed to send notification: " + e.getMessage());
         }
     }
