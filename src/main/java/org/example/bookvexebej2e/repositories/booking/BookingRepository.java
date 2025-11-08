@@ -22,7 +22,7 @@ public interface BookingRepository extends BaseRepository<BookingDbModel> {
     JOIN b.trip t
     LEFT JOIN b.notifications n ON n.type.code = :typeCode
     WHERE t.departureTime BETWEEN :startTime AND :endTime
-      AND b.bookingStatus != 'PENDING'
+      AND b.bookingStatus = 'PENDING'
       AND n.id IS NULL
     """)
     List<BookingDbModel> findBookingsAwaitingReminder(
