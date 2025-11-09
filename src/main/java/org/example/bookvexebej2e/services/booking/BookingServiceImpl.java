@@ -84,9 +84,16 @@ public class BookingServiceImpl implements BookingService {
         BookingDbModel entity = new BookingDbModel();
         entity.setCode(createDto.getCode());
         entity.setType(createDto.getType());
-        // Set default status to 'new' if not provided
-        entity.setBookingStatus(
-                createDto.getBookingStatus() != null ? createDto.getBookingStatus() : BookingStatus.NEW);
+
+        // For admin bookings with payment confirmed, set status directly to AWAIT_GO
+        // For user bookings, they should go through AWAIT_PAYMENT -> AWAIT_GO flow
+        if (createDto.getBookingStatus() != null) {
+            entity.setBookingStatus(createDto.getBookingStatus());
+        } else {
+            // Default for admin created bookings with payment is AWAIT_GO
+            entity.setBookingStatus(BookingStatus.AWAIT_GO);
+        }
+
         entity.setTotalPrice(createDto.getTotalPrice());
 
         // Resolve relationships

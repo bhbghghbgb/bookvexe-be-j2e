@@ -1,0 +1,38 @@
+CREATE TABLE seat_holds (
+  uuid UUID NOT NULL,
+  is_deleted BOOLEAN,
+  created_date TIMESTAMP WITHOUT TIME ZONE,
+  created_by UUID,
+  updated_date TIMESTAMP WITHOUT TIME ZONE,
+  updated_by UUID,
+
+  trip_id UUID NOT NULL,
+  car_id UUID NOT NULL,
+  seat_id UUID NOT NULL,
+  user_id UUID,
+  session_id VARCHAR(100),
+  hold_until TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  status VARCHAR(20) NOT NULL, -- ACTIVE, EXPIRED, RELEASED
+
+  PRIMARY KEY (uuid)
+);
+
+-- UNIQUE + INDEXES
+CREATE INDEX "FK_SEATHOLDS_ON_TRIPID" ON seat_holds (trip_id);
+CREATE INDEX "FK_SEATHOLDS_ON_CARID" ON seat_holds (car_id);
+CREATE INDEX "FK_SEATHOLDS_ON_SEATID" ON seat_holds (seat_id);
+CREATE INDEX "FK_SEATHOLDS_ON_USERID" ON seat_holds (user_id);
+CREATE INDEX "IDX_SEATHOLDS_TRIP_CAR" ON seat_holds (trip_id, car_id);
+
+-- FOREIGN KEYS
+ALTER TABLE seat_holds ADD CONSTRAINT "FK_SEATHOLDS_ON_TRIPID"
+    FOREIGN KEY (trip_id) REFERENCES trips (uuid);
+
+ALTER TABLE seat_holds ADD CONSTRAINT "FK_SEATHOLDS_ON_CARID"
+    FOREIGN KEY (car_id) REFERENCES cars (uuid);
+
+ALTER TABLE seat_holds ADD CONSTRAINT "FK_SEATHOLDS_ON_SEATID"
+    FOREIGN KEY (seat_id) REFERENCES car_seats (uuid);
+
+ALTER TABLE seat_holds ADD CONSTRAINT "FK_SEATHOLDS_ON_USERID"
+    FOREIGN KEY (user_id) REFERENCES users (uuid);

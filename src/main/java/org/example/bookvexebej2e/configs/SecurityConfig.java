@@ -23,6 +23,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 @Configuration
@@ -65,53 +66,54 @@ public class SecurityConfig {
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
-        ObjectProvider<ClientRegistrationRepository> clientRegistrations) throws Exception {
+                                           ObjectProvider<ClientRegistrationRepository> clientRegistrations) throws Exception {
         http
-            // CORS and CSRF Configuration
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            // EXPLICITLY SET THE ENTRY POINT TO RETURN 401 ON AUTH FAILURE
-            .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(unauthorizedHandler))
+                // CORS and CSRF Configuration
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // EXPLICITLY SET THE ENTRY POINT TO RETURN 401 ON AUTH FAILURE
+                .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(unauthorizedHandler))
 
-            // 1. CONDITIONAL AUTHORIZATION LOGIC
-            .authorizeHttpRequests(authz -> {
-                if (allowAllAdminAccess) {
-                    // DEV MODE: Allow ALL requests (authenticated or not)
-                    authz.requestMatchers("/**")
-                        .permitAll();
-                } else {
-                    // PROD MODE: Standard authorization rules
-                    authz
-                        // Permit public/auth/swagger/root
+                // 1. CONDITIONAL AUTHORIZATION LOGIC
+                .authorizeHttpRequests(authz -> {
+                    if (allowAllAdminAccess) {
+                        // DEV MODE: Allow ALL requests (authenticated or not)
+                        authz.requestMatchers("/**")
+                                .permitAll();
+                    } else {
+                        // PROD MODE: Standard authorization rules
+                        authz
+                                // Permit public/auth/swagger/root
 
-                        .requestMatchers("/swagger/**", "/swagger/v1/**", "/", "/hello", "/auth/**",
-                                "/swagger-ui/**", "/v3/api-docs/**", "/error", "/dev/*", "/api/chat/*")
-                        .permitAll()
-                        // Require ADMIN role for /admin/**
-                        .requestMatchers("/admin/**")
-                        .hasRole("ADMIN")
-                        // All others require authentication
-                        .anyRequest()
-                        .authenticated();
-                }
-            })
+                                .requestMatchers("/swagger/**", "/swagger/v1/**", "/", "/hello", "/auth/**",
+                                        "/swagger-ui/**", "/v3/api-docs/**", "/error", "/dev/*", "/api/chat/*",
+                                        "/api/v1/routes/**", "/api/v1/trips/**")
+                                .permitAll()
+                                // Require ADMIN role for /admin/**
+                                .requestMatchers("/admin/**")
+                                .hasRole("ADMIN")
+                                // All others require authentication
+                                .anyRequest()
+                                .authenticated();
+                    }
+                })
 
-            // 5. Configure OAuth2 Login (using modern lambda syntax)
-            //            .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/auth/oauth2/success")
-            //                .failureUrl("/auth/oauth2/failure"))
+                // 5. Configure OAuth2 Login (using modern lambda syntax)
+                //            .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/auth/oauth2/success")
+                //                .failureUrl("/auth/oauth2/failure"))
 
-            // 6. Set the authentication provider
-            .authenticationProvider(authenticationProvider())
+                // 6. Set the authentication provider
+                .authenticationProvider(authenticationProvider())
 
-            // 7. Add the custom JWT filter BEFORE the standard UsernamePasswordAuthenticationFilter
-            // This ensures JWT processing happens before Spring tries to look for form data/session.
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                // 7. Add the custom JWT filter BEFORE the standard UsernamePasswordAuthenticationFilter
+                // This ensures JWT processing happens before Spring tries to look for form data/session.
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         // Only enable oauth2Login if OAuth2 clients are present
         if (clientRegistrations.getIfAvailable() != null) {
             http.oauth2Login(oauth2 -> oauth2.successHandler(oauth2SuccessHandler)
-                .failureUrl("/auth/oauth2/failure"));
+                    .failureUrl("/auth/oauth2/failure"));
             log.info("OAuth2 login enabled (client registrations found).");
         } else {
             log.warn("OAuth2 login disabled (no client registrations found).");
@@ -126,10 +128,17 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Collections.singletonList("*")); // Allow all origins
-        config.setAllowedMethods(Collections.singletonList("*")); // Allow all HTTP methods
-        config.setAllowedHeaders(Collections.singletonList("*")); // Allow all headers
-        config.setAllowCredentials(false); // Disallow credentials (standard for stateless JWT APIs)
+        config.setAllowedOrigins(Arrays.asList(
+            "http://localhost:5173",  // BMS User
+            "http://localhost:5174",  // BMS Admin
+            "http://localhost:5182",
+            "http://localhost:8080"
+        )); 
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        config.setAllowedHeaders(Arrays.asList("*"));
+        config.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

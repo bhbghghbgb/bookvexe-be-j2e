@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: bookvexe-be-j2e
+  config:
+    import: optional:configserver:http://localhost:8888
