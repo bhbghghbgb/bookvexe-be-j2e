@@ -131,6 +131,7 @@ public class SecurityConfig {
         config.setAllowedOrigins(Arrays.asList(
             "http://localhost:5173",  // BMS User
             "http://localhost:5174",  // BMS Admin
+            "http://localhost:5182",
             "http://localhost:8080"
         )); 
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
