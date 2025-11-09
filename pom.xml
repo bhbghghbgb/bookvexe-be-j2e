@@ -173,6 +173,11 @@
             <artifactId>spring-boot-starter-mail</artifactId>
             <version>3.5.7</version>
         </dependency>
+        <!-- Kafka Producer -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>

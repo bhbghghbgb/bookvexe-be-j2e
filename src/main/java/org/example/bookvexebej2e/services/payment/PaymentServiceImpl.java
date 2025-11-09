@@ -1,23 +1,19 @@
 package org.example.bookvexebej2e.services.payment;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.PaymentMapper;
 import org.example.bookvexebej2e.models.db.BookingDbModel;
 import org.example.bookvexebej2e.models.db.PaymentDbModel;
 import org.example.bookvexebej2e.models.db.PaymentMethodDbModel;
-import org.example.bookvexebej2e.models.dto.payment.PaymentCreate;
-import org.example.bookvexebej2e.models.dto.payment.PaymentQuery;
-import org.example.bookvexebej2e.models.dto.payment.PaymentResponse;
-import org.example.bookvexebej2e.models.dto.payment.PaymentSelectResponse;
-import org.example.bookvexebej2e.models.dto.payment.PaymentUpdate;
+import org.example.bookvexebej2e.models.dto.payment.*;
 import org.example.bookvexebej2e.repositories.booking.BookingRepository;
 import org.example.bookvexebej2e.repositories.payment.PaymentMethodRepository;
 import org.example.bookvexebej2e.repositories.payment.PaymentRepository;
+import org.example.bookvexebej2e.repositories.user.UserRepository;
+import org.example.bookvexebej2e.services.notification.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,16 +21,21 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final BookingRepository bookingRepository;
     private final PaymentMethodRepository paymentMethodRepository;
+    private final UserRepository userRepository;
+    private final NotificationService notificationService;
     private final PaymentMapper paymentMapper;
 
     @Override
@@ -77,6 +78,27 @@ public class PaymentServiceImpl implements PaymentService {
         entity.setMethod(method);
 
         PaymentDbModel savedEntity = paymentRepository.save(entity);
+
+        if ("SUCCESS".equals(savedEntity.getStatus())) {
+            try {
+                // Get booking and user info
+                BookingDbModel savedBooking = savedEntity.getBooking();
+                UUID userId = userRepository.findByCustomerId(savedBooking.getCustomer()
+                        .getId())
+                    .orElseThrow()
+                    .getId();
+
+                String message = String.format("Thanh toán cho đặt chỗ %s thành công. Số tiền: %s",
+                    savedBooking.getCode(), savedEntity.getAmount());
+
+                notificationService.sendNotification(userId, "TYPE_PAYMENT_SUCCESS", "Thanh toán thành công", message,
+                    savedBooking.getId(), savedBooking.getTrip()
+                        .getId(), "CHANNEL_BOOKING", true, true);
+            } catch (Exception e) {
+                log.warn("Failed to send payment success notification: {}", e.getMessage());
+            }
+        }
+
         return paymentMapper.toResponse(savedEntity);
     }
 
@@ -105,6 +127,29 @@ public class PaymentServiceImpl implements PaymentService {
 
         // Không đụng tới code, createdAt, v.v.
         PaymentDbModel updatedEntity = paymentRepository.save(entity);
+
+        // Check if status changed to SUCCESS
+        if (updateDto.getStatus() != null && "SUCCESS".equals(updateDto.getStatus()) &&
+            !"SUCCESS".equals(entity.getStatus())) { // Only if status changed to SUCCESS
+
+            try {
+                BookingDbModel booking = updatedEntity.getBooking();
+                UUID userId = userRepository.findByCustomerId(booking.getCustomer()
+                        .getId())
+                    .orElseThrow()
+                    .getId();
+
+                String message = String.format("Thanh toán cho đặt chỗ %s đã thành công. Số tiền: %s",
+                    booking.getCode(), updatedEntity.getAmount());
+
+                notificationService.sendNotification(userId, "TYPE_PAYMENT_SUCCESS", "Thanh toán thành công", message,
+                    booking.getId(), booking.getTrip()
+                        .getId(), "CHANNEL_BOOKING", true, true);
+            } catch (Exception e) {
+                log.warn("Failed to send payment success notification: {}", e.getMessage());
+            }
+        }
+
         return paymentMapper.toResponse(updatedEntity);
     }
 
