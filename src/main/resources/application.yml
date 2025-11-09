@@ -46,6 +46,27 @@ spring:
     compose:
       enabled: false
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: YOUR_GMAIL_ADDRESS@gmail.com # Replace with your Gmail email
+    password: YOUR_GENERATED_APP_PASSWORD # Replace with your 16-character App Password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: smtp.gmail.com
+
+  # Kafka Producer Configuration
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
 logging:
   level:
     org:

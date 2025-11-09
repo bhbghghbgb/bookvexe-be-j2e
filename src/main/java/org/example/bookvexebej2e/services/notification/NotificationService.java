@@ -29,14 +29,19 @@ public interface NotificationService {
     Page<NotificationSelectResponse> findAllForSelect(NotificationQuery query);
 
     // New high-level service method for use by other modules
-    NotificationResponse sendNotification(
-        UUID userId, String typeCode, String title, String message,
-        UUID bookingId, UUID tripId, String channel,
-        Boolean sendEmail, Boolean shouldSave);
+    NotificationResponse sendNotification(UUID userId, String typeCode, String title, String message, UUID bookingId,
+        UUID tripId, String channel, Boolean sendEmail, Boolean shouldSave);
+
+    NotificationResponse sendNotification(UUID userId, String toEmail, String typeCode, String title, String message,
+        UUID bookingId, UUID tripId, String channel, Boolean sendEmail, Boolean shouldSave);
+
 
     // user-facing methods
     Page<NotificationResponse> getMyNotifications(UUID userId, NotificationQuery query);
+
     void markNotificationAsRead(UUID notificationId, UUID userId);
+
     void deleteNotification(UUID notificationId, UUID userId);
+
     int countUnreadNotifications(UUID userId);
 }

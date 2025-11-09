@@ -42,4 +42,7 @@ public interface UserRepository extends BaseRepository<UserDbModel> {
 
     @Query("SELECT u FROM UserDbModel u WHERE u.employee.id = :employeeId")
     Optional<UserDbModel> findByEmployeeId(@Param("employeeId") UUID employeeId);
+
+    @Query("SELECT u FROM UserDbModel u WHERE u.customer.id = :customerId")
+    Optional<UserDbModel> findByCustomerId(@Param("customerId") UUID customerId);
 }
