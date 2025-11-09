@@ -39,4 +39,4 @@ spec:
     app: postgres
   ports:
     - port: 5441
-      targetPort: 5441
+      targetPort: 5432
