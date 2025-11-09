@@ -26,6 +26,7 @@ public class NotificationUserController {
 
     private final Environment environment;
     private final NotificationService notificationService;
+    private final NotificationController notificationController;
     private final SecurityUtils securityUtils;
     private final NotificationQueryMapper queryMapper;
 
@@ -53,6 +54,11 @@ public class NotificationUserController {
         return ResponseEntity.ok(notifications);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<NotificationResponse> getMyNotification(@PathVariable UUID id) {
+        return notificationController.findById(id);
+    }
+
     /**
      * GET /notifications/unread-count
      * Customer views the count of unread notifications.
@@ -72,7 +78,8 @@ public class NotificationUserController {
     public ResponseEntity<Void> markNotificationAsRead(@PathVariable("id") UUID notificationId) {
         UUID userId = getCurrentUserId();
         notificationService.markNotificationAsRead(notificationId, userId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.noContent()
+            .build();
     }
 
     /**
@@ -83,7 +90,8 @@ public class NotificationUserController {
     public ResponseEntity<Void> deleteNotification(@PathVariable("id") UUID notificationId) {
         UUID userId = getCurrentUserId();
         notificationService.deleteNotification(notificationId, userId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.noContent()
+            .build();
     }
 
     // NOTE: The sendNotification method is a high-level service function intended
@@ -98,8 +106,10 @@ public class NotificationUserController {
     @Profile("dev")
     @PostMapping("/test-create")
     public ResponseEntity<NotificationResponse> createDebugNotification() {
-        if (!Arrays.asList(environment.getActiveProfiles()).contains("dev")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        if (!Arrays.asList(environment.getActiveProfiles())
+            .contains("dev")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .build();
         }
 
         UUID userId = getCurrentUserId();
@@ -109,18 +119,15 @@ public class NotificationUserController {
         String message = "Message received at " + java.time.LocalDateTime.now() + " (User: " + userId + ")";
 
         // Call the enhanced service method with shouldSave = false
-        NotificationResponse response = notificationService.sendNotification(
-            userId,
-            null,
-            title,
-            message,
-            null,       // bookingId
+        NotificationResponse response = notificationService.sendNotification(userId, null, title, message, null,
+            // bookingId
             null,       // tripId
             "TEST_WS",  // channel
             false,      // sendEmail (We only want the WS test)
             false       // Do NOT save to DB
         );
 
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(response);
     }
 }
