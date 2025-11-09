@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
     BaseRepositoryImpl.class)
 @EnableScheduling
 @SpringBootApplication
+@EnableScheduling
 public class BookvexeBeJ2eApplication {
 
     public static void main(String[] args) {

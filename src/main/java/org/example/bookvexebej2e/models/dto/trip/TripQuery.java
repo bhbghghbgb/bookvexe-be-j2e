@@ -12,6 +12,8 @@ import java.util.UUID;
 public class TripQuery extends BasePageableQuery {
     private UUID routeId;
     private LocalDateTime departureTime;
+    private LocalDateTime departureTimeFrom;
+    private LocalDateTime departureTimeTo;
     private Double price;
     private Boolean isDeleted;
 }

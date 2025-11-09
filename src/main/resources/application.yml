@@ -1,31 +1,30 @@
-security:
+﻿security:
   admin:
     allow-all: true
 
 spring:
-  profiles:
-    active: dev
-
   application:
     name: bookvexe-be-j2e
 
   #  config:
   #    import: optional:classpath:application-oauth.yml
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: nguyendinhthongdhsg@gmail.com
+    password: auxhnuproxxopoug
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/bookvexedb_j2e
-    username: postgres
-    password: ""
-  ai:
-    ollama:
-      base-url: http://localhost:11434 # URL của Ollama server (mặc định)
-      chat:
-        options:
-          model: gemma2 # Mô hình AI (có thể đổi thành mistral, gemma2, v.v.)
-          temperature: 0.7
-      embedding:
-        options:
-          model: nomic-embed-text # Mô hình embedding cho vector search
+    url: jdbc:postgresql://localhost:5441/bookvexedb_j2e
+    #    url: jdbc:postgresql://postgres-service:5441/bookvexedb_j2e
+    username: root
+    password: nopass
   jpa:
     show-sql: true
     hibernate:
@@ -87,6 +86,8 @@ server:
   port: 5181
 
 app:
+  email:
+    sender: nguyendinhthongdhsg@gmail.com
   jwt:
     secret: "your-very-secure-secret-key-that-is-at-least-32-characters-long"
     expiration:
@@ -94,6 +95,14 @@ app:
     refresh-expiration:
       ms: 604800000 # 7 days
 
-  # The email address that will appear as the sender
-  email:
-    sender: YOUR_GMAIL_ADDRESS@gmail.com
+vnpay:
+  tmnCode: VWJ2IOSO
+  hashSecret: AMFRNXTX77SU7EBXP68PFQMLEQ204X2P
+  payUrl: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+  returnUrl: https://unsuccinctly-unadhering-zenaida.ngrok-free.dev/api/vnpay-return
+  ipnUrl: https://unsuccinctly-unadhering-zenaida.ngrok-free.dev/api/vnpay-ipn
+  frontendReturnUrl: http://localhost:5173/payment/vnpay-return
+
+chat:
+  service:
+    url: http://localhost:5182
