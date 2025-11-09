@@ -22,9 +22,8 @@ public class KnowledgeSyncService {
     }
 
     /**
-     * Async sync knowledge để không block main thread
+     * Sync knowledge to chat service
      */
-    @Async
     public void syncKnowledge(KnowledgeSyncRequest request) {
         try {
             String url = chatServiceUrl + "/api/knowledge/sync";
@@ -37,7 +36,8 @@ public class KnowledgeSyncService {
             if (response.getStatusCode().is2xxSuccessful()) {
                 log.info("Knowledge sync successful for entityId: {}", request.getEntityId());
             } else {
-                log.warn("Knowledge sync returned non-success status: {}", response.getStatusCode());
+                log.warn("Knowledge sync returned non-success status: {} - Response: {}", 
+                        response.getStatusCode(), response.getBody());
             }
         } catch (Exception e) {
             log.error("Failed to sync knowledge to chat service for entityId: {}. Error: {}", 

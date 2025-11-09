@@ -272,24 +272,24 @@ public class TripServiceImpl implements TripService {
      */
     private void syncTripKnowledge(TripDbModel trip, String operation) {
         try {
-            String title = String.format("Chuy?n xe %s - %s", 
+            String title = String.format("Chuyến xe %s - %s", 
                     trip.getRoute().getStartLocation(), 
                     trip.getRoute().getEndLocation());
             
             String content = String.format(
-                    "Chuy?n xe t? %s d?n %s. " +
-                    "Kh?i h�nh l�c %s. " +
-                    "Gi� v�: %s VN�. " +
-                    "S? gh? tr?ng: %d. " +
-                    "Qu�ng du?ng: %.2f km. " +
-                    "Th?i gian di chuy?n: kho?ng %d gi?.",
+                    "Chuyến xe từ %s đến %s. " +
+                    "Khởi hành lúc %s. " +
+                    "Giá vé: %s VNĐ. " +
+                    "Số ghế trống: %d. " +
+                    "Quảng đường: %.2f km. " +
+                    "Thời gian di chuyển: khoảng %d phút.",
                     trip.getRoute().getStartLocation(),
                     trip.getRoute().getEndLocation(),
                     trip.getDepartureTime().toString(),
                     trip.getPrice().toString(),
                     trip.getAvailableSeats(),
                     trip.getRoute().getDistanceKm(),
-                    trip.getRoute().getDistanceKm()
+                    trip.getRoute().getEstimatedDuration()
             );
             
             knowledgeSyncService.syncTrip(
@@ -300,7 +300,7 @@ public class TripServiceImpl implements TripService {
             );
         } catch (Exception e) {
             log.error("Failed to sync trip knowledge: {}", e.getMessage(), e);
-            // Kh�ng throw exception d? kh�ng ?nh hu?ng main flow
+            // Không throw exception để không ảnh hưởng main flow
         }
     }
 }
