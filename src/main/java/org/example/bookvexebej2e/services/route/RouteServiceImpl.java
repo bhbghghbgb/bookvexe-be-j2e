@@ -200,14 +200,14 @@ public class RouteServiceImpl implements RouteService {
      */
     private void syncRouteKnowledge(RouteDbModel route, String operation) {
         try {
-            String title = String.format("Tuy?n du?ng %s - %s", 
+            String title = String.format("Tuyến đường %s - %s",
                     route.getStartLocation(), 
                     route.getEndLocation());
             
             String content = String.format(
-                    "Tuy?n du?ng t? %s d?n %s. " +
-                    "Qu�ng du?ng: %.2f km. " +
-                    "Th?i gian di chuy?n u?c t�nh: %d ph�t.",
+                    "Tuyến đường từ %s đến %s. " +
+                    "Quảng đường: %.2f km. " +
+                    "thời gian di chuyển ước tính: %d phút.",
                     route.getStartLocation(),
                     route.getEndLocation(),
                     route.getDistanceKm(),

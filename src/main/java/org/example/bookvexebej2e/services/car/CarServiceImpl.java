@@ -15,6 +15,7 @@ import org.example.bookvexebej2e.models.dto.car.CarSelectResponse;
 import org.example.bookvexebej2e.models.dto.car.CarUpdate;
 import org.example.bookvexebej2e.repositories.car.CarRepository;
 import org.example.bookvexebej2e.repositories.car.CarTypeRepository;
+import org.example.bookvexebej2e.services.knowledge.KnowledgeSyncService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +34,7 @@ public class CarServiceImpl implements CarService {
     private final CarTypeRepository carTypeRepository;
     private final CarMapper carMapper;
     private final CarSeatService carSeatService;
+    private final KnowledgeSyncService knowledgeSyncService;
 
     @Override
     public List<CarResponse> findAll() {
@@ -74,6 +76,9 @@ public class CarServiceImpl implements CarService {
             carSeatService.createSeatsForCar(savedEntity.getId(), carType.getSeatCount());
         }
 
+        // Sync knowledge to chat service
+        syncCarKnowledge(savedEntity, "CREATE");
+
         return carMapper.toResponse(savedEntity);
     }
 
@@ -112,11 +117,16 @@ public class CarServiceImpl implements CarService {
             }
         }
 
+        // Sync knowledge to chat service
+        syncCarKnowledge(updatedEntity, "UPDATE");
+
         return carMapper.toResponse(updatedEntity);
     }
 
     @Override
     public void delete(UUID id) {
+        // Sync delete to chat service first
+        knowledgeSyncService.syncCar(id.toString(), "DELETE", "", "");
         carRepository.softDeleteById(id);
     }
 
@@ -181,5 +191,36 @@ public class CarServiceImpl implements CarService {
         Sort.Direction direction = Sort.Direction.fromString(query.getSortDirection());
         Sort sort = Sort.by(direction, query.getSortBy());
         return PageRequest.of(query.getPage(), query.getSize(), sort);
+    }
+
+    /**
+     * Sync car knowledge to chat service
+     */
+    private void syncCarKnowledge(CarDbModel car, String operation) {
+        try {
+            String title = String.format("Xe %s - %s",
+                    car.getLicensePlate(),
+                    car.getCode());
+            
+            String content = String.format(
+                    "Xe có biển số %s, mã xe %s. " +
+                    "Loại xe: %s. " +
+                    "Số ghế: %d.",
+                    car.getLicensePlate(),
+                    car.getCode(),
+                    car.getCarType() != null ? car.getCarType().getName() : "Không xác định",
+                    car.getCarType() != null ? car.getCarType().getSeatCount() : 0
+            );
+            
+            knowledgeSyncService.syncCar(
+                    car.getId().toString(), 
+                    operation, 
+                    title, 
+                    content
+            );
+        } catch (Exception e) {
+            // Log error but don't fail the operation
+            System.err.println("Failed to sync car knowledge: " + e.getMessage());
+        }
     }
 }
