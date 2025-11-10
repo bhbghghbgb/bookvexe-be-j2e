@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.UUID;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
-import feign.FeignException;
 
 /**
  * Booking Service Implementation
@@ -318,9 +317,7 @@ public class BookingServiceImpl implements BookingService {
             try {
                 PaymentDto payment = paymentApi.findById(paymentId);
                 isPaidSuccess = payment != null && "SUCCESS".equalsIgnoreCase(payment.getStatus());
-            } catch (FeignException.NotFound ex) {
-                isPaidSuccess = false;
-            } catch (FeignException ex) {
+            } catch (Exception ex) {
                 isPaidSuccess = false;
             }
         }
