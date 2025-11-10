@@ -20,12 +20,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
-import feign.FeignException;
 
 @Service
 @RequiredArgsConstructor
@@ -149,12 +149,12 @@ public class InvoiceServiceImpl implements InvoiceService {
     private void ensurePaymentExists(UUID paymentId) {
         try {
             paymentApi.findById(paymentId);
-        } catch (FeignException.NotFound ex) {
+        } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Payment not found with id: " + paymentId);
-        } catch (FeignException ex) {
+        } //catch (HttpStatusCodeException ex) {
             // propagate as 502 Bad Gateway for upstream issues
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Failed to verify payment: " + ex.getMessage());
-        }
+            //throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Failed to verify payment: " + ex.getMessage());
+        //}
     }
 
     private Pageable buildPageable(InvoiceQuery query) {
