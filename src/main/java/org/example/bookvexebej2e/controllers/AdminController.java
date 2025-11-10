@@ -29,48 +29,49 @@ public class AdminController {
     }
 
     @PostMapping("/test-notification")
-    public Map<String, Object> testNotificationUnified(@RequestParam(required = false) UUID userId, // Target user ID
-        // (optional)
-        @RequestParam(required = false) String toEmail, // Email override (optional)
-        @RequestParam(required = false, defaultValue = "TEST_NOTIFICATION") String typeCode, @RequestParam(required =
-            false, defaultValue = "false") Boolean sendEmail, @RequestParam(required = false) String title,
-        @RequestParam(required = false) String message, @RequestParam(required = false) UUID bookingId,
-        @RequestParam(required = false) UUID tripId,
+    public Map<String, Object> testNotificationUnified(@RequestParam(required = false) UUID userId,
+        @RequestParam(required = false) String toEmail, @RequestParam(required = false, defaultValue =
+            "TEST_NOTIFICATION") String typeCode,
+        @RequestParam(required = false, defaultValue = "false") Boolean sendEmail,
+        @RequestParam(required = false) String title, @RequestParam(required = false) String message,
+        @RequestParam(required = false) UUID bookingId, @RequestParam(required = false) UUID tripId,
         @RequestParam(required = false, defaultValue = "CHANNEL_TEST") String channel, @RequestParam(required = false
-            , defaultValue = "false") Boolean shouldSave, // Control persistence
-        Authentication authentication) {
+            , defaultValue = "false") Boolean shouldSave, Authentication authentication) {
 
         UUID authenticatedUserId = getAuthenticatedUserId(authentication);
-        // 1. Determine the target user ID for WebSocket ping/ownership
         UUID targetUserId = userId != null ? userId : authenticatedUserId;
 
-        // 2. Prepare content
         String notificationTitle = title != null ? title : "Test Notification - " + typeCode;
         String notificationMessage = message != null ? message : "Notification Type: " + typeCode + (toEmail != null
             ? " | Email Override: " + toEmail : "") + " | Time: " + LocalDateTime.now();
 
-        // 3. Determine which method to call
         try {
             NotificationResponse response;
             String emailDetail = "N/A";
+            String emailResolution = "not requested";
 
-            if (Boolean.TRUE.equals(sendEmail) && toEmail != null && !toEmail.isBlank()) {
-                response = notificationService.sendNotification(targetUserId, toEmail, // Use the explicit email
-                    typeCode, notificationTitle, notificationMessage, bookingId, tripId, channel, true,
-                    shouldSave);
-                emailDetail = "Sent to Override: " + toEmail;
-
+            if (Boolean.TRUE.equals(sendEmail)) {
+                if (toEmail != null && !toEmail.isBlank()) {
+                    response = notificationService.sendNotification(targetUserId, toEmail, typeCode, notificationTitle,
+                        notificationMessage, bookingId, tripId, channel, true, shouldSave);
+                    emailDetail = "Sent to Override: " + toEmail;
+                    emailResolution = "explicit_email";
+                } else {
+                    response = notificationService.sendNotification(targetUserId, typeCode, notificationTitle,
+                        notificationMessage, bookingId, tripId, channel, true, shouldSave);
+                    emailDetail = "Resolved from available sources";
+                    emailResolution = "auto_resolved";
+                }
             } else {
                 response = notificationService.sendNotification(targetUserId, typeCode, notificationTitle,
-                    notificationMessage, bookingId, tripId, channel, sendEmail, // Use the parameter value
-                    shouldSave);
-                emailDetail = Boolean.TRUE.equals(sendEmail) ? "Sent via User Lookup" : "Email disabled";
+                    notificationMessage, bookingId, tripId, channel, false, shouldSave);
+                emailDetail = "Email disabled";
+                emailResolution = "disabled";
             }
 
             return Map.of("status", "success", "message", "Notification sent successfully", "notification", response,
-                "details",
-                Map.of("targetUserId", targetUserId, "typeCode", typeCode, "sendEmailMode", emailDetail, "savedToDB",
-                    shouldSave));
+                "details", Map.of("targetUserId", targetUserId, "typeCode", typeCode, "sendEmailMode", emailDetail,
+                    "emailResolution", emailResolution, "savedToDB", shouldSave));
 
         } catch (Exception e) {
             log.error("Failed to send notification for user {}: {}", targetUserId, e.getMessage(), e);
