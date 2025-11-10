@@ -61,7 +61,7 @@ public class WebSocketService {
     }
 
     private void notifyUserWithKafkaProducer(UUID userId, String eventType) {
-        kafkaProducerService.sendNotification(new NotificationKafkaDTO(userId, null, null, null));
+        kafkaProducerService.sendNotification(new NotificationKafkaDTO(userId, null, null, null, eventType));
     }
 
     public void notifyUser(UUID userId, String eventType) {
