@@ -32,11 +32,29 @@ public class ReportPrintServiceImpl implements ReportPrintService {
     private final ReportService reportService;
 
     private byte[] exportPdf(String template, Map<String, Object> params, List<?> data) {
-        try (InputStream is = getClass().getResourceAsStream(template)) {
-            JasperReport jasperReport = JasperCompileManager.compileReport(is);
-            JasperPrint print = JasperFillManager.fillReport(jasperReport, params == null ? new HashMap<>() : params,
-                    new JRBeanCollectionDataSource(data));
-            return JasperExportManager.exportReportToPdf(print);
+        try {
+            // Ensure params and data are non-null
+            Map<String, Object> safeParams = (params == null) ? new HashMap<>() : params;
+            List<?> safeData = (data == null) ? java.util.Collections.emptyList() : data;
+
+            // Try to load resource via both class relative and context classloader
+            InputStream is = getClass().getResourceAsStream(template);
+            if (is == null) {
+                String normalized = template.startsWith("/") ? template.substring(1) : template;
+                ClassLoader cl = Thread.currentThread().getContextClassLoader();
+                if (cl != null) {
+                    is = cl.getResourceAsStream(normalized);
+                }
+            }
+            if (is == null) {
+                throw new RuntimeException("Report template not found: " + template);
+            }
+            try (InputStream in = is) {
+                JasperReport jasperReport = JasperCompileManager.compileReport(in);
+                JasperPrint print = JasperFillManager.fillReport(jasperReport, safeParams,
+                        new JRBeanCollectionDataSource(safeData));
+                return JasperExportManager.exportReportToPdf(print);
+            }
         } catch (JRException | java.io.IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
