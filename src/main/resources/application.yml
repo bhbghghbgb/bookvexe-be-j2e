@@ -46,19 +46,19 @@ spring:
     compose:
       enabled: false
 
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: YOUR_GMAIL_ADDRESS@gmail.com # Replace with your Gmail email
-    password: YOUR_GENERATED_APP_PASSWORD # Replace with your 16-character App Password
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-          ssl:
-            trust: smtp.gmail.com
+#  mail:
+#    host: smtp.gmail.com
+#    port: 587
+#    username: YOUR_GMAIL_ADDRESS@gmail.com # Replace with your Gmail email
+#    password: YOUR_GENERATED_APP_PASSWORD # Replace with your 16-character App Password
+#    properties:
+#      mail:
+#        smtp:
+#          auth: true
+#          starttls:
+#            enable: true
+#          ssl:
+#            trust: smtp.gmail.com
 
   # Kafka Producer Configuration
   kafka:
