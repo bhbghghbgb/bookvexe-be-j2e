@@ -84,8 +84,8 @@ logging:
 
 server:
   port: 5181
-  servlet:
-    context-path: /bookvexe-be-j2e
+#  servlet:
+#    context-path: /bookvexe-be-j2e
     
 app:
   email:

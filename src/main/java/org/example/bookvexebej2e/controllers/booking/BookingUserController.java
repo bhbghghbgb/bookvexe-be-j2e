@@ -60,16 +60,4 @@ public class BookingUserController {
     public ResponseEntity<BookingResponse> cancelBooking(@PathVariable UUID id) {
         return ResponseEntity.ok(bookingUserService.cancelBooking(id));
     }
-
-    // Xác nhận thanh toán booking
-    @PostMapping("/confirm-payment/{id}")
-    public ResponseEntity<BookingResponse> confirmPayment(@PathVariable UUID id) {
-        return ResponseEntity.ok(bookingUserService.confirmPayment(id));
-    }
-
-    // Xác nhận thanh toán booking (khách)
-    @PostMapping("/confirm-payment/guest/{id}")
-    public ResponseEntity<BookingResponse> confirmPaymentGuest(@PathVariable UUID id) {
-        return ResponseEntity.ok(bookingUserService.confirmPaymentGuest(id));
-    }
 }
