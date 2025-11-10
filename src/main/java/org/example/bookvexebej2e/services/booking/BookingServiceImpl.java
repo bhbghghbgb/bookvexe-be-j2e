@@ -18,6 +18,8 @@ import org.example.bookvexebej2e.models.dto.booking.BookingResponse;
 import org.example.bookvexebej2e.models.dto.booking.BookingSeatCreate;
 import org.example.bookvexebej2e.models.dto.booking.BookingSelectResponse;
 import org.example.bookvexebej2e.models.dto.booking.BookingUpdate;
+import org.example.bookvexebej2e.helpers.api.PaymentApi;
+import org.example.bookvexebej2e.helpers.dto.PaymentDto;
 import org.example.bookvexebej2e.repositories.booking.BookingRepository;
 import org.example.bookvexebej2e.repositories.customer.CustomerRepository;
 import org.example.bookvexebej2e.repositories.trip.TripRepository;
@@ -31,7 +33,11 @@ import org.springframework.stereotype.Service;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import feign.FeignException;
 
+/**
+ * Booking Service Implementation
+ */
 @Service
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
@@ -42,6 +48,7 @@ public class BookingServiceImpl implements BookingService {
     private final TripStopRepository tripStopRepository;
     private final BookingSeatService bookingSeatService;
     private final BookingMapper bookingMapper;
+    private final PaymentApi paymentApi;
 
     @Override
     public List<BookingResponse> findAll() {
@@ -256,8 +263,21 @@ public class BookingServiceImpl implements BookingService {
                     "Booking can only be confirmed when status is 'new'. Current status: " + entity.getBookingStatus());
         }
 
-        // Check if payment exists to determine next status
-        if (entity.getPayment() != null && "SUCCESS".equals(entity.getPayment().getStatus())) {
+        // Check payment via Payment Service
+        boolean isPaidSuccess = false;
+        UUID paymentId = entity.getPaymentId();
+        if (paymentId != null) {
+            try {
+                PaymentDto payment = paymentApi.findById(paymentId);
+                isPaidSuccess = payment != null && "SUCCESS".equalsIgnoreCase(payment.getStatus());
+            } catch (FeignException.NotFound ex) {
+                isPaidSuccess = false;
+            } catch (FeignException ex) {
+                isPaidSuccess = false;
+            }
+        }
+
+        if (isPaidSuccess) {
             entity.setBookingStatus(BookingStatus.AWAIT_GO);
         } else {
             entity.setBookingStatus(BookingStatus.AWAIT_PAYMENT);
