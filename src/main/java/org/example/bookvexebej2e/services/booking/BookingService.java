@@ -35,5 +35,7 @@ public interface BookingService {
 
     BookingResponse completeTrip(UUID id);
 
+    BookingResponse cancelBooking(UUID id);
+
     BookingResponse updateStatusByDate(UUID id);
 }
