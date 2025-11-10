@@ -18,7 +18,7 @@ import org.example.bookvexebej2e.models.dto.booking.BookingResponse;
 import org.example.bookvexebej2e.models.dto.booking.BookingSeatCreate;
 import org.example.bookvexebej2e.models.dto.booking.BookingSelectResponse;
 import org.example.bookvexebej2e.models.dto.booking.BookingUpdate;
-import org.example.bookvexebej2e.helpers.api.PaymentApi;
+import org.example.bookvexebej2e.helpers.api.PaymentClient;
 import org.example.bookvexebej2e.helpers.dto.PaymentDto;
 import org.example.bookvexebej2e.repositories.booking.BookingRepository;
 import org.example.bookvexebej2e.repositories.customer.CustomerRepository;
@@ -37,8 +37,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+ 
 
 /**
  * Booking Service Implementation
@@ -56,7 +55,7 @@ public class BookingServiceImpl implements BookingService {
     private final NotificationService notificationService;
     private final BookingSeatService bookingSeatService;
     private final BookingMapper bookingMapper;
-    private final PaymentApi paymentApi;
+    private final PaymentClient paymentClient;
 
     @Override
     public List<BookingResponse> findAll() {
@@ -315,7 +314,7 @@ public class BookingServiceImpl implements BookingService {
         UUID paymentId = entity.getPaymentId();
         if (paymentId != null) {
             try {
-                PaymentDto payment = paymentApi.findById(paymentId);
+                PaymentDto payment = paymentClient.findById(paymentId);
                 isPaidSuccess = payment != null && "SUCCESS".equalsIgnoreCase(payment.getStatus());
             } catch (Exception ex) {
                 isPaidSuccess = false;

@@ -13,7 +13,8 @@ import org.example.bookvexebej2e.models.dto.invoice.InvoiceResponse;
 import org.example.bookvexebej2e.models.dto.invoice.InvoiceSelectResponse;
 import org.example.bookvexebej2e.models.dto.invoice.InvoiceUpdate;
 import org.example.bookvexebej2e.repositories.invoice.InvoiceRepository;
-import org.example.bookvexebej2e.helpers.api.PaymentApi;
+import org.example.bookvexebej2e.helpers.api.PaymentClient;
+import org.example.bookvexebej2e.helpers.dto.PaymentDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,7 +34,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     private final InvoiceRepository invoiceRepository;
     private final InvoiceMapper invoiceMapper;
-    private final PaymentApi paymentApi;
+    private final PaymentClient paymentClient;
 
     @Override
     public List<InvoiceResponse> findAll() {
@@ -148,13 +149,15 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     private void ensurePaymentExists(UUID paymentId) {
         try {
-            paymentApi.findById(paymentId);
+            PaymentDto dto = paymentClient.findById(paymentId);
+            if (dto == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Payment not found with id: " + paymentId);
+            }
+        } catch (ResponseStatusException e) {
+            throw e;
         } catch (Exception ex) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Payment not found with id: " + paymentId);
-        } //catch (HttpStatusCodeException ex) {
-            // propagate as 502 Bad Gateway for upstream issues
-            //throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Failed to verify payment: " + ex.getMessage());
-        //}
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Failed to verify payment: " + ex.getMessage());
+        }
     }
 
     private Pageable buildPageable(InvoiceQuery query) {
