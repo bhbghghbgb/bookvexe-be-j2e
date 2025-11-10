@@ -21,10 +21,10 @@ spring:
             enable: true
 
   datasource:
-    url: jdbc:postgresql://localhost:5441/bookvexedb_j2e
+    url: jdbc:postgresql://localhost:5432/bookvexedb_j2e
     #    url: jdbc:postgresql://postgres-service:5441/bookvexedb_j2e
-    username: root
-    password: nopass
+    username: postgres
+    password: root
   jpa:
     show-sql: true
     hibernate:

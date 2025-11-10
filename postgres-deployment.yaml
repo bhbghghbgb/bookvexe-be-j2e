@@ -16,9 +16,9 @@ spec:
           image: ankane/pgvector:latest
           env:
             - name: POSTGRES_USER
-              value: root
+              value: postgres
             - name: POSTGRES_PASSWORD
-              value: nopass
+              value: root
             - name: POSTGRES_DB
               value: bookvexedb_j2e
           ports:
@@ -38,5 +38,5 @@ spec:
   selector:
     app: postgres
   ports:
-    - port: 5441
+    - port: 5432
       targetPort: 5432

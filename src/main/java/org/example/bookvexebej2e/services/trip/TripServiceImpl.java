@@ -1,5 +1,6 @@
 package org.example.bookvexebej2e.services.trip;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -198,6 +199,16 @@ public class TripServiceImpl implements TripService {
         Pageable pageable = buildPageable(query);
         Page<TripDbModel> entities = tripRepository.findAll(spec, pageable);
         return entities.map(tripMapper::toSelectResponse);
+    }
+
+    @Override
+    public List<TripResponse> findUpcomingTrips() {
+        LocalDateTime now = LocalDateTime.now();
+        List<TripDbModel> entities = tripRepository.findUpcomingTrips(now);
+        log.info("Found {} upcoming trips from {}", entities.size(), now);
+        return entities.stream()
+                .map(tripMapper::toResponse)
+                .toList();
     }
 
     // Private helper methods
