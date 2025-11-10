@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport name="revenue_time" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="a1111111-1111-1111-1111-111111111111">
+    <property name="net.sf.jasperreports.default.pdf.font.name" value="DejaVu Sans"/>
+    <property name="net.sf.jasperreports.default.pdf.encoding" value="Identity-H"/>
+    <property name="net.sf.jasperreports.default.pdf.embedded" value="true"/>
+    <parameter name="REPORT_TITLE" class="java.lang.String"/>
+    <field name="date" class="java.lang.String"/>
+    <field name="totalRevenue" class="java.math.BigDecimal"/>
+    <field name="transactionCount" class="java.lang.Long"/>
+
+    <title>
+        <band height="40">
+            <textField>
+                <reportElement x="0" y="0" width="782" height="30"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="16" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$P{REPORT_TITLE}]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+
+    <columnHeader>
+        <band height="24">
+            <staticText>
+                <reportElement x="0" y="0" width="200" height="24"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle"><font isBold="true"/></textElement>
+                <text><![CDATA[Ngày]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="200" y="0" width="200" height="24"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font isBold="true"/></textElement>
+                <text><![CDATA[Số giao dịch]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="400" y="0" width="382" height="24"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font isBold="true"/></textElement>
+                <text><![CDATA[Tổng doanh thu]]></text>
+            </staticText>
+        </band>
+    </columnHeader>
+
+    <detail>
+        <band height="20">
+            <textField>
+                <reportElement x="0" y="0" width="200" height="20"/>
+                <textElement verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$F{date}]]></textFieldExpression>
+            </textField>
+            <textField pattern="#,##0">
+                <reportElement x="200" y="0" width="200" height="20"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$F{transactionCount} == null ? 0 : $F{transactionCount}]]></textFieldExpression>
+            </textField>
+            <textField pattern="#,##0">
+                <reportElement x="400" y="0" width="382" height="20"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$F{totalRevenue} == null ? java.math.BigDecimal.ZERO : $F{totalRevenue}]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+</jasperReport>
