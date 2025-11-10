@@ -30,4 +30,6 @@ public interface TripService {
     List<TripSelectResponse> findAllForSelect();
 
     Page<TripSelectResponse> findAllForSelect(TripQuery query);
+
+    List<TripResponse> findUpcomingTrips();
 }

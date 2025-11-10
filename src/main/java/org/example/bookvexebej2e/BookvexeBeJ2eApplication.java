@@ -6,9 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-@EnableJpaRepositories(basePackages = "org.example.bookvexebej2e.repositories", repositoryBaseClass =
-    BaseRepositoryImpl.class)
-@EnableScheduling
+@EnableJpaRepositories(basePackages = "org.example.bookvexebej2e.repositories", repositoryBaseClass = BaseRepositoryImpl.class)
 @SpringBootApplication
 @EnableScheduling
 public class BookvexeBeJ2eApplication {

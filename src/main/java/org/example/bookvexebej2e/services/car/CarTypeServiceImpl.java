@@ -55,6 +55,13 @@ public class CarTypeServiceImpl implements CarTypeService {
 
     @Override
     public CarTypeResponse create(CarTypeCreate createDto) {
+        // Check for duplicate code
+        if (createDto.getCode() != null && !createDto.getCode().isEmpty()) {
+            carTypeRepository.findByCode(createDto.getCode()).ifPresent(existingCarType -> {
+                throw new IllegalStateException("Không thể tạo loại xe vì mã loại xe '" + createDto.getCode() + "' đã tồn tại trong hệ thống");
+            });
+        }
+
         CarTypeDbModel entity = new CarTypeDbModel();
         entity.setCode(createDto.getCode());
         entity.setName(createDto.getName());
@@ -69,6 +76,15 @@ public class CarTypeServiceImpl implements CarTypeService {
     public CarTypeResponse update(UUID id, CarTypeUpdate updateDto) {
         CarTypeDbModel entity = carTypeRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> new ResourceNotFoundException(CarTypeDbModel.class, id));
+
+        // Check for duplicate code (excluding current entity)
+        if (updateDto.getCode() != null && !updateDto.getCode().isEmpty()) {
+            carTypeRepository.findByCode(updateDto.getCode()).ifPresent(existingCarType -> {
+                if (!existingCarType.getId().equals(id)) {
+                    throw new IllegalStateException("Không thể cập nhật loại xe vì mã loại xe '" + updateDto.getCode() + "' đã tồn tại trong hệ thống");
+                }
+            });
+        }
 
         entity.setCode(updateDto.getCode());
         entity.setName(updateDto.getName());

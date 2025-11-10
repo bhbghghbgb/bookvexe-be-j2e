@@ -87,6 +87,12 @@ public class TripController {
         return ResponseEntity.ok(tripService.findAllForSelect());
     }
 
+    @GetMapping("/upcoming")
+    public ResponseEntity<List<TripResponse>> getUpcomingTrips() {
+        List<TripResponse> trips = tripService.findUpcomingTrips();
+        return ResponseEntity.ok(trips);
+    }
+
     @GetMapping("/select/pagination")
     @RequirePermission(module = ModuleCode.TRIP, action = PermissionAction.READ)
     public ResponseEntity<Page<TripSelectResponse>> findAllForSelect(TripQuery query) {

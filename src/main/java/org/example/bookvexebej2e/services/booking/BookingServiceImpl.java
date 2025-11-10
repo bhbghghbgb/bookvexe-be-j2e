@@ -85,6 +85,12 @@ public class BookingServiceImpl implements BookingService {
         entity.setCode(createDto.getCode());
         entity.setType(createDto.getType());
 
+        if (createDto.getCode() != null && !createDto.getCode().isEmpty()) {
+            bookingRepository.findByCode(createDto.getCode()).ifPresent(existingCarType -> {
+                throw new IllegalStateException("Không thể tạo đặt xe vì mã đặt xe '" + createDto.getCode() + "' đã tồn tại trong hệ thống");
+            });
+        }
+
         // For admin bookings with payment confirmed, set status directly to AWAIT_GO
         // For user bookings, they should go through AWAIT_PAYMENT -> AWAIT_GO flow
         if (createDto.getBookingStatus() != null) {
@@ -153,6 +159,16 @@ public class BookingServiceImpl implements BookingService {
     public BookingResponse update(UUID id, BookingUpdate updateDto) {
         BookingDbModel entity = bookingRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, id));
+
+
+        // Check for duplicate code (excluding current entity)
+        if (updateDto.getCode() != null && !updateDto.getCode().isEmpty()) {
+            bookingRepository.findByCode(updateDto.getCode()).ifPresent(existingCarType -> {
+                if (!existingCarType.getId().equals(id)) {
+                    throw new IllegalStateException("Không thể cập nhật đặt xe vì mã đặt xe '" + updateDto.getCode() + "' đã tồn tại trong hệ thống");
+                }
+            });
+        }
 
         entity.setCode(updateDto.getCode());
         entity.setType(updateDto.getType());
