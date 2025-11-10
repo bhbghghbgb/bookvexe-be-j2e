@@ -17,13 +17,11 @@ import org.example.bookvexebej2e.repositories.trip.TripRepository;
 import org.example.bookvexebej2e.repositories.user.UserRepository;
 import org.example.bookvexebej2e.services.external.MailingService;
 import org.example.bookvexebej2e.services.external.WebSocketService;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -205,38 +203,98 @@ public class NotificationServiceImpl implements NotificationService {
     // -------------------------------------------------------------
     // Internal Method to Avoid Code Repetition
     // -------------------------------------------------------------
-
     private NotificationResponse sendNotificationInternal(UUID userId, String toEmail, String typeCode, String title,
         String message, UUID bookingId, UUID tripId, String channel, Boolean sendEmail, Boolean shouldSave) {
 
         NotificationDbModel entity;
 
         if (Boolean.TRUE.equals(shouldSave)) {
-            // 1. Save Notification (Persistence)
             entity = saveNotification(userId, typeCode, title, message, bookingId, tripId, channel);
             log.info("Notification saved and sent to user {}. ID: {}", userId, entity.getId());
         } else {
-            // 1b. Create unsaved entity for response and logging (No Persistence)
             entity = createUnsavedNotification(userId, typeCode, title, message, bookingId, tripId, channel);
             log.info("DEBUG Notification created (unsaved) and sent to user {}.", userId);
         }
 
-        // 2. Send Email if requested
+        // Enhanced email handling for core service
         if (Boolean.TRUE.equals(sendEmail)) {
-            if (toEmail != null && !toEmail.isBlank()) {
-                // Use explicit email if provided
-                mailingService.sendEmail(toEmail, title, message);
+            String finalRecipientEmail = toEmail;
+
+            // If no explicit email provided, try to resolve it from available sources
+            if (finalRecipientEmail == null || finalRecipientEmail.isBlank()) {
+                finalRecipientEmail = resolveRecipientEmail(userId, bookingId);
+            }
+
+            if (finalRecipientEmail != null && !finalRecipientEmail.isBlank()) {
+                mailingService.sendEmail(finalRecipientEmail, title, message);
+                log.info("Email sent to: {}", finalRecipientEmail);
             } else {
-                // Fallback to user ID lookup
-                mailingService.sendEmailToUser(userId, title, message);
+                log.warn("Email requested but no recipient email could be resolved for user {} and booking {}", userId,
+                    bookingId);
             }
         }
 
-        // 3. Ping Frontend via WebSocket
         webSocketService.notifyUser(userId, "NEW_NOTIFICATION");
-
         return notificationMapper.toResponse(entity);
     }
+
+    /**
+     * Resolves recipient email by trying multiple sources in priority order for core service
+     */
+    private String resolveRecipientEmail(UUID userId, UUID bookingId) {
+        // Try to get email from user first
+        try {
+            UserDbModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, userId));
+
+            // Check if user has email directly
+            //            if (user.getEmail() != null && !user.getEmail()
+            //                .isBlank()) {
+            //                return user.getEmail();
+            //            }
+
+            // If user doesn't have direct email, check related entities
+            if (user.getCustomer() != null && user.getCustomer()
+                .getEmail() != null && !user.getCustomer()
+                .getEmail()
+                .isBlank()) {
+                return user.getCustomer()
+                    .getEmail();
+            }
+
+            if (user.getEmployee() != null && user.getEmployee()
+                .getEmail() != null && !user.getEmployee()
+                .getEmail()
+                .isBlank()) {
+                return user.getEmployee()
+                    .getEmail();
+            }
+        } catch (ResourceNotFoundException e) {
+            log.warn("User {} not found when trying to resolve email", userId);
+        }
+
+        // If user lookup failed but we have bookingId, try to get email from booking
+        if (bookingId != null) {
+            try {
+                BookingDbModel booking = bookingRepository.findById(bookingId)
+                    .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, bookingId));
+
+                if (booking.getCustomer() != null && booking.getCustomer()
+                    .getEmail() != null && !booking.getCustomer()
+                    .getEmail()
+                    .isBlank()) {
+                    return booking.getCustomer()
+                        .getEmail();
+                }
+            } catch (ResourceNotFoundException e) {
+                log.warn("Booking {} not found when trying to resolve email", bookingId);
+            }
+        }
+
+        log.warn("Could not resolve email for user {} with booking {}", userId, bookingId);
+        return null;
+    }
+
 
     // Helper for unsaved response
     private NotificationDbModel createUnsavedNotification(UUID userId, String typeCode, String title, String message,
