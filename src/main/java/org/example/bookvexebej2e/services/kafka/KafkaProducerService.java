@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.services.kafka;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.example.bookvexebej2e.configs.KafkaTopicConfig;
 import org.example.bookvexebej2e.models.dto.kafka.MailKafkaDTO;
 import org.example.bookvexebej2e.models.dto.kafka.NotificationKafkaDTO;
