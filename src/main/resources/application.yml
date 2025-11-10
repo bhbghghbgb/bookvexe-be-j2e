@@ -1,7 +1,108 @@
+﻿security:
+  admin:
+    allow-all: true
+
 spring:
-  profiles:
-    active: dev
   application:
     name: bookvexe-be-j2e
-  config:
-    import: optional:configserver:http://localhost:8888
+
+  #  config:
+  #    import: optional:classpath:application-oauth.yml
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: nguyendinhthongdhsg@gmail.com
+    password: auxhnuproxxopoug
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bookvexedb_j2e
+    #    url: jdbc:postgresql://postgres-service:5441/bookvexedb_j2e
+    username: postgres
+    password: root
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none # ddl-auto was originally set to update, now explicitly none
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    # log SQL binding parameters to get the actual values of a query parameter
+  # spring.jpa.hibernate.ddl-auto: update
+
+  # spring.autoconfigure.exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  docker:
+    compose:
+      enabled: false
+
+#  mail:
+#    host: smtp.gmail.com
+#    port: 587
+#    username: YOUR_GMAIL_ADDRESS@gmail.com # Replace with your Gmail email
+#    password: YOUR_GENERATED_APP_PASSWORD # Replace with your 16-character App Password
+#    properties:
+#      mail:
+#        smtp:
+#          auth: true
+#          starttls:
+#            enable: true
+#          ssl:
+#            trust: smtp.gmail.com
+
+  # Kafka Producer Configuration
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+logging:
+  level:
+    org:
+      hibernate:
+        orm:
+          jdbc:
+            bind: trace
+      springframework:
+        web: DEBUG # Log incoming HTTP requests and mappings
+        web.servlet.DispatcherServlet: DEBUG
+        web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: DEBUG
+        security: DEBUG # Log security decisions
+        security.web.FilterChainProxy: DEBUG
+      flywaydb: DEBUG
+
+server:
+  port: 5181
+
+app:
+  email:
+    sender: nguyendinhthongdhsg@gmail.com
+  jwt:
+    secret: "your-very-secure-secret-key-that-is-at-least-32-characters-long"
+    expiration:
+      ms: 86400000 # 24 hours
+    refresh-expiration:
+      ms: 604800000 # 7 days
+
+vnpay:
+  tmnCode: VWJ2IOSO
+  hashSecret: AMFRNXTX77SU7EBXP68PFQMLEQ204X2P
+  payUrl: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+  returnUrl: https://unsuccinctly-unadhering-zenaida.ngrok-free.dev/api/vnpay-return
+  ipnUrl: https://unsuccinctly-unadhering-zenaida.ngrok-free.dev/api/vnpay-ipn
+  frontendReturnUrl: http://localhost:5173/payment/vnpay-return
+
+chat:
+  service:
+    url: http://localhost:5182

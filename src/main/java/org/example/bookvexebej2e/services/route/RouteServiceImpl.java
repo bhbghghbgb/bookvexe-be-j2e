@@ -13,6 +13,7 @@ import org.example.bookvexebej2e.models.dto.route.RouteResponse;
 import org.example.bookvexebej2e.models.dto.route.RouteSelectResponse;
 import org.example.bookvexebej2e.models.dto.route.RouteUpdate;
 import org.example.bookvexebej2e.repositories.route.RouteRepository;
+import org.example.bookvexebej2e.services.knowledge.KnowledgeSyncService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,13 +23,16 @@ import org.springframework.stereotype.Service;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RouteServiceImpl implements RouteService {
 
     private final RouteRepository routeRepository;
     private final RouteMapper routeMapper;
+    private final KnowledgeSyncService knowledgeSyncService;
 
     @Override
     public List<RouteResponse> findAll() {
@@ -62,6 +66,10 @@ public class RouteServiceImpl implements RouteService {
         entity.setEstimatedDuration(createDto.getEstimatedDuration());
 
         RouteDbModel savedEntity = routeRepository.save(entity);
+        
+        // Sync knowledge to chat service
+        syncRouteKnowledge(savedEntity, "CREATE");
+        
         return routeMapper.toResponse(savedEntity);
     }
 
@@ -76,11 +84,17 @@ public class RouteServiceImpl implements RouteService {
         entity.setEstimatedDuration(updateDto.getEstimatedDuration());
 
         RouteDbModel updatedEntity = routeRepository.save(entity);
+        
+        // Sync knowledge to chat service
+        syncRouteKnowledge(updatedEntity, "UPDATE");
+        
         return routeMapper.toResponse(updatedEntity);
     }
 
     @Override
     public void delete(UUID id) {
+        // Sync delete to chat service first
+        knowledgeSyncService.syncRoute(id.toString(), "DELETE", "", "");
         routeRepository.softDeleteById(id);
     }
 
@@ -180,4 +194,33 @@ public class RouteServiceImpl implements RouteService {
         Sort sort = Sort.by(direction, query.getSortBy());
         return PageRequest.of(query.getPage(), query.getSize(), sort);
     }
-}
+
+    /**
+     * Sync route knowledge to chat service
+     */
+    private void syncRouteKnowledge(RouteDbModel route, String operation) {
+        try {
+            String title = String.format("Tuyến đường %s - %s",
+                    route.getStartLocation(), 
+                    route.getEndLocation());
+            
+            String content = String.format(
+                    "Tuyến đường từ %s đến %s. " +
+                    "Quảng đường: %.2f km. " +
+                    "thời gian di chuyển ước tính: %d phút.",
+                    route.getStartLocation(),
+                    route.getEndLocation(),
+                    route.getDistanceKm(),
+                    route.getEstimatedDuration()
+            );
+            
+            knowledgeSyncService.syncRoute(
+                    route.getId().toString(), 
+                    operation, 
+                    title, 
+                    content
+            );
+        } catch (Exception e) {
+            log.error("Failed to sync route knowledge: {}", e.getMessage(), e);
+        }
+    }}

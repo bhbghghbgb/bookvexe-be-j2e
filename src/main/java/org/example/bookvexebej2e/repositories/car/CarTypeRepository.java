@@ -1,9 +1,12 @@
 package org.example.bookvexebej2e.repositories.car;
 
+import java.util.Optional;
+import java.util.UUID;
 import org.example.bookvexebej2e.models.db.CarTypeDbModel;
 import org.example.bookvexebej2e.repositories.base.BaseRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CarTypeRepository extends BaseRepository<CarTypeDbModel> {
+    Optional<CarTypeDbModel> findByCode(String code);
 }

@@ -1,5 +1,6 @@
 package org.example.bookvexebej2e.services.trip;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -20,6 +21,7 @@ import org.example.bookvexebej2e.repositories.car.CarRepository;
 import org.example.bookvexebej2e.repositories.route.RouteRepository;
 import org.example.bookvexebej2e.repositories.trip.TripCarRepository;
 import org.example.bookvexebej2e.repositories.trip.TripRepository;
+import org.example.bookvexebej2e.services.knowledge.KnowledgeSyncService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +44,7 @@ public class TripServiceImpl implements TripService {
     private final TripMapper tripMapper;
     private final TripCarRepository tripCarRepository;
     private final CarRepository carRepository;
+    private final KnowledgeSyncService knowledgeSyncService;
 
     @Override
     public List<TripResponse> findAll() {
@@ -89,6 +92,9 @@ public class TripServiceImpl implements TripService {
             log.info("Creating trip with {} unique cars", uniqueCarIds.size());
             createTripCars(savedEntity, uniqueCarIds, createDto.getPrice(), createDto.getAvailableSeats());
         }
+        
+        // Sync knowledge to chat service
+        syncTripKnowledge(savedEntity, "CREATE");
 
         return tripMapper.toResponse(savedEntity);
     }
@@ -149,12 +155,17 @@ public class TripServiceImpl implements TripService {
         tripRepository.flush();
         TripDbModel refreshedEntity = tripRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, id));
+        
+        // Sync knowledge to chat service
+        syncTripKnowledge(refreshedEntity, "UPDATE");
 
         return tripMapper.toResponse(refreshedEntity);
     }
 
     @Override
     public void delete(UUID id) {
+        // Sync delete to chat service first
+        knowledgeSyncService.syncTrip(id.toString(), "DELETE", "", "");
         tripRepository.softDeleteById(id);
     }
 
@@ -188,6 +199,16 @@ public class TripServiceImpl implements TripService {
         Pageable pageable = buildPageable(query);
         Page<TripDbModel> entities = tripRepository.findAll(spec, pageable);
         return entities.map(tripMapper::toSelectResponse);
+    }
+
+    @Override
+    public List<TripResponse> findUpcomingTrips() {
+        LocalDateTime now = LocalDateTime.now();
+        List<TripDbModel> entities = tripRepository.findUpcomingTrips(now);
+        log.info("Found {} upcoming trips from {}", entities.size(), now);
+        return entities.stream()
+                .map(tripMapper::toResponse)
+                .toList();
     }
 
     // Private helper methods
@@ -256,4 +277,42 @@ public class TripServiceImpl implements TripService {
         Sort sort = Sort.by(direction, query.getSortBy());
         return PageRequest.of(query.getPage(), query.getSize(), sort);
     }
+    
+    /**
+     * Sync trip knowledge to chat service
+     */
+    private void syncTripKnowledge(TripDbModel trip, String operation) {
+        try {
+            String title = String.format("Chuyến xe %s - %s", 
+                    trip.getRoute().getStartLocation(), 
+                    trip.getRoute().getEndLocation());
+            
+            String content = String.format(
+                    "Chuyến xe từ %s đến %s. " +
+                    "Khởi hành lúc %s. " +
+                    "Giá vé: %s VNĐ. " +
+                    "Số ghế trống: %d. " +
+                    "Quảng đường: %.2f km. " +
+                    "Thời gian di chuyển: khoảng %d phút.",
+                    trip.getRoute().getStartLocation(),
+                    trip.getRoute().getEndLocation(),
+                    trip.getDepartureTime().toString(),
+                    trip.getPrice().toString(),
+                    trip.getAvailableSeats(),
+                    trip.getRoute().getDistanceKm(),
+                    trip.getRoute().getEstimatedDuration()
+            );
+            
+            knowledgeSyncService.syncTrip(
+                    trip.getId().toString(), 
+                    operation, 
+                    title, 
+                    content
+            );
+        } catch (Exception e) {
+            log.error("Failed to sync trip knowledge: {}", e.getMessage(), e);
+            // Không throw exception để không ảnh hưởng main flow
+        }
+    }
 }
+

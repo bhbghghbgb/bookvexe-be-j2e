@@ -1,12 +1,18 @@
 package org.example.bookvexebej2e.services.trip;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.TripStopMapper;
 import org.example.bookvexebej2e.models.db.TripDbModel;
 import org.example.bookvexebej2e.models.db.TripStopDbModel;
-import org.example.bookvexebej2e.models.dto.trip.*;
+import org.example.bookvexebej2e.models.dto.trip.TripStopCreate;
+import org.example.bookvexebej2e.models.dto.trip.TripStopQuery;
+import org.example.bookvexebej2e.models.dto.trip.TripStopResponse;
+import org.example.bookvexebej2e.models.dto.trip.TripStopSelectResponse;
+import org.example.bookvexebej2e.models.dto.trip.TripStopUpdate;
 import org.example.bookvexebej2e.repositories.trip.TripRepository;
 import org.example.bookvexebej2e.repositories.trip.TripStopRepository;
 import org.springframework.data.domain.Page;
@@ -16,9 +22,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -86,8 +91,23 @@ public class TripStopServiceImpl implements TripStopService {
     }
 
     @Override
-    public void delete(UUID id) {
-        tripStopRepository.softDeleteById(id);
+    public void hardDelete(UUID id) {
+        TripStopDbModel entity = tripStopRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(TripStopDbModel.class, id));
+
+        // Kiểm tra xem có booking nào đang sử dụng TripStop này không
+        if (entity.getPickupBookings() != null && !entity.getPickupBookings().isEmpty()) {
+            throw new IllegalStateException("Không thể xóa TripStop này vì có " +
+                    entity.getPickupBookings().size() + " booking đang sử dụng làm điểm đón");
+        }
+
+        if (entity.getDropoffBookings() != null && !entity.getDropoffBookings().isEmpty()) {
+            throw new IllegalStateException("Không thể xóa TripStop này vì có " +
+                    entity.getDropoffBookings().size() + " booking đang sử dụng làm điểm trả");
+        }
+
+        // Nếu không có ràng buộc, thực hiện xóa cứng khỏi database
+        tripStopRepository.delete(entity);
     }
 
     @Override
