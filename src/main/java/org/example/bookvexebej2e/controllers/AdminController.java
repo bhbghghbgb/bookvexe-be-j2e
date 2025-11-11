@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -51,7 +52,7 @@ public class AdminController {
             String emailResolution = "not requested";
             String userType = "authenticated";
 
-            // NEW: Handle guest scenario explicitly
+            // Handle guest scenario explicitly
             if (targetUserId == null) {
                 userType = "guest";
                 response = notificationService.sendGuestNotification(toEmail, typeCode, notificationTitle,
@@ -81,10 +82,24 @@ public class AdminController {
                 emailResolution = "disabled";
             }
 
-            return Map.of("status", "success", "message", "Notification sent successfully", "notification", response,
-                "details",
-                Map.of("userType", userType, "targetUserId", targetUserId, "typeCode", typeCode, "sendEmailMode",
-                    emailDetail, "emailResolution", emailResolution, "savedToDB", shouldSave, "bookingId", bookingId));
+            // FIX: Use HashMap instead of Map.of to handle null values
+            Map<String, Object> result = new HashMap<>();
+            result.put("status", "success");
+            result.put("message", "Notification sent successfully");
+            result.put("notification", response);
+
+            Map<String, Object> details = new HashMap<>();
+            details.put("userType", userType);
+            details.put("targetUserId", targetUserId); // This can be null now
+            details.put("typeCode", typeCode);
+            details.put("sendEmailMode", emailDetail);
+            details.put("emailResolution", emailResolution);
+            details.put("savedToDB", shouldSave);
+            details.put("bookingId", bookingId); // This can also be null
+
+            result.put("details", details);
+
+            return result;
 
         } catch (Exception e) {
             log.error("Failed to send notification for user {}: {}", targetUserId, e.getMessage(), e);
@@ -92,7 +107,6 @@ public class AdminController {
         }
     }
 
-    // NEW: Add explicit guest notification test endpoint
     @PostMapping("/test-guest-notification")
     public Map<String, Object> testGuestNotification(@RequestParam(required = false) String toEmail,
         @RequestParam(required = false, defaultValue = "GUEST_NOTIFICATION") String typeCode, @RequestParam(required
@@ -113,11 +127,24 @@ public class AdminController {
             String emailDetail = Boolean.TRUE.equals(
                 sendEmail) ? (toEmail != null ? "Sent to: " + toEmail : "Attempted booking lookup") : "Email disabled";
 
-            return Map.of("status", "success", "message", "Guest notification sent successfully", "notification",
-                response, "details",
-                Map.of("userType", "guest", "toEmail", toEmail != null ? toEmail : "not provided", "typeCode", typeCode,
-                    "sendEmailMode", emailDetail, "savedToDB", shouldSave, "bookingId", bookingId, "note",
-                    "Guest notifications cannot be saved to DB or use WebSocket"));
+            // FIX: Use HashMap for guest endpoint too
+            Map<String, Object> result = new HashMap<>();
+            result.put("status", "success");
+            result.put("message", "Guest notification sent successfully");
+            result.put("notification", response);
+
+            Map<String, Object> details = new HashMap<>();
+            details.put("userType", "guest");
+            details.put("toEmail", toEmail != null ? toEmail : "not provided");
+            details.put("typeCode", typeCode);
+            details.put("sendEmailMode", emailDetail);
+            details.put("savedToDB", shouldSave);
+            details.put("bookingId", bookingId);
+            details.put("note", "Guest notifications cannot be saved to DB or use WebSocket");
+
+            result.put("details", details);
+
+            return result;
 
         } catch (Exception e) {
             log.error("Failed to send guest notification: {}", e.getMessage(), e);
