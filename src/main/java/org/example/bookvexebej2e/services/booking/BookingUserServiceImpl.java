@@ -1,25 +1,15 @@
 package org.example.bookvexebej2e.services.booking;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
+import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.BookingUserMapper;
 import org.example.bookvexebej2e.models.constant.BookingStatus;
 import org.example.bookvexebej2e.models.constant.SeatStatus;
-import org.example.bookvexebej2e.models.db.BookingDbModel;
-import org.example.bookvexebej2e.models.db.BookingSeatDbModel;
-import org.example.bookvexebej2e.models.db.CarSeatDbModel;
-import org.example.bookvexebej2e.models.db.CustomerDbModel;
-import org.example.bookvexebej2e.models.db.TripDbModel;
-import org.example.bookvexebej2e.models.db.TripStopDbModel;
-import org.example.bookvexebej2e.models.db.UserDbModel;
-import org.example.bookvexebej2e.models.dto.booking.BookingQuery;
-import org.example.bookvexebej2e.models.dto.booking.BookingResponse;
-import org.example.bookvexebej2e.models.dto.booking.BookingSearchRequest;
-import org.example.bookvexebej2e.models.dto.booking.BookingSeatCreate;
-import org.example.bookvexebej2e.models.dto.booking.BookingUserCreate;
+import org.example.bookvexebej2e.models.db.*;
+import org.example.bookvexebej2e.models.dto.booking.*;
 import org.example.bookvexebej2e.repositories.booking.BookingSeatRepository;
 import org.example.bookvexebej2e.repositories.booking.BookingUserRepository;
 import org.example.bookvexebej2e.repositories.car.CarSeatRepository;
@@ -27,6 +17,7 @@ import org.example.bookvexebej2e.repositories.customer.CustomerRepository;
 import org.example.bookvexebej2e.repositories.trip.TripRepository;
 import org.example.bookvexebej2e.repositories.trip.TripStopRepository;
 import org.example.bookvexebej2e.repositories.user.UserRepository;
+import org.example.bookvexebej2e.services.notification.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -37,12 +28,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import jakarta.persistence.criteria.Predicate;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BookingUserServiceImpl implements BookingUserService {
 
     private final BookingUserRepository bookingUserRepository;
@@ -52,6 +44,7 @@ public class BookingUserServiceImpl implements BookingUserService {
     private final TripRepository tripRepository;
     private final TripStopRepository tripStopRepository;
     private final CarSeatRepository carSeatRepository;
+    private final NotificationService notificationService;
     private final BookingUserMapper bookingUserMapper;
     private final PasswordEncoder passwordEncoder;
 
@@ -187,6 +180,47 @@ public class BookingUserServiceImpl implements BookingUserService {
             }
             bookingSeatRepository.saveAll(bookingSeats);
             savedBooking.setBookingSeats(bookingSeats);
+        }
+
+        // ADD NOTIFICATION: Booking Created
+        try {
+            // Determine if this is a guest booking (no authenticated user)
+            CustomerDbModel customer2 = savedBooking.getCustomer();
+            UUID userId = null;
+            String customerEmail = customer2.getEmail();
+
+            if (userId != null) {
+                // Registered user - can save notification and send WebSocket
+                notificationService.sendNotification(
+                    userId,
+                    "TYPE_BOOKING_CREATED",
+                    "Đặt vé thành công",
+                    "Bạn đã đặt vé thành công. Mã đặt vé: " + savedBooking.getCode() +
+                        ". Vui lòng thanh toán để hoàn tất.",
+                    savedBooking.getId(),
+                    savedBooking.getTrip().getId(),
+                    "APP",
+                    true,  // sendEmail
+                    true   // shouldSave
+                );
+            } else {
+                // Guest user - can only send email
+                notificationService.sendGuestNotification(
+                    customerEmail,
+                    "TYPE_BOOKING_CREATED",
+                    "Đặt vé thành công",
+                    "Bạn đã đặt vé thành công. Mã đặt vé: " + savedBooking.getCode() +
+                        ". Vui lòng thanh toán để hoàn tất.",
+                    savedBooking.getId(),
+                    savedBooking.getTrip().getId(),
+                    "EMAIL",
+                    true,  // sendEmail
+                    false  // shouldSave - cannot save without user
+                );
+            }
+        } catch (Exception e) {
+            log.error("Failed to send booking creation notification: {}", e.getMessage(), e);
+            // Don't throw - notification failure shouldn't break booking creation
         }
 
         return bookingUserMapper.toResponse(savedBooking);

@@ -177,8 +177,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     /**
-     * High-level service method to send a notification, optionally saving it to the database
-     * and always pushing it via WebSocket and email (if requested), resolved from userId.
+     * Enhanced high-level service method to send a notification that handles guest users
      */
     @Transactional
     public NotificationResponse sendNotification(UUID userId, String typeCode, String title, String message,
@@ -189,8 +188,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     /**
-     * Overload method that allows specifying an explicit email address for sending the email
-     * notification, bypassing the lookup from the userId.
+     * Overload method that allows specifying an explicit email address
      */
     @Transactional
     public NotificationResponse sendNotification(UUID userId, String toEmail, String typeCode, String title,
@@ -200,11 +198,62 @@ public class NotificationServiceImpl implements NotificationService {
             sendEmail, shouldSave);
     }
 
+    /**
+     * NEW: Guest-friendly notification method that doesn't require user ID
+     */
+    @Transactional
+    public NotificationResponse sendGuestNotification(String toEmail, String typeCode, String title, String message,
+        UUID bookingId, UUID tripId, String channel, Boolean sendEmail, Boolean shouldSave) {
+
+        log.info("Sending guest notification for booking {} with email {}", bookingId, toEmail);
+
+        // For guest notifications, we cannot save to DB or send WebSocket
+        if (Boolean.TRUE.equals(shouldSave)) {
+            log.warn("Cannot save guest notification without user ID. Skipping database save.");
+            shouldSave = false;
+        }
+
+        // Create a temporary notification response without user context
+        NotificationDbModel entity = createGuestNotification(typeCode, title, message, bookingId, tripId, channel);
+
+        // Handle email if requested
+        if (Boolean.TRUE.equals(sendEmail)) {
+            if (toEmail != null && !toEmail.isBlank()) {
+                mailingService.sendEmail(toEmail, title, message);
+                log.info("Email sent to guest: {}", toEmail);
+            } else {
+                // Try to resolve email from booking if available
+                String resolvedEmail = resolveGuestEmail(bookingId);
+                if (resolvedEmail != null) {
+                    mailingService.sendEmail(resolvedEmail, title, message);
+                    log.info("Email sent to guest (resolved from booking): {}", resolvedEmail);
+                } else {
+                    log.warn("Email requested for guest notification but no email available for booking {}", bookingId);
+                }
+            }
+        }
+
+        // WebSocket is not available for guests (no user ID)
+        log.info("WebSocket notification skipped for guest (no user ID)");
+
+        return notificationMapper.toResponse(entity);
+    }
+
+
     // -------------------------------------------------------------
-    // Internal Method to Avoid Code Repetition
+    // Internal Method with Guest Support
     // -------------------------------------------------------------
     private NotificationResponse sendNotificationInternal(UUID userId, String toEmail, String typeCode, String title,
         String message, UUID bookingId, UUID tripId, String channel, Boolean sendEmail, Boolean shouldSave) {
+
+        // Determine if this is a guest scenario
+        boolean isGuest = (userId == null);
+
+        if (isGuest) {
+            log.info("Guest notification detected - using guest notification flow");
+            return sendGuestNotification(toEmail, typeCode, title, message, bookingId, tripId, channel, sendEmail,
+                shouldSave);
+        }
 
         NotificationDbModel entity;
 
@@ -234,6 +283,7 @@ public class NotificationServiceImpl implements NotificationService {
             }
         }
 
+        // WebSocket only for authenticated users
         webSocketService.notifyUser(userId, "NEW_NOTIFICATION");
         return notificationMapper.toResponse(entity);
     }
@@ -292,6 +342,82 @@ public class NotificationServiceImpl implements NotificationService {
         }
 
         log.warn("Could not resolve email for user {} with booking {}", userId, bookingId);
+        return null;
+    }
+
+    /**
+     * NEW: Create guest notification without user context
+     */
+    private NotificationDbModel createGuestNotification(String typeCode, String title, String message, UUID bookingId
+        , UUID tripId, String channel) {
+
+        NotificationDbModel entity = new NotificationDbModel();
+        entity.setId(UUID.randomUUID()); // Temporary ID for response
+        entity.setChannel(channel != null ? channel : "EMAIL"); // Default channel for guests
+        entity.setTitle(title);
+        entity.setMessage(message);
+        entity.setIsRead(false);
+        entity.setIsSent(true);
+        entity.setSentAt(LocalDateTime.now());
+        entity.setCreatedDate(LocalDateTime.now());
+        entity.setUpdatedDate(LocalDateTime.now());
+
+        // Try to set notification type if available
+        if (typeCode != null && !typeCode.trim()
+            .isEmpty()) {
+            try {
+                NotificationTypeDbModel type = notificationTypeRepository.findByCode(typeCode)
+                    .orElseThrow(() -> new ResourceNotFoundException(NotificationTypeDbModel.class, typeCode));
+                entity.setType(type);
+            } catch (ResourceNotFoundException e) {
+                log.warn("Notification type {} not found for guest notification", typeCode);
+            }
+        }
+
+        // Set booking/trip references if available
+        if (bookingId != null) {
+            try {
+                BookingDbModel booking = bookingRepository.findById(bookingId)
+                    .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, bookingId));
+                entity.setBooking(booking);
+            } catch (ResourceNotFoundException e) {
+                log.warn("Booking {} not found for guest notification", bookingId);
+            }
+        }
+
+        if (tripId != null) {
+            try {
+                TripDbModel trip = tripRepository.findById(tripId)
+                    .orElseThrow(() -> new ResourceNotFoundException(TripDbModel.class, tripId));
+                entity.setTrip(trip);
+            } catch (ResourceNotFoundException e) {
+                log.warn("Trip {} not found for guest notification", tripId);
+            }
+        }
+
+        return entity;
+    }
+
+    /**
+     * NEW: Resolve email for guest notifications
+     */
+    private String resolveGuestEmail(UUID bookingId) {
+        if (bookingId != null) {
+            try {
+                BookingDbModel booking = bookingRepository.findById(bookingId)
+                    .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, bookingId));
+
+                if (booking.getCustomer() != null && booking.getCustomer()
+                    .getEmail() != null && !booking.getCustomer()
+                    .getEmail()
+                    .isBlank()) {
+                    return booking.getCustomer()
+                        .getEmail();
+                }
+            } catch (ResourceNotFoundException e) {
+                log.warn("Booking {} not found when trying to resolve guest email", bookingId);
+            }
+        }
         return null;
     }
 
