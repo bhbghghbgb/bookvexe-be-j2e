@@ -303,29 +303,15 @@ public class BookingServiceImpl implements BookingService {
         BookingDbModel entity = bookingRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, id));
 
-        // Validate current status
-        if (!BookingStatus.NEW.equals(entity.getBookingStatus())) {
+        // Validate current status and confirm booking
+        if (!(BookingStatus.NEW.equals(entity.getBookingStatus())
+            || BookingStatus.AWAIT_PAYMENT.equals(entity.getBookingStatus()))) {
             throw new IllegalStateException(
-                    "Booking can only be confirmed when status is 'new'. Current status: " + entity.getBookingStatus());
+                "Booking can only be confirmed when status is 'new' or 'await_payment'. Current status: "
+                    + entity.getBookingStatus());
         }
 
-        // Check payment via Payment Service
-        boolean isPaidSuccess = false;
-        UUID paymentId = entity.getPaymentId();
-        if (paymentId != null) {
-            try {
-                PaymentDto payment = paymentClient.findById(paymentId);
-                isPaidSuccess = payment != null && "SUCCESS".equalsIgnoreCase(payment.getStatus());
-            } catch (Exception ex) {
-                isPaidSuccess = false;
-            }
-        }
-
-        if (isPaidSuccess) {
-            entity.setBookingStatus(BookingStatus.AWAIT_GO);
-        } else {
-            entity.setBookingStatus(BookingStatus.AWAIT_PAYMENT);
-        }
+        entity.setBookingStatus(BookingStatus.AWAIT_GO);
 
         BookingDbModel savedEntity = bookingRepository.save(entity);
 
