@@ -14,9 +14,11 @@ import org.example.bookvexebej2e.models.dto.report.RevenuePointResponse;
 import org.example.bookvexebej2e.models.dto.report.TripsFilter;
 import org.example.bookvexebej2e.models.dto.report.TripsStatusResponse;
 import org.example.bookvexebej2e.models.dto.report.TripsTrendPointResponse;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
@@ -27,6 +29,7 @@ import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ReportPrintServiceImpl implements ReportPrintService {
 
     private final ReportService reportService;
@@ -36,7 +39,9 @@ public class ReportPrintServiceImpl implements ReportPrintService {
             // Ensure params and data are non-null
             Map<String, Object> safeParams = (params == null) ? new HashMap<>() : params;
             List<?> safeData = (data == null) ? java.util.Collections.emptyList() : data;
-
+            if (log.isInfoEnabled()) {
+                log.info("Report export start: template={}, paramsKeys={}, dataSize={}", template, safeParams.keySet(), safeData.size());
+            }
             // Try to load resource via both class relative and context classloader
             InputStream is = getClass().getResourceAsStream(template);
             if (is == null) {
@@ -45,17 +50,33 @@ public class ReportPrintServiceImpl implements ReportPrintService {
                 if (cl != null) {
                     is = cl.getResourceAsStream(normalized);
                 }
+                if (is == null) {
+                    try {
+                        ClassPathResource cpr = new ClassPathResource(normalized);
+                        if (cpr.exists()) {
+                            is = cpr.getInputStream();
+                        }
+                    } catch (java.io.IOException ioex) {
+                        log.warn("ClassPathResource load failed for {}: {}", normalized, ioex.getMessage());
+                    }
+                }
             }
             if (is == null) {
+                log.error("Report template not found: {}", template);
                 throw new RuntimeException("Report template not found: " + template);
             }
             try (InputStream in = is) {
                 JasperReport jasperReport = JasperCompileManager.compileReport(in);
                 JasperPrint print = JasperFillManager.fillReport(jasperReport, safeParams,
                         new JRBeanCollectionDataSource(safeData));
-                return JasperExportManager.exportReportToPdf(print);
+                byte[] out = JasperExportManager.exportReportToPdf(print);
+                if (log.isInfoEnabled()) {
+                    log.info("Report export success: template={}, bytes={}", template, out == null ? 0 : out.length);
+                }
+                return out;
             }
         } catch (JRException | java.io.IOException e) {
+            log.error("Report export failed for template={}: {}", template, e.getMessage(), e);
             throw new RuntimeException(e.getMessage(), e);
         }
     }

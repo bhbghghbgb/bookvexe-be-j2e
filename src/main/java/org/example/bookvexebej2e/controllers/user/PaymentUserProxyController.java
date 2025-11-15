@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
@@ -56,6 +57,13 @@ public class PaymentUserProxyController {
             return new ResponseEntity<>(response.getBody(), proxyHeaders, response.getStatusCode());
         } catch (URISyntaxException e) {
             return ResponseEntity.badRequest().body(("Invalid target URL").getBytes());
+        } catch (HttpStatusCodeException ex) {
+            HttpHeaders proxyHeaders = new HttpHeaders();
+            MediaType contentType = ex.getResponseHeaders() != null ? ex.getResponseHeaders().getContentType() : null;
+            if (contentType != null) {
+                proxyHeaders.setContentType(contentType);
+            }
+            return new ResponseEntity<>(ex.getResponseBodyAsByteArray(), proxyHeaders, ex.getStatusCode());
         } catch (RestClientException ex) {
             return ResponseEntity.status(502).body(("Upstream payment-service error: " + ex.getMessage()).getBytes());
         }
