@@ -19,14 +19,10 @@ public interface PaymentMapper {
 
     PaymentSelectResponse toSelectResponse(PaymentDbModel entity);
 
-    // Shallow mapping for Booking (ignores payment back-ref)
     @Named("mapBookingShallow")
-    @Mapping(target = "payment", ignore = true)  // Break cycle here
     BookingResponse bookingDbModelToBookingResponse(BookingDbModel booking);
 
-    // Shallow mapping for Invoice (ignores payment back-ref)
     @Named("mapInvoiceShallow")
-    @Mapping(target = "payment", ignore = true)  // Break cycle here
     InvoiceResponse invoiceDbModelToInvoiceResponse(InvoiceDbModel invoice);
 
     @AfterMapping

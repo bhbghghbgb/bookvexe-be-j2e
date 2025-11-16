@@ -1,19 +1,16 @@
 package org.example.bookvexebej2e.models.dto.booking;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.example.bookvexebej2e.models.dto.base.BasePermissionResponse;
+import org.example.bookvexebej2e.models.dto.customer.CustomerResponse;
+import org.example.bookvexebej2e.models.dto.trip.TripResponse;
+import org.example.bookvexebej2e.models.dto.trip.TripStopResponse;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.example.bookvexebej2e.models.dto.customer.CustomerResponse;
-import org.example.bookvexebej2e.models.dto.payment.PaymentResponse;
-import org.example.bookvexebej2e.models.dto.trip.TripResponse;
-import org.example.bookvexebej2e.models.dto.trip.TripStopResponse;
-
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.example.bookvexebej2e.models.dto.base.BasePermissionResponse;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -24,8 +21,6 @@ public class BookingResponse extends BasePermissionResponse {
     private CustomerResponse customer;
     private TripResponse trip;
     private List<BookingSeatResponse> bookingSeats;
-    @JsonIgnoreProperties("booking")
-    private PaymentResponse payment;
     private TripStopResponse pickupStop;
     private TripStopResponse dropoffStop;
     private String bookingStatus;
