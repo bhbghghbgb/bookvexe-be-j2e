@@ -4,6 +4,7 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.bookvexebej2e.configs.SecurityUtils;
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.BookingUserMapper;
 import org.example.bookvexebej2e.models.constant.BookingStatus;
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -46,6 +48,7 @@ public class BookingUserServiceImpl implements BookingUserService {
     private final TripStopRepository tripStopRepository;
     private final CarSeatRepository carSeatRepository;
     private final NotificationService notificationService;
+    private final SecurityUtils security;
     private final BookingUserMapper bookingUserMapper;
     private final PasswordEncoder passwordEncoder; // ✅ Thêm encoder
 
@@ -187,7 +190,9 @@ public class BookingUserServiceImpl implements BookingUserService {
         try {
             // Determine if this is a guest booking (no authenticated user)
             CustomerDbModel customer2 = savedBooking.getCustomer();
-            UUID userId = null;
+            UUID userId = Optional.ofNullable(security.getCurrentUserEntity())
+                .map(UserDbModel::getId)
+                .orElse(null);
             String customerEmail = customer2.getEmail();
 
             if (userId != null) {
