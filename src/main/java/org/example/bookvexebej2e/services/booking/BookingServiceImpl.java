@@ -1,8 +1,10 @@
 package org.example.bookvexebej2e.services.booking;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.helpers.api.PaymentClient;
 import org.example.bookvexebej2e.helpers.dto.PaymentDto;
@@ -34,11 +36,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
- 
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Booking Service Implementation
@@ -106,7 +106,8 @@ public class BookingServiceImpl implements BookingService {
 
         if (createDto.getCode() != null && !createDto.getCode().isEmpty()) {
             bookingRepository.findByCode(createDto.getCode()).ifPresent(existingCarType -> {
-                throw new IllegalStateException("Không thể tạo đặt xe vì mã đặt xe '" + createDto.getCode() + "' đã tồn tại trong hệ thống");
+                throw new IllegalStateException(
+                        "Không thể tạo đặt xe vì mã đặt xe '" + createDto.getCode() + "' đã tồn tại trong hệ thống");
             });
         }
 
@@ -152,20 +153,20 @@ public class BookingServiceImpl implements BookingService {
         try {
             UUID userId = userRepository.findByCustomerId(savedEntity.getCustomer()
                     .getId())
-                .orElseThrow().getId();
+                    .orElseThrow().getId();
             String message = String.format("Đặt chỗ %s đã được tạo thành công. Trạng thái: %s",
-                savedEntity.getCode(), savedEntity.getBookingStatus());
+                    savedEntity.getCode(), savedEntity.getBookingStatus());
 
             notificationService.sendNotification(
-                userId,
-                "TYPE_BOOKING_CREATED",
-                "Đặt chỗ mới",
-                message,
-                savedEntity.getId(),
-                savedEntity.getTrip().getId(),
-                "CHANNEL_BOOKING",
-                true, // sendEmail
-                true  // shouldSave
+                    userId,
+                    "TYPE_BOOKING_CREATED",
+                    "Đặt chỗ mới",
+                    message,
+                    savedEntity.getId(),
+                    savedEntity.getTrip().getId(),
+                    "CHANNEL_BOOKING",
+                    true, // sendEmail
+                    true // shouldSave
             );
         } catch (Exception e) {
             log.warn("Failed to send notification for booking creation: {}", e.getMessage());
@@ -179,12 +180,12 @@ public class BookingServiceImpl implements BookingService {
         BookingDbModel entity = bookingRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, id));
 
-
         // Check for duplicate code (excluding current entity)
         if (updateDto.getCode() != null && !updateDto.getCode().isEmpty()) {
             bookingRepository.findByCode(updateDto.getCode()).ifPresent(existingCarType -> {
                 if (!existingCarType.getId().equals(id)) {
-                    throw new IllegalStateException("Không thể cập nhật đặt xe vì mã đặt xe '" + updateDto.getCode() + "' đã tồn tại trong hệ thống");
+                    throw new IllegalStateException("Không thể cập nhật đặt xe vì mã đặt xe '" + updateDto.getCode()
+                            + "' đã tồn tại trong hệ thống");
                 }
             });
         }
@@ -307,10 +308,10 @@ public class BookingServiceImpl implements BookingService {
 
         // Validate current status and confirm booking
         if (!(BookingStatus.NEW.equals(entity.getBookingStatus())
-            || BookingStatus.AWAIT_PAYMENT.equals(entity.getBookingStatus()))) {
+                || BookingStatus.AWAIT_PAYMENT.equals(entity.getBookingStatus()))) {
             throw new IllegalStateException(
-                "Booking can only be confirmed when status is 'new' or 'await_payment'. Current status: "
-                    + entity.getBookingStatus());
+                    "Booking can only be confirmed when status is 'new' or 'await_payment'. Current status: "
+                            + entity.getBookingStatus());
         }
 
         // Update all related booking seats from RESERVED to BOOKED so that
@@ -332,23 +333,20 @@ public class BookingServiceImpl implements BookingService {
         try {
             UUID userId = userRepository.findByCustomerId(savedEntity.getCustomer()
                     .getId())
-                .orElseThrow().getId();
-            String statusMessage = BookingStatus.AWAIT_PAYMENT.equals(savedEntity.getBookingStatus())
-                ? "chờ thanh toán" : "chờ khởi hành";
-            String message = String.format("Đặt chỗ %s đã được xác nhận. Trạng thái: %s",
-                savedEntity.getCode(), statusMessage);
+                    .orElseThrow().getId();
+            String message = String.format("Đặt chỗ %s đã được xác nhận. Trạng thái: chờ khởi hành",
+                    savedEntity.getCode());
 
             notificationService.sendNotification(
-                userId,
-                "TYPE_BOOKING_CONFIRMED",
-                "Xác nhận đặt chỗ",
-                message,
-                savedEntity.getId(),
-                savedEntity.getTrip().getId(),
-                "CHANNEL_BOOKING",
-                true,
-                true
-            );
+                    userId,
+                    "TYPE_BOOKING_CONFIRMED",
+                    "Xác nhận đặt chỗ",
+                    message,
+                    savedEntity.getId(),
+                    savedEntity.getTrip().getId(),
+                    "CHANNEL_BOOKING",
+                    true,
+                    true);
         } catch (Exception e) {
             log.warn("Failed to send notification for booking confirmation: {}", e.getMessage());
         }
@@ -378,21 +376,20 @@ public class BookingServiceImpl implements BookingService {
         try {
             UUID userId = userRepository.findByCustomerId(savedEntity.getCustomer()
                     .getId())
-                .orElseThrow().getId();
+                    .orElseThrow().getId();
             String message = String.format("Chuyến đi cho đặt chỗ %s đã hoàn thành. Cảm ơn bạn đã sử dụng dịch vụ!",
-                savedEntity.getCode());
+                    savedEntity.getCode());
 
             notificationService.sendNotification(
-                userId,
-                "TYPE_TRIP_COMPLETED",
-                "Chuyến đi hoàn thành",
-                message,
-                savedEntity.getId(),
-                savedEntity.getTrip().getId(),
-                "CHANNEL_BOOKING",
-                true,
-                true
-            );
+                    userId,
+                    "TYPE_TRIP_COMPLETED",
+                    "Chuyến đi hoàn thành",
+                    message,
+                    savedEntity.getId(),
+                    savedEntity.getTrip().getId(),
+                    "CHANNEL_BOOKING",
+                    true,
+                    true);
         } catch (Exception e) {
             log.warn("Failed to send notification for trip completion: {}", e.getMessage());
         }
@@ -403,7 +400,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingResponse cancelBooking(UUID id) {
         BookingDbModel entity = bookingRepository.findByIdAndNotDeleted(id)
-            .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, id));
+                .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, id));
 
         entity.setBookingStatus(BookingStatus.CANCELLED);
         BookingDbModel savedEntity = bookingRepository.save(entity);
@@ -412,20 +409,19 @@ public class BookingServiceImpl implements BookingService {
         try {
             UUID userId = userRepository.findByCustomerId(savedEntity.getCustomer()
                     .getId())
-                .orElseThrow().getId();
+                    .orElseThrow().getId();
             String message = String.format("Đặt chỗ %s đã được hủy.", savedEntity.getCode());
 
             notificationService.sendNotification(
-                userId,
-                "TYPE_BOOKING_CANCELLED",
-                "Hủy đặt chỗ",
-                message,
-                savedEntity.getId(),
-                savedEntity.getTrip().getId(),
-                "CHANNEL_BOOKING",
-                true,
-                true
-            );
+                    userId,
+                    "TYPE_BOOKING_CANCELLED",
+                    "Hủy đặt chỗ",
+                    message,
+                    savedEntity.getId(),
+                    savedEntity.getTrip().getId(),
+                    "CHANNEL_BOOKING",
+                    true,
+                    true);
         } catch (Exception e) {
             log.warn("Failed to send notification for booking cancellation: {}", e.getMessage());
         }

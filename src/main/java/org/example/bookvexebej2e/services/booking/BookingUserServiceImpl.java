@@ -4,6 +4,7 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.bookvexebej2e.configs.SecurityUtils;
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.BookingUserMapper;
 import org.example.bookvexebej2e.models.constant.BookingStatus;
@@ -30,8 +31,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -48,6 +49,8 @@ public class BookingUserServiceImpl implements BookingUserService {
     private final NotificationService notificationService;
     private final BookingUserMapper bookingUserMapper;
     private final PasswordEncoder passwordEncoder;
+    private final SecurityUtils security;
+    private final org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
 
     /**
      * Search booking by code, phone, or name
@@ -84,7 +87,8 @@ public class BookingUserServiceImpl implements BookingUserService {
 
                 return bookingUserMapper.toResponse(booking);
             } else {
-                throw new IllegalArgumentException("Không tìm thấy vé đặt xe với mã vé: " + searchRequest.getBookingCode());
+                throw new IllegalArgumentException(
+                        "Không tìm thấy vé đặt xe với mã vé: " + searchRequest.getBookingCode());
             }
         }
 
@@ -109,7 +113,8 @@ public class BookingUserServiceImpl implements BookingUserService {
                 }
                 return bookingUserMapper.toResponse(booking);
             } else {
-                throw new IllegalArgumentException("Không tìm thấy vé đặt xe với số điện thoại: " + searchRequest.getCustomerPhone());
+                throw new IllegalArgumentException(
+                        "Không tìm thấy vé đặt xe với số điện thoại: " + searchRequest.getCustomerPhone());
             }
         }
 
@@ -150,7 +155,7 @@ public class BookingUserServiceImpl implements BookingUserService {
         TripStopDbModel dropoffStop = tripStopRepository.findById(createDto.getDropoffStopId())
                 .orElseThrow(() -> new ResourceNotFoundException(TripStopDbModel.class, createDto.getDropoffStopId()));
 
-        // 3. Create booking with AWAIT_PAYMENT status (seats are held, not booked yet)
+        // 3. Create booking with appropriate status based on payment type
         BookingDbModel booking = new BookingDbModel();
         booking.setCode(generateBookingCode());
         booking.setType(createDto.getType());
@@ -158,7 +163,14 @@ public class BookingUserServiceImpl implements BookingUserService {
         booking.setTrip(trip);
         booking.setPickupStop(pickupStop);
         booking.setDropoffStop(dropoffStop);
-        booking.setBookingStatus(BookingStatus.AWAIT_PAYMENT); // Change from NEW to AWAIT_PAYMENT
+
+        // Cash payments are immediately confirmed, others await payment
+        if ("CASH".equalsIgnoreCase(createDto.getType())) {
+            booking.setBookingStatus(BookingStatus.AWAIT_GO); // Cash payments are confirmed immediately
+        } else {
+            booking.setBookingStatus(BookingStatus.AWAIT_PAYMENT); // Online payments need confirmation
+        }
+
         booking.setTotalPrice(createDto.getTotalPrice());
 
         BookingDbModel savedBooking = bookingUserRepository.save(booking);
@@ -174,7 +186,14 @@ public class BookingUserServiceImpl implements BookingUserService {
                 bookingSeat.setCode(generateBookingSeatCode());
                 bookingSeat.setBooking(savedBooking);
                 bookingSeat.setSeat(seat);
-                bookingSeat.setStatus(SeatStatus.RESERVED); // Use RESERVED instead of BOOKED
+
+                // Set seat status based on payment type
+                if ("CASH".equalsIgnoreCase(createDto.getType())) {
+                    bookingSeat.setStatus(SeatStatus.BOOKED); // Cash payments - seats are immediately booked
+                } else {
+                    bookingSeat.setStatus(SeatStatus.RESERVED); // Online payments - seats are reserved until payment
+                }
+
                 bookingSeat.setPrice(seatCreate.getPrice());
 
                 bookingSeats.add(bookingSeat);
@@ -183,47 +202,79 @@ public class BookingUserServiceImpl implements BookingUserService {
             savedBooking.setBookingSeats(bookingSeats);
         }
 
-        // ADD NOTIFICATION: Booking Created (async, do not block booking response)
-        CompletableFuture.runAsync(() -> {
+        // Broadcast seat status changes for cash payments (seats are immediately
+        // BOOKED)
+        if ("CASH".equalsIgnoreCase(createDto.getType()) && createDto.getBookingSeats() != null
+                && !createDto.getBookingSeats().isEmpty()) {
             try {
-                // Determine if this is a guest booking (no authenticated user)
-                CustomerDbModel customer2 = savedBooking.getCustomer();
-                UUID userId = null;
-                String customerEmail = customer2.getEmail();
+                List<String> seatIds = createDto.getBookingSeats().stream()
+                        .map(seat -> seat.getSeatId().toString())
+                        .collect(java.util.stream.Collectors.toList());
 
-                if (userId != null) {
-                    // Registered user - can save notification and send WebSocket
-                    notificationService.sendNotification(
+                // Get car ID from the first seat (all seats should be from the same car)
+                CarSeatDbModel firstSeat = carSeatRepository.findById(createDto.getBookingSeats().get(0).getSeatId())
+                        .orElse(null);
+
+                if (firstSeat != null) {
+                    // Broadcast that these seats are now BOOKED (not just reserved)
+                    org.example.bookvexebej2e.models.dto.seat.SeatUpdatePayload payload = new org.example.bookvexebej2e.models.dto.seat.SeatUpdatePayload();
+                    payload.setTripId(createDto.getTripId().toString());
+                    payload.setCarId(firstSeat.getCar().getId().toString());
+                    payload.setSeatIds(seatIds);
+                    payload.setAction("book"); // Custom action for booked seats
+                    payload.setBy("CASH_PAYMENT");
+
+                    // Use messaging template to broadcast
+                    String topic = "/topic/seats/" + payload.getTripId() + "/" + payload.getCarId();
+                    messagingTemplate.convertAndSend(topic, payload);
+                    log.info("Broadcasted BOOKED seats for cash payment: {}", seatIds);
+                }
+            } catch (Exception e) {
+                log.warn("Failed to broadcast seat booking status: {}", e.getMessage());
+            }
+        }
+
+        // ADD NOTIFICATION: Booking Created
+        try {
+            // Determine if this is a guest booking (no authenticated user)
+            CustomerDbModel customer2 = savedBooking.getCustomer();
+            UUID userId = Optional.ofNullable(security.getCurrentUserEntity())
+                .map(UserDbModel::getId)
+                .orElse(null);
+            String customerEmail = customer2.getEmail();
+
+            if (userId != null) {
+                // Registered user - can save notification and send WebSocket
+                notificationService.sendNotification(
                         userId,
                         "TYPE_BOOKING_CREATED",
                         "Đặt vé thành công",
                         "Bạn đã đặt vé thành công. Mã đặt vé: " + savedBooking.getCode() +
-                            ". Vui lòng thanh toán để hoàn tất.",
+                                ". Vui lòng thanh toán để hoàn tất.",
                         savedBooking.getId(),
                         savedBooking.getTrip().getId(),
                         "APP",
-                        true,  // sendEmail
-                        true   // shouldSave
-                    );
-                } else {
-                    // Guest user - can only send email
-                    notificationService.sendGuestNotification(
+                        true, // sendEmail
+                        true // shouldSave
+                );
+            } else {
+                // Guest user - can only send email
+                notificationService.sendGuestNotification(
                         customerEmail,
                         "TYPE_BOOKING_CREATED",
                         "Đặt vé thành công",
                         "Bạn đã đặt vé thành công. Mã đặt vé: " + savedBooking.getCode() +
-                            ". Vui lòng thanh toán để hoàn tất.",
+                                ". Vui lòng thanh toán để hoàn tất.",
                         savedBooking.getId(),
                         savedBooking.getTrip().getId(),
                         "EMAIL",
-                        true,  // sendEmail
-                        false  // shouldSave - cannot save without user
-                    );
-                }
-            } catch (Exception e) {
-                log.error("Failed to send booking creation notification: {}", e.getMessage(), e);
+                        true, // sendEmail
+                        false // shouldSave - cannot save without user
+                );
             }
-        });
+        } catch (Exception e) {
+            log.error("Failed to send booking creation notification: {}", e.getMessage(), e);
+        }
 
         return bookingUserMapper.toResponse(savedBooking);
     }
