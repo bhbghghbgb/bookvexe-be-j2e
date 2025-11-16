@@ -1,26 +1,16 @@
 package org.example.bookvexebej2e.services.booking;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
+import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.example.bookvexebej2e.configs.SecurityUtils;
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.BookingUserMapper;
 import org.example.bookvexebej2e.models.constant.BookingStatus;
 import org.example.bookvexebej2e.models.constant.SeatStatus;
-import org.example.bookvexebej2e.models.db.BookingDbModel;
-import org.example.bookvexebej2e.models.db.BookingSeatDbModel;
-import org.example.bookvexebej2e.models.db.CarSeatDbModel;
-import org.example.bookvexebej2e.models.db.CustomerDbModel;
-import org.example.bookvexebej2e.models.db.TripDbModel;
-import org.example.bookvexebej2e.models.db.TripStopDbModel;
-import org.example.bookvexebej2e.models.db.UserDbModel;
-import org.example.bookvexebej2e.models.dto.booking.BookingQuery;
-import org.example.bookvexebej2e.models.dto.booking.BookingResponse;
-import org.example.bookvexebej2e.models.dto.booking.BookingSearchRequest;
-import org.example.bookvexebej2e.models.dto.booking.BookingSeatCreate;
-import org.example.bookvexebej2e.models.dto.booking.BookingUserCreate;
+import org.example.bookvexebej2e.models.db.*;
+import org.example.bookvexebej2e.models.dto.booking.*;
 import org.example.bookvexebej2e.repositories.booking.BookingSeatRepository;
 import org.example.bookvexebej2e.repositories.booking.BookingUserRepository;
 import org.example.bookvexebej2e.repositories.car.CarSeatRepository;
@@ -39,10 +29,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import jakarta.persistence.criteria.Predicate;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -59,6 +50,7 @@ public class BookingUserServiceImpl implements BookingUserService {
     private final NotificationService notificationService;
     private final BookingUserMapper bookingUserMapper;
     private final PasswordEncoder passwordEncoder;
+    private final SecurityUtils security;
     private final org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
 
     /**
@@ -248,7 +240,9 @@ public class BookingUserServiceImpl implements BookingUserService {
             try {
                 // Determine if this is a guest booking (no authenticated user)
                 CustomerDbModel customer2 = savedBooking.getCustomer();
-                UUID userId = null;
+                UUID userId = Optional.ofNullable(security.getCurrentUserEntity())
+                    .map(UserDbModel::getId)
+                    .orElse(null);
                 String customerEmail = customer2.getEmail();
 
                 if (userId != null) {
