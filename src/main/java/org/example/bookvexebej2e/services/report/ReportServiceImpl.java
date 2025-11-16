@@ -50,95 +50,14 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public List<RevenuePointResponse> revenueTime(RevenueFilter filter) {
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Object[]> cq = cb.createQuery(Object[].class);
-        Root<org.example.bookvexebej2e.models.db.PaymentDbModel> p = cq.from(org.example.bookvexebej2e.models.db.PaymentDbModel.class);
-
-        // DATE(p.paidAt)
-        Expression<String> dateExpr = cb.function("TO_CHAR", String.class, p.get("paidAt"), cb.literal("YYYY-MM-DD"));
-
-        List<Predicate> predicates = new ArrayList<>();
-        // not deleted (treat NULL as not-deleted too)
-        predicates.add(cb.or(cb.isFalse(p.get("isDeleted")), cb.isNull(p.get("isDeleted"))));
-
-        // status default SUCCESS if not provided
-        if (filter.getStatus() != null && !filter.getStatus().isEmpty()) {
-            predicates.add(cb.equal(p.get("status"), filter.getStatus()));
-        } else {
-            predicates.add(cb.equal(p.get("status"), "SUCCESS"));
-        }
-
-        // date range on paidAt
-        if (filter.getStartDate() != null && filter.getEndDate() != null) {
-            predicates.add(cb.between(p.get("paidAt"), startOfDay(filter.getStartDate()), endOfDay(filter.getEndDate())));
-        }
-
-        // joins optional
-        if (filter.getRouteId() != null) {
-            Join<?, ?> b = p.join("booking");
-            Join<?, ?> t = b.join("trip");
-            Join<?, ?> r = t.join("route");
-            predicates.add(cb.equal(r.get("id"), filter.getRouteId()));
-        }
-        if (filter.getMethodId() != null) {
-            Join<?, ?> m = p.join("method");
-            predicates.add(cb.equal(m.get("id"), filter.getMethodId()));
-        }
-
-        cq.multiselect(dateExpr, cb.sum(p.get("amount")), cb.count(p.get("id")))
-          .where(predicates.toArray(new Predicate[0]))
-          .groupBy(dateExpr)
-          .orderBy(cb.asc(dateExpr));
-
-        TypedQuery<Object[]> query = em.createQuery(cq);
-        List<Object[]> rows = query.getResultList();
-        List<RevenuePointResponse> result = new ArrayList<>();
-        for (Object[] r : rows) {
-            String date = (String) r[0];
-            BigDecimal total = (BigDecimal) r[1];
-            Long cnt = (Long) r[2];
-            result.add(new RevenuePointResponse(date, total == null ? BigDecimal.ZERO : total, cnt == null ? 0L : cnt));
-        }
-        return result;
+        // Payment has been extracted to a separate service; this monolith no longer aggregates payment revenue.
+        return new ArrayList<>();
     }
 
     @Override
     public List<RevenueByMethodResponse> revenueByMethod(RevenueFilter filter) {
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Object[]> cq = cb.createQuery(Object[].class);
-        Root<org.example.bookvexebej2e.models.db.PaymentDbModel> p = cq.from(org.example.bookvexebej2e.models.db.PaymentDbModel.class);
-        Join<?, ?> m = p.join("method");
-
-        List<Predicate> predicates = new ArrayList<>();
-        predicates.add(cb.or(cb.isFalse(p.get("isDeleted")), cb.isNull(p.get("isDeleted"))));
-        if (filter.getStatus() != null && !filter.getStatus().isEmpty()) {
-            predicates.add(cb.equal(p.get("status"), filter.getStatus()));
-        } else {
-            predicates.add(cb.equal(p.get("status"), "SUCCESS"));
-        }
-        if (filter.getStartDate() != null && filter.getEndDate() != null) {
-            predicates.add(cb.between(p.get("paidAt"), startOfDay(filter.getStartDate()), endOfDay(filter.getEndDate())));
-        }
-        if (filter.getRouteId() != null) {
-            Join<?, ?> b = p.join("booking");
-            Join<?, ?> t = b.join("trip");
-            Join<?, ?> r = t.join("route");
-            predicates.add(cb.equal(r.get("id"), filter.getRouteId()));
-        }
-
-        cq.multiselect(m.get("name"), cb.sum(p.get("amount")))
-          .where(predicates.toArray(new Predicate[0]))
-          .groupBy(m.get("name"))
-          .orderBy(cb.desc(cb.sum(p.get("amount"))));
-
-        List<Object[]> rows = em.createQuery(cq).getResultList();
-        List<RevenueByMethodResponse> result = new ArrayList<>();
-        for (Object[] r : rows) {
-            String method = (String) r[0];
-            BigDecimal total = (BigDecimal) r[1];
-            result.add(new RevenueByMethodResponse(method, total == null ? BigDecimal.ZERO : total));
-        }
-        return result;
+        // Payment has been extracted to a separate service; this monolith no longer aggregates payment revenue by method.
+        return new ArrayList<>();
     }
 
     @Override

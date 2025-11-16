@@ -1,4 +1,4 @@
-﻿security:
+security:
   admin:
     allow-all: true
 
@@ -84,7 +84,9 @@ logging:
 
 server:
   port: 5181
-
+#  servlet:
+#    context-path: /bookvexe-be-j2e
+    
 app:
   email:
     sender: nguyendinhthongdhsg@gmail.com
@@ -95,14 +97,10 @@ app:
     refresh-expiration:
       ms: 604800000 # 7 days
 
-vnpay:
-  tmnCode: VWJ2IOSO
-  hashSecret: AMFRNXTX77SU7EBXP68PFQMLEQ204X2P
-  payUrl: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
-  returnUrl: https://unsuccinctly-unadhering-zenaida.ngrok-free.dev/api/vnpay-return
-  ipnUrl: https://unsuccinctly-unadhering-zenaida.ngrok-free.dev/api/vnpay-ipn
-  frontendReturnUrl: http://localhost:5173/payment/vnpay-return
-
 chat:
   service:
     url: http://localhost:5182
+
+services:
+  payment-service:
+    url: http://localhost:8084
