@@ -4,11 +4,13 @@ import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
+import org.example.bookvexebej2e.helpers.api.PaymentClient;
+import org.example.bookvexebej2e.helpers.dto.PaymentDto;
 import org.example.bookvexebej2e.mappers.BookingMapper;
 import org.example.bookvexebej2e.models.constant.BookingStatus;
-import org.example.bookvexebej2e.models.db.*;
-import org.example.bookvexebej2e.models.dto.booking.*;
+import org.example.bookvexebej2e.models.constant.SeatStatus;
 import org.example.bookvexebej2e.models.db.BookingDbModel;
+import org.example.bookvexebej2e.models.db.BookingSeatDbModel;
 import org.example.bookvexebej2e.models.db.CustomerDbModel;
 import org.example.bookvexebej2e.models.db.TripDbModel;
 import org.example.bookvexebej2e.models.db.TripStopDbModel;
@@ -18,9 +20,8 @@ import org.example.bookvexebej2e.models.dto.booking.BookingResponse;
 import org.example.bookvexebej2e.models.dto.booking.BookingSeatCreate;
 import org.example.bookvexebej2e.models.dto.booking.BookingSelectResponse;
 import org.example.bookvexebej2e.models.dto.booking.BookingUpdate;
-import org.example.bookvexebej2e.helpers.api.PaymentClient;
-import org.example.bookvexebej2e.helpers.dto.PaymentDto;
 import org.example.bookvexebej2e.repositories.booking.BookingRepository;
+import org.example.bookvexebej2e.repositories.booking.BookingSeatRepository;
 import org.example.bookvexebej2e.repositories.customer.CustomerRepository;
 import org.example.bookvexebej2e.repositories.trip.TripRepository;
 import org.example.bookvexebej2e.repositories.trip.TripStopRepository;
@@ -56,6 +57,7 @@ public class BookingServiceImpl implements BookingService {
     private final BookingSeatService bookingSeatService;
     private final BookingMapper bookingMapper;
     private final PaymentClient paymentClient;
+    private final BookingSeatRepository bookingSeatRepository;
 
     @Override
     public List<BookingResponse> findAll() {
@@ -309,6 +311,17 @@ public class BookingServiceImpl implements BookingService {
             throw new IllegalStateException(
                 "Booking can only be confirmed when status is 'new' or 'await_payment'. Current status: "
                     + entity.getBookingStatus());
+        }
+
+        // Update all related booking seats from RESERVED to BOOKED so that
+        // they are treated as permanently sold seats
+        if (entity.getBookingSeats() != null && !entity.getBookingSeats().isEmpty()) {
+            for (BookingSeatDbModel bookingSeat : entity.getBookingSeats()) {
+                if (SeatStatus.RESERVED.equals(bookingSeat.getStatus())) {
+                    bookingSeat.setStatus(SeatStatus.BOOKED);
+                }
+            }
+            bookingSeatRepository.saveAll(entity.getBookingSeats());
         }
 
         entity.setBookingStatus(BookingStatus.AWAIT_GO);
