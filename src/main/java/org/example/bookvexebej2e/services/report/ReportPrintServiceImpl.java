@@ -1,6 +1,8 @@
 package org.example.bookvexebej2e.services.report;
 
 import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +35,8 @@ import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 public class ReportPrintServiceImpl implements ReportPrintService {
 
     private final ReportService reportService;
+
+    private static final DateTimeFormatter PRINTED_DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private byte[] exportPdf(String template, Map<String, Object> params, List<?> data) {
         try {
@@ -76,6 +80,14 @@ public class ReportPrintServiceImpl implements ReportPrintService {
                 return out;
             }
         } catch (JRException | java.io.IOException e) {
+            try (java.io.PrintWriter pw = new java.io.PrintWriter(
+                    new java.io.FileWriter("report-errors.txt", true))) {
+                pw.println("=== " + java.time.LocalDateTime.now() + " - template=" + template + " ===");
+                e.printStackTrace(pw);
+                pw.println();
+            } catch (java.io.IOException ioex) {
+                log.warn("Failed to write report error log: {}", ioex.getMessage());
+            }
             log.error("Report export failed for template={}: {}", template, e.getMessage(), e);
             throw new RuntimeException(e.getMessage(), e);
         }
@@ -85,7 +97,12 @@ public class ReportPrintServiceImpl implements ReportPrintService {
     public byte[] printRevenueTime(RevenueFilter filter) {
         List<RevenuePointResponse> rows = reportService.revenueTime(filter);
         Map<String, Object> params = new HashMap<>();
-        params.put("REPORT_TITLE", "Báo cáo Doanh thu theo thời gian");
+        params.put("REPORT_TITLE", "Hệ thống đặt vé xe — Báo cáo doanh thu theo thời gian");
+        params.put("printedDate", LocalDate.now().format(PRINTED_DATE_FMT));
+        params.put("printedBy", filter.getPrintedBy());
+        params.put("fromDate", filter.getStartDate());
+        params.put("toDate", filter.getEndDate());
+        params.put("reportCode", "BC-DT-001");
         return exportPdf("/reports/revenue_time.jrxml", params, rows);
     }
 
@@ -101,7 +118,12 @@ public class ReportPrintServiceImpl implements ReportPrintService {
     public byte[] printBookingsByRoute(BookingsFilter filter) {
         List<BookingsByRouteResponse> rows = reportService.bookingsByRoute(filter);
         Map<String, Object> params = new HashMap<>();
-        params.put("REPORT_TITLE", "Lượt đặt vé theo tuyến");
+        params.put("REPORT_TITLE", "Hệ thống đặt vé xe — Báo cáo lượt đặt vé theo tuyến");
+        params.put("printedDate", LocalDate.now().format(PRINTED_DATE_FMT));
+        params.put("printedBy", filter.getPrintedBy());
+        params.put("fromDate", filter.getStartDate());
+        params.put("toDate", filter.getEndDate());
+        params.put("reportCode", "BC-LDV-003");
         return exportPdf("/reports/bookings_by_route.jrxml", params, rows);
     }
 
@@ -117,7 +139,12 @@ public class ReportPrintServiceImpl implements ReportPrintService {
     public byte[] printTripsStatus(TripsFilter filter) {
         List<TripsStatusResponse> rows = reportService.tripsStatus(filter);
         Map<String, Object> params = new HashMap<>();
-        params.put("REPORT_TITLE", "Tình trạng chuyến chạy / hủy");
+        params.put("REPORT_TITLE", "Hệ thống đặt vé xe — Báo cáo tình trạng chuyến xe — Chạy / Hủy");
+        params.put("printedDate", LocalDate.now().format(PRINTED_DATE_FMT));
+        params.put("printedBy", filter.getPrintedBy());
+        params.put("fromDate", filter.getStartDate());
+        params.put("toDate", filter.getEndDate());
+        params.put("reportCode", "BC-TC-004");
         return exportPdf("/reports/trips_status.jrxml", params, rows);
     }
 

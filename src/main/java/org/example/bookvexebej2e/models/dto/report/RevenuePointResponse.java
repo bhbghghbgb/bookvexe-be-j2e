@@ -13,4 +13,8 @@ public class RevenuePointResponse {
     private String date;
     private BigDecimal totalRevenue;
     private Long transactionCount;
+    private Long successCount;
+    private Long failCount;
+    private Double successRate;
+    private String note;
 }
