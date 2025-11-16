@@ -5,26 +5,14 @@
 spring:
   application:
     name: bookvexe-be-j2e
-
-  #  config:
-  #    import: optional:classpath:application-oauth.yml
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: nguyendinhthongdhsg@gmail.com
-    password: auxhnuproxxopoug
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
+  config:
+    import: optional:classpath:application-oauth.yml
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/bookvexedb_j2e
+    url: jdbc:postgresql://localhost:5441/bookvexedb_j2e
     #    url: jdbc:postgresql://postgres-service:5441/bookvexedb_j2e
-    username: postgres
-    password: root
+    username: root
+    password: nopass
   jpa:
     show-sql: true
     hibernate:
@@ -49,8 +37,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: YOUR_GMAIL_ADDRESS@gmail.com # Replace with your Gmail email
-    password: YOUR_GENERATED_APP_PASSWORD # Replace with your 16-character App Password
+    username: nguyendinhthongdhsg@gmail.com # Replace with your Gmail email
+    password: auxhnuproxxopoug # Replace with your 16-character App Password
     properties:
       mail:
         smtp:
