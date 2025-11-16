@@ -3,6 +3,7 @@ package org.example.bookvexebej2e.services.external;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Strings;
+import org.example.bookvexebej2e.configs.MicroserviceProperties;
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.models.db.UserDbModel;
 import org.example.bookvexebej2e.models.dto.kafka.NotificationKafkaDTO;
@@ -24,6 +25,7 @@ public class WebSocketService {
     private final UserRepository userRepository;
     private final KafkaProducerService kafkaProducerService;
     private final SimpUserRegistry userRegistry;
+    private final MicroserviceProperties microserviceProperties;
 
     /**
      * Sends a real-time event to a specific user's private queue.
@@ -65,6 +67,13 @@ public class WebSocketService {
     }
 
     public void notifyUser(UUID userId, String eventType) {
+        // *** CONDITIONAL CHECK: If notification service is disabled, we stop here. ***
+        if (!microserviceProperties.getNotification().isEnabled()) {
+            log.warn("Notification Microservice is currently DISABLED. Skipping notification attempt. userId={}, eventType={}",
+                userId, eventType);
+            return;
+        }
+
         if (Strings.CI.contains(eventType, "NOTIFICATION")) {
             notifyUserWithKafkaProducer(userId, eventType);
             return;
