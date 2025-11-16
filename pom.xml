@@ -173,6 +173,25 @@
             <artifactId>spring-boot-starter-mail</artifactId>
             <version>3.5.7</version>
         </dependency>
+        <!-- Kafka Producer -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports</artifactId>
+            <version>6.20.0</version>
+        </dependency> 
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports-fonts</artifactId>
+            <version>6.20.0</version>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>

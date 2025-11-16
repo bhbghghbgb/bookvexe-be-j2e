@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.services.auth;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
 import org.example.bookvexebej2e.configs.JwtUtils;
 import org.example.bookvexebej2e.models.db.TokenDbModel;
 import org.example.bookvexebej2e.models.db.UserDbModel;

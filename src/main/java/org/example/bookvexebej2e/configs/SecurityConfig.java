@@ -1,7 +1,8 @@
 package org.example.bookvexebej2e.configs;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Arrays;
+
+import org.example.bookvexebej2e.configs.JwtAuthenticationFilter;
 import org.example.bookvexebej2e.services.auth.AuthUserDetailsService;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,8 +24,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
-import java.util.Collections;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @RequiredArgsConstructor
@@ -39,7 +40,6 @@ public class SecurityConfig {
 
     @Value("${security.admin.allow-all:false}")
     private boolean allowAllAdminAccess;
-
 
     /**
      * Defines the authentication mechanism using DAO (Database Access Object)
@@ -66,7 +66,7 @@ public class SecurityConfig {
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
-                                           ObjectProvider<ClientRegistrationRepository> clientRegistrations) throws Exception {
+            ObjectProvider<ClientRegistrationRepository> clientRegistrations) throws Exception {
         http
                 // CORS and CSRF Configuration
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -100,14 +100,16 @@ public class SecurityConfig {
                 })
 
                 // 5. Configure OAuth2 Login (using modern lambda syntax)
-                //            .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/auth/oauth2/success")
-                //                .failureUrl("/auth/oauth2/failure"))
+                // .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl("/auth/oauth2/success")
+                // .failureUrl("/auth/oauth2/failure"))
 
                 // 6. Set the authentication provider
                 .authenticationProvider(authenticationProvider())
 
-                // 7. Add the custom JWT filter BEFORE the standard UsernamePasswordAuthenticationFilter
-                // This ensures JWT processing happens before Spring tries to look for form data/session.
+                // 7. Add the custom JWT filter BEFORE the standard
+                // UsernamePasswordAuthenticationFilter
+                // This ensures JWT processing happens before Spring tries to look for form
+                // data/session.
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         // Only enable oauth2Login if OAuth2 clients are present
@@ -129,11 +131,10 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(Arrays.asList(
-            "http://localhost:5173",  // BMS User
-            "http://localhost:5174",  // BMS Admin
-            "http://localhost:5182",
-            "http://localhost:8080"
-        )); 
+                "http://localhost:5173", // BMS User
+                "http://localhost:5174", // BMS Admin
+                "http://localhost:5182",
+                "http://localhost:8080"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(Arrays.asList("*"));
         config.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
@@ -145,10 +146,12 @@ public class SecurityConfig {
         return source;
     }
 
-    //    // Custom converter to map Keycloak roles
-    //    private Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter() {
-    //        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-    //        converter.setJwtGrantedAuthoritiesConverter(new KeycloakJwtGrantedAuthoritiesConverter());
-    //        return converter;
-    //    }
+    // // Custom converter to map Keycloak roles
+    // private Converter<Jwt, AbstractAuthenticationToken>
+    // jwtAuthenticationConverter() {
+    // JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+    // converter.setJwtGrantedAuthoritiesConverter(new
+    // KeycloakJwtGrantedAuthoritiesConverter());
+    // return converter;
+    // }
 }

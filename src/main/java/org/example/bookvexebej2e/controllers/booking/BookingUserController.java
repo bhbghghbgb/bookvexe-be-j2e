@@ -7,6 +7,7 @@ import org.example.bookvexebej2e.models.dto.booking.BookingQuery;
 import org.example.bookvexebej2e.models.dto.booking.BookingResponse;
 import org.example.bookvexebej2e.models.dto.booking.BookingSearchRequest;
 import org.example.bookvexebej2e.models.dto.booking.BookingUserCreate;
+import org.example.bookvexebej2e.services.booking.BookingService;
 import org.example.bookvexebej2e.services.booking.BookingUserService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class BookingUserController {
     private final BookingUserService bookingUserService;
+    private final BookingService bookingService;
 
     // Tìm kiếm booking theo mã, tên hoặc số điện thoại
     @PostMapping("/search")
@@ -61,15 +63,9 @@ public class BookingUserController {
         return ResponseEntity.ok(bookingUserService.cancelBooking(id));
     }
 
-    // Xác nhận thanh toán booking
-    @PostMapping("/confirm-payment/{id}")
-    public ResponseEntity<BookingResponse> confirmPayment(@PathVariable UUID id) {
-        return ResponseEntity.ok(bookingUserService.confirmPayment(id));
-    }
-
-    // Xác nhận thanh toán booking (khách)
-    @PostMapping("/confirm-payment/guest/{id}")
-    public ResponseEntity<BookingResponse> confirmPaymentGuest(@PathVariable UUID id) {
-        return ResponseEntity.ok(bookingUserService.confirmPaymentGuest(id));
+    // Xác nhận booking sau khi thanh toán (guest/user)
+    @PostMapping("/confirm/{id}")
+    public ResponseEntity<BookingResponse> confirmBooking(@PathVariable UUID id) {
+        return ResponseEntity.ok(bookingService.confirmTrip(id));
     }
 }

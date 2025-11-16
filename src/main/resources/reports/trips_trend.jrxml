@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
+<jasperReport name="trips_trend" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" whenNoDataType="AllSectionsNoDetail" uuid="f6666666-6666-6666-6666-666666666666">
+    <property name="net.sf.jasperreports.default.pdf.font.name" value="DejaVu Sans"/>
+    <property name="net.sf.jasperreports.default.pdf.encoding" value="Identity-H"/>
+    <property name="net.sf.jasperreports.default.pdf.embedded" value="true"/>
+    <parameter name="REPORT_TITLE" class="java.lang.String"/>
+    <field name="date" class="java.lang.String"/>
+    <field name="cancelledTrips" class="java.lang.Long"/>
+    <field name="completedTrips" class="java.lang.Long"/>
+
+    <title>
+        <band height="40">
+            <textField>
+                <reportElement x="0" y="0" width="782" height="30"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="16" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$P{REPORT_TITLE}]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+    <noData>
+        <band height="40">
+            <staticText>
+                <reportElement x="0" y="0" width="782" height="40"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="12" isItalic="true"/>
+                </textElement>
+                <text><![CDATA[Không có dữ liệu cho kỳ lọc này]]></text>
+            </staticText>
+        </band>
+    </noData>
+
+    <columnHeader>
+        <band height="24">
+            <rectangle>
+                <reportElement x="0" y="0" width="782" height="24" backcolor="#F5F5F5" mode="Opaque"/>
+            </rectangle>
+            <staticText>
+                <reportElement x="0" y="0" width="200" height="24"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle"><font isBold="true"/></textElement>
+                <text><![CDATA[Ngày]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="200" y="0" width="291" height="24"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font isBold="true"/></textElement>
+                <text><![CDATA[Đã chạy]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="491" y="0" width="291" height="24"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font isBold="true"/></textElement>
+                <text><![CDATA[Bị hủy]]></text>
+            </staticText>
+        </band>
+    </columnHeader>
+
+    <detail>
+        <band height="20">
+            <textField>
+                <reportElement x="0" y="0" width="200" height="20"/>
+                <textElement verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$F{date}]]></textFieldExpression>
+            </textField>
+            <textField pattern="#,##0">
+                <reportElement x="200" y="0" width="291" height="20"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$F{completedTrips} == null ? 0 : $F{completedTrips}]]></textFieldExpression>
+            </textField>
+            <textField pattern="#,##0">
+                <reportElement x="491" y="0" width="291" height="20"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$F{cancelledTrips} == null ? 0 : $F{cancelledTrips}]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+    <pageFooter>
+        <band height="20">
+            <textField>
+                <reportElement x="0" y="0" width="782" height="20"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA["Trang " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+</jasperReport>

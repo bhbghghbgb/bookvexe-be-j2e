@@ -1,4 +1,4 @@
-﻿security:
+security:
   admin:
     allow-all: true
 
@@ -21,10 +21,10 @@ spring:
             enable: true
 
   datasource:
-    url: jdbc:postgresql://localhost:5441/bookvexedb_j2e
+    url: jdbc:postgresql://localhost:5432/bookvexedb_j2e
     #    url: jdbc:postgresql://postgres-service:5441/bookvexedb_j2e
-    username: root
-    password: nopass
+    username: postgres
+    password: root
   jpa:
     show-sql: true
     hibernate:
@@ -46,6 +46,27 @@ spring:
     compose:
       enabled: false
 
+#  mail:
+#    host: smtp.gmail.com
+#    port: 587
+#    username: YOUR_GMAIL_ADDRESS@gmail.com # Replace with your Gmail email
+#    password: YOUR_GENERATED_APP_PASSWORD # Replace with your 16-character App Password
+#    properties:
+#      mail:
+#        smtp:
+#          auth: true
+#          starttls:
+#            enable: true
+#          ssl:
+#            trust: smtp.gmail.com
+
+  # Kafka Producer Configuration
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
 logging:
   level:
     org:
@@ -63,7 +84,9 @@ logging:
 
 server:
   port: 5181
-
+#  servlet:
+#    context-path: /bookvexe-be-j2e
+    
 app:
   email:
     sender: nguyendinhthongdhsg@gmail.com
@@ -74,14 +97,10 @@ app:
     refresh-expiration:
       ms: 604800000 # 7 days
 
-vnpay:
-  tmnCode: VWJ2IOSO
-  hashSecret: AMFRNXTX77SU7EBXP68PFQMLEQ204X2P
-  payUrl: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
-  returnUrl: https://unsuccinctly-unadhering-zenaida.ngrok-free.dev/api/vnpay-return
-  ipnUrl: https://unsuccinctly-unadhering-zenaida.ngrok-free.dev/api/vnpay-ipn
-  frontendReturnUrl: http://localhost:5173/payment/vnpay-return
-
 chat:
   service:
     url: http://localhost:5182
+
+services:
+  payment-service:
+    url: http://localhost:8084

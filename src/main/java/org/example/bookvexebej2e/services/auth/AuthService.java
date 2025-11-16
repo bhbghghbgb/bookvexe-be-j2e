@@ -3,6 +3,7 @@ package org.example.bookvexebej2e.services.auth;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.example.bookvexebej2e.configs.JwtUtils;
 import org.example.bookvexebej2e.exceptions.UnauthorizedException;
 import org.example.bookvexebej2e.models.db.CustomerDbModel;
