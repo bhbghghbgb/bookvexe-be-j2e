@@ -111,6 +111,7 @@ public class DataSeeder {
                 new Object[]{"TYPE_PAYMENT_SUCCESS", "Payment Successful", "Notification when payment is successful"},
                 new Object[]{"TYPE_PAYMENT_FAILED", "Payment Failed", "Notification when payment fails"},
                 new Object[]{"TYPE_PAYMENT_PENDING", "Payment Pending", "Notification when payment is pending"},
+                new Object[]{"TYPE_PAYMENT_STATUS_CHANGED", "Payment Status Changed", "Notification when payment status is changed"},
                 new Object[]{"TRIP_DEPARTURE_REMINDER", "Departure Reminder", "Reminder notification before trip departure"},
                 new Object[]{"TRIP_SCHEDULE_CHANGE", "Schedule Change", "Notification when trip schedule changes"},
                 new Object[]{"TRIP_CANCELLED", "Trip Cancelled", "Notification when a trip is cancelled"},

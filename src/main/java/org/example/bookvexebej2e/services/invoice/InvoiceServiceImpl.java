@@ -7,20 +7,23 @@ import java.util.UUID;
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.InvoiceMapper;
 import org.example.bookvexebej2e.models.db.InvoiceDbModel;
-import org.example.bookvexebej2e.models.db.PaymentDbModel;
 import org.example.bookvexebej2e.models.dto.invoice.InvoiceCreate;
 import org.example.bookvexebej2e.models.dto.invoice.InvoiceQuery;
 import org.example.bookvexebej2e.models.dto.invoice.InvoiceResponse;
 import org.example.bookvexebej2e.models.dto.invoice.InvoiceSelectResponse;
 import org.example.bookvexebej2e.models.dto.invoice.InvoiceUpdate;
 import org.example.bookvexebej2e.repositories.invoice.InvoiceRepository;
-import org.example.bookvexebej2e.repositories.payment.PaymentRepository;
+import org.example.bookvexebej2e.helpers.api.PaymentClient;
+import org.example.bookvexebej2e.helpers.dto.PaymentDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -30,8 +33,8 @@ import lombok.RequiredArgsConstructor;
 public class InvoiceServiceImpl implements InvoiceService {
 
     private final InvoiceRepository invoiceRepository;
-    private final PaymentRepository paymentRepository;
     private final InvoiceMapper invoiceMapper;
+    private final PaymentClient paymentClient;
 
     @Override
     public List<InvoiceResponse> findAll() {
@@ -62,10 +65,10 @@ public class InvoiceServiceImpl implements InvoiceService {
         entity.setInvoiceNumber(createDto.getInvoiceNumber());
         entity.setFileUrl(createDto.getFileUrl());
         entity.setIssuedAt(createDto.getIssuedAt());
-
-        PaymentDbModel payment = paymentRepository.findById(createDto.getPaymentId())
-                .orElseThrow(() -> new ResourceNotFoundException(PaymentDbModel.class, createDto.getPaymentId()));
-        entity.setPayment(payment);
+        if (createDto.getPaymentId() != null) {
+            ensurePaymentExists(createDto.getPaymentId());
+            entity.setPaymentId(createDto.getPaymentId());
+        }
 
         InvoiceDbModel savedEntity = invoiceRepository.save(entity);
         return invoiceMapper.toResponse(savedEntity);
@@ -81,9 +84,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         entity.setIssuedAt(updateDto.getIssuedAt());
 
         if (updateDto.getPaymentId() != null) {
-            PaymentDbModel payment = paymentRepository.findById(updateDto.getPaymentId())
-                    .orElseThrow(() -> new ResourceNotFoundException(PaymentDbModel.class, updateDto.getPaymentId()));
-            entity.setPayment(payment);
+            ensurePaymentExists(updateDto.getPaymentId());
+            entity.setPaymentId(updateDto.getPaymentId());
         }
 
         InvoiceDbModel updatedEntity = invoiceRepository.save(entity);
@@ -133,8 +135,7 @@ public class InvoiceServiceImpl implements InvoiceService {
             // Remove the isDeleted filter to show all records including deleted ones
 
             if (query.getPaymentId() != null) {
-                predicates.add(cb.equal(root.get("payment")
-                        .get("id"), query.getPaymentId()));
+                predicates.add(cb.equal(root.get("paymentId"), query.getPaymentId()));
             }
             if (query.getInvoiceNumber() != null && !query.getInvoiceNumber()
                     .isEmpty()) {
@@ -144,6 +145,19 @@ public class InvoiceServiceImpl implements InvoiceService {
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };
+    }
+
+    private void ensurePaymentExists(UUID paymentId) {
+        try {
+            PaymentDto dto = paymentClient.findById(paymentId);
+            if (dto == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Payment not found with id: " + paymentId);
+            }
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Failed to verify payment: " + ex.getMessage());
+        }
     }
 
     private Pageable buildPageable(InvoiceQuery query) {

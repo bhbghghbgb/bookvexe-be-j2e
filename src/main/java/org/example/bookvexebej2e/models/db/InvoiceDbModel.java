@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "invoices")
@@ -13,9 +14,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @ToString
 public class InvoiceDbModel extends BaseModel {
-    @OneToOne
-    @JoinColumn(name = "paymentId")
-    private PaymentDbModel payment;
+    @Column(name = "payment_id")
+    private UUID paymentId;
 
     @Column(length = 50, unique = true, name = "invoiceNumber")
     private String invoiceNumber;

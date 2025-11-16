@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.controllers.user;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
 import org.example.bookvexebej2e.configs.AuthUserDetails;
 import org.example.bookvexebej2e.models.dto.auth.CustomerProfileUpdate;
 import org.example.bookvexebej2e.models.dto.user.UserResponse;

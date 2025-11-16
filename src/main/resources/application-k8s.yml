@@ -3,13 +3,8 @@ security:
     allow-all: true
 
 spring:
-  application:
-    name: bookvexe-be-j2e
-  config:
-    import: optional:classpath:application-oauth.yml
-
   datasource:
-    url: jdbc:postgresql://localhost:5441/bookvexedb_j2e
+    url: jdbc:postgresql://postgres-service:5441/bookvexedb_j2e
     username: root
     password: nopass
   jpa:
@@ -45,7 +40,7 @@ spring:
 
   kafka:
     producer:
-      bootstrap-servers: localhost:9092
+      bootstrap-servers: kafka-service:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
@@ -55,14 +50,11 @@ logging:
       hibernate:
         orm:
           jdbc:
-            bind: trace
+            bind: info
       springframework:
-        web: DEBUG
-        web.servlet.DispatcherServlet: DEBUG
-        web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: DEBUG
-        security: DEBUG
-        security.web.FilterChainProxy: DEBUG
-      flywaydb: DEBUG
+        web: INFO
+        security: INFO
+      flywaydb: INFO
 
 server:
   port: 5181
@@ -79,8 +71,8 @@ app:
 
 chat:
   service:
-    url: http://localhost:5182
+    url: http://bookvexe-chat-service:5182
 
 services:
   payment-service:
-    url: http://localhost:8084
+    url: http://bookvexe-payment-service:8084

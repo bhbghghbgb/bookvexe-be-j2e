@@ -2,13 +2,13 @@ package org.example.bookvexebej2e.models.db;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -56,8 +56,8 @@ public class BookingDbModel extends BaseModel {
     @OneToMany(mappedBy = "booking")
     private List<BookingSeatDbModel> bookingSeats;
 
-    @OneToOne(mappedBy = "booking")
-    private PaymentDbModel payment;
+    @Column(name = "payment_id")
+    private UUID paymentId;
 
     @OneToMany(mappedBy = "booking")
     private List<NotificationDbModel> notifications;

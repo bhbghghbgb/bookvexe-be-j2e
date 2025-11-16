@@ -8,6 +8,18 @@ import org.example.bookvexebej2e.mappers.BookingMapper;
 import org.example.bookvexebej2e.models.constant.BookingStatus;
 import org.example.bookvexebej2e.models.db.*;
 import org.example.bookvexebej2e.models.dto.booking.*;
+import org.example.bookvexebej2e.models.db.BookingDbModel;
+import org.example.bookvexebej2e.models.db.CustomerDbModel;
+import org.example.bookvexebej2e.models.db.TripDbModel;
+import org.example.bookvexebej2e.models.db.TripStopDbModel;
+import org.example.bookvexebej2e.models.dto.booking.BookingCreate;
+import org.example.bookvexebej2e.models.dto.booking.BookingQuery;
+import org.example.bookvexebej2e.models.dto.booking.BookingResponse;
+import org.example.bookvexebej2e.models.dto.booking.BookingSeatCreate;
+import org.example.bookvexebej2e.models.dto.booking.BookingSelectResponse;
+import org.example.bookvexebej2e.models.dto.booking.BookingUpdate;
+import org.example.bookvexebej2e.helpers.api.PaymentClient;
+import org.example.bookvexebej2e.helpers.dto.PaymentDto;
 import org.example.bookvexebej2e.repositories.booking.BookingRepository;
 import org.example.bookvexebej2e.repositories.customer.CustomerRepository;
 import org.example.bookvexebej2e.repositories.trip.TripRepository;
@@ -25,7 +37,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+ 
 
+/**
+ * Booking Service Implementation
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -39,6 +55,7 @@ public class BookingServiceImpl implements BookingService {
     private final NotificationService notificationService;
     private final BookingSeatService bookingSeatService;
     private final BookingMapper bookingMapper;
+    private final PaymentClient paymentClient;
 
     @Override
     public List<BookingResponse> findAll() {
@@ -286,18 +303,15 @@ public class BookingServiceImpl implements BookingService {
         BookingDbModel entity = bookingRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, id));
 
-        // Validate current status
-        if (!BookingStatus.NEW.equals(entity.getBookingStatus())) {
+        // Validate current status and confirm booking
+        if (!(BookingStatus.NEW.equals(entity.getBookingStatus())
+            || BookingStatus.AWAIT_PAYMENT.equals(entity.getBookingStatus()))) {
             throw new IllegalStateException(
-                    "Booking can only be confirmed when status is 'new'. Current status: " + entity.getBookingStatus());
+                "Booking can only be confirmed when status is 'new' or 'await_payment'. Current status: "
+                    + entity.getBookingStatus());
         }
 
-        // Check if payment exists to determine next status
-        if (entity.getPayment() != null && "SUCCESS".equals(entity.getPayment().getStatus())) {
-            entity.setBookingStatus(BookingStatus.AWAIT_GO);
-        } else {
-            entity.setBookingStatus(BookingStatus.AWAIT_PAYMENT);
-        }
+        entity.setBookingStatus(BookingStatus.AWAIT_GO);
 
         BookingDbModel savedEntity = bookingRepository.save(entity);
 
