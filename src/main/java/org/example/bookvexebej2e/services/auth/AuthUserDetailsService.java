@@ -1,6 +1,7 @@
 package org.example.bookvexebej2e.services.auth;
 
 import lombok.RequiredArgsConstructor;
+
 import org.example.bookvexebej2e.configs.AuthUserDetails;
 import org.example.bookvexebej2e.models.db.UserDbModel;
 import org.example.bookvexebej2e.repositories.user.UserRepository;

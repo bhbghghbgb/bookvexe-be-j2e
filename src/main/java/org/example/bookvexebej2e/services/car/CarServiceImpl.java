@@ -61,6 +61,18 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public CarResponse create(CarCreate createDto) {
+        if (createDto.getCode() != null && !createDto.getCode().isEmpty()) {
+            carRepository.findByCode(createDto.getCode()).ifPresent(existingCar -> {
+                throw new IllegalStateException("Không thể tạo xe vì mã xe '" + createDto.getCode() + "' đã tồn tại trong hệ thống");
+            });
+        }
+
+        // Check for duplicate license plate
+        if (createDto.getLicensePlate() != null && !createDto.getLicensePlate().isEmpty()) {
+            carRepository.findByLicensePlate(createDto.getLicensePlate()).ifPresent(existingCar -> {
+                throw new IllegalStateException("Không thể tạo xe vì biển số xe '" + createDto.getLicensePlate() + "' đã tồn tại trong hệ thống");
+            });
+        }
         CarDbModel entity = new CarDbModel();
         entity.setLicensePlate(createDto.getLicensePlate());
         entity.setCode(createDto.getCode());
@@ -87,6 +99,23 @@ public class CarServiceImpl implements CarService {
         CarDbModel entity = carRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> new ResourceNotFoundException(CarDbModel.class, id));
 
+        // Check for duplicate code (excluding current entity)
+        if (updateDto.getCode() != null && !updateDto.getCode().isEmpty()) {
+            carRepository.findByCode(updateDto.getCode()).ifPresent(existingCar -> {
+                if (!existingCar.getId().equals(id)) {
+                    throw new IllegalStateException("Không thể cập nhật xe vì mã xe '" + updateDto.getCode() + "' đã tồn tại trong hệ thống");
+                }
+            });
+        }
+
+        // Check for duplicate license plate (excluding current entity)
+        if (updateDto.getLicensePlate() != null && !updateDto.getLicensePlate().isEmpty()) {
+            carRepository.findByLicensePlate(updateDto.getLicensePlate()).ifPresent(existingCar -> {
+                if (!existingCar.getId().equals(id)) {
+                    throw new IllegalStateException("Không thể cập nhật xe vì biển số xe '" + updateDto.getLicensePlate() + "' đã tồn tại trong hệ thống");
+                }
+            });
+        }
         entity.setLicensePlate(updateDto.getLicensePlate());
         entity.setCode(updateDto.getCode());
 

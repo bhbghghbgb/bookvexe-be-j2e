@@ -1,25 +1,15 @@
 package org.example.bookvexebej2e.services.booking;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
+import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.BookingUserMapper;
 import org.example.bookvexebej2e.models.constant.BookingStatus;
 import org.example.bookvexebej2e.models.constant.SeatStatus;
-import org.example.bookvexebej2e.models.db.BookingDbModel;
-import org.example.bookvexebej2e.models.db.BookingSeatDbModel;
-import org.example.bookvexebej2e.models.db.CarSeatDbModel;
-import org.example.bookvexebej2e.models.db.CustomerDbModel;
-import org.example.bookvexebej2e.models.db.TripDbModel;
-import org.example.bookvexebej2e.models.db.TripStopDbModel;
-import org.example.bookvexebej2e.models.db.UserDbModel;
-import org.example.bookvexebej2e.models.dto.booking.BookingQuery;
-import org.example.bookvexebej2e.models.dto.booking.BookingResponse;
-import org.example.bookvexebej2e.models.dto.booking.BookingSearchRequest;
-import org.example.bookvexebej2e.models.dto.booking.BookingSeatCreate;
-import org.example.bookvexebej2e.models.dto.booking.BookingUserCreate;
+import org.example.bookvexebej2e.models.db.*;
+import org.example.bookvexebej2e.models.dto.booking.*;
 import org.example.bookvexebej2e.repositories.booking.BookingSeatRepository;
 import org.example.bookvexebej2e.repositories.booking.BookingUserRepository;
 import org.example.bookvexebej2e.repositories.car.CarSeatRepository;
@@ -27,23 +17,25 @@ import org.example.bookvexebej2e.repositories.customer.CustomerRepository;
 import org.example.bookvexebej2e.repositories.trip.TripRepository;
 import org.example.bookvexebej2e.repositories.trip.TripStopRepository;
 import org.example.bookvexebej2e.repositories.user.UserRepository;
+import org.example.bookvexebej2e.services.notification.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import jakarta.persistence.criteria.Predicate;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BookingUserServiceImpl implements BookingUserService {
 
     private final BookingUserRepository bookingUserRepository;
@@ -53,8 +45,9 @@ public class BookingUserServiceImpl implements BookingUserService {
     private final TripRepository tripRepository;
     private final TripStopRepository tripStopRepository;
     private final CarSeatRepository carSeatRepository;
+    private final NotificationService notificationService;
     private final BookingUserMapper bookingUserMapper;
-    private final PasswordEncoder passwordEncoder; // ✅ Thêm encoder
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * Search booking by code, phone, or name
@@ -79,19 +72,19 @@ public class BookingUserServiceImpl implements BookingUserService {
                         !searchRequest.getCustomerName().trim().isEmpty() &&
                         !booking.getCustomer().getName().equalsIgnoreCase(searchRequest.getCustomerName().trim())) {
                     throw new IllegalArgumentException(
-                            "Booking not found: code matches but customer name does not match");
+                            "Không tìm được vé đặt xe: Tên khách hàng không đúng");
                 }
 
                 if (searchRequest.getCustomerPhone() != null &&
                         !searchRequest.getCustomerPhone().trim().isEmpty() &&
                         !booking.getCustomer().getPhone().equals(searchRequest.getCustomerPhone().trim())) {
                     throw new IllegalArgumentException(
-                            "Booking not found: code matches but customer phone does not match");
+                            "Không tìm được vé đặt xe: Số điện thoại khách hàng không đúng");
                 }
 
                 return bookingUserMapper.toResponse(booking);
             } else {
-                throw new IllegalArgumentException("Booking not found with code: " + searchRequest.getBookingCode());
+                throw new IllegalArgumentException("Không tìm thấy vé đặt xe với mã vé: " + searchRequest.getBookingCode());
             }
         }
 
@@ -108,15 +101,15 @@ public class BookingUserServiceImpl implements BookingUserService {
                             .findFirst().orElse(null);
 
                     if (booking == null) {
-                        throw new IllegalArgumentException("Booking not found with phone " +
-                                searchRequest.getCustomerPhone() + " and name " + searchRequest.getCustomerName());
+                        throw new IllegalArgumentException("Không tìm thấy vé đặt xe với số điện thoại " +
+                                searchRequest.getCustomerPhone() + " và tên " + searchRequest.getCustomerName());
                     }
                 } else {
                     booking = bookingsByPhone.get(0);
                 }
                 return bookingUserMapper.toResponse(booking);
             } else {
-                throw new IllegalArgumentException("Booking not found with phone: " + searchRequest.getCustomerPhone());
+                throw new IllegalArgumentException("Không tìm thấy vé đặt xe với số điện thoại: " + searchRequest.getCustomerPhone());
             }
         }
 
@@ -131,11 +124,11 @@ public class BookingUserServiceImpl implements BookingUserService {
                 return bookingUserMapper.toResponse(booking);
             } else {
                 throw new IllegalArgumentException(
-                        "Booking not found with customer name: " + searchRequest.getCustomerName());
+                        "Không tìm thấy vé đặt xe với tên khách hàng: " + searchRequest.getCustomerName());
             }
         }
 
-        throw new IllegalArgumentException("Booking not found with provided search criteria");
+        throw new IllegalArgumentException("Không tìm thấy đặt chỗ theo các thông tin trên");
     }
 
     /**
@@ -190,6 +183,48 @@ public class BookingUserServiceImpl implements BookingUserService {
             savedBooking.setBookingSeats(bookingSeats);
         }
 
+        // ADD NOTIFICATION: Booking Created (async, do not block booking response)
+        CompletableFuture.runAsync(() -> {
+            try {
+                // Determine if this is a guest booking (no authenticated user)
+                CustomerDbModel customer2 = savedBooking.getCustomer();
+                UUID userId = null;
+                String customerEmail = customer2.getEmail();
+
+                if (userId != null) {
+                    // Registered user - can save notification and send WebSocket
+                    notificationService.sendNotification(
+                        userId,
+                        "TYPE_BOOKING_CREATED",
+                        "Đặt vé thành công",
+                        "Bạn đã đặt vé thành công. Mã đặt vé: " + savedBooking.getCode() +
+                            ". Vui lòng thanh toán để hoàn tất.",
+                        savedBooking.getId(),
+                        savedBooking.getTrip().getId(),
+                        "APP",
+                        true,  // sendEmail
+                        true   // shouldSave
+                    );
+                } else {
+                    // Guest user - can only send email
+                    notificationService.sendGuestNotification(
+                        customerEmail,
+                        "TYPE_BOOKING_CREATED",
+                        "Đặt vé thành công",
+                        "Bạn đã đặt vé thành công. Mã đặt vé: " + savedBooking.getCode() +
+                            ". Vui lòng thanh toán để hoàn tất.",
+                        savedBooking.getId(),
+                        savedBooking.getTrip().getId(),
+                        "EMAIL",
+                        true,  // sendEmail
+                        false  // shouldSave - cannot save without user
+                    );
+                }
+            } catch (Exception e) {
+                log.error("Failed to send booking creation notification: {}", e.getMessage(), e);
+            }
+        });
+
         return bookingUserMapper.toResponse(savedBooking);
     }
 
@@ -243,7 +278,7 @@ public class BookingUserServiceImpl implements BookingUserService {
 
         CustomerDbModel customer = getCurrentCustomer();
         if (!booking.getCustomer().getId().equals(customer.getId())) {
-            throw new AccessDeniedException("You don't have permission to access this booking");
+            throw new IllegalArgumentException("You don't have permission to access this booking");
         }
 
         return bookingUserMapper.toResponse(booking);
@@ -260,76 +295,15 @@ public class BookingUserServiceImpl implements BookingUserService {
 
         CustomerDbModel customer = getCurrentCustomer();
         if (!booking.getCustomer().getId().equals(customer.getId())) {
-            throw new AccessDeniedException("You don't have permission to cancel this booking");
+            throw new IllegalArgumentException("Bạn không có quyền hủy đặt xe này");
         }
 
         if (BookingStatus.COMPLETED.equals(booking.getBookingStatus()) ||
                 BookingStatus.CANCELLED.equals(booking.getBookingStatus())) {
-            throw new IllegalStateException("Cannot cancel a booking that is already completed or cancelled");
+            throw new IllegalStateException("Không thể hủy đặt chỗ đã hoàn tất hoặc đã hủy");
         }
 
         booking.setBookingStatus(BookingStatus.CANCELLED);
-        BookingDbModel updatedBooking = bookingUserRepository.save(booking);
-        return bookingUserMapper.toResponse(updatedBooking);
-    }
-
-    /**
-     * Confirm payment for booking
-     */
-    @Transactional
-    @Override
-    public BookingResponse confirmPayment(UUID id) {
-        BookingDbModel booking = bookingUserRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, id));
-
-        CustomerDbModel customer = getCurrentCustomer();
-        if (!booking.getCustomer().getId().equals(customer.getId())) {
-            throw new AccessDeniedException("You don't have permission to access this booking");
-        }
-
-        // Only allow payment confirmation for AWAIT_PAYMENT status
-        if (BookingStatus.AWAIT_PAYMENT.equals(booking.getBookingStatus())) {
-            booking.setBookingStatus(BookingStatus.AWAIT_GO);
-
-            // Update booking seats status from RESERVED to BOOKED
-            if (booking.getBookingSeats() != null && !booking.getBookingSeats().isEmpty()) {
-                for (BookingSeatDbModel bookingSeat : booking.getBookingSeats()) {
-                    if (SeatStatus.RESERVED.equals(bookingSeat.getStatus())) {
-                        bookingSeat.setStatus(SeatStatus.BOOKED);
-                    }
-                }
-                bookingSeatRepository.saveAll(booking.getBookingSeats());
-            }
-
-            // Release seat holds for this booking since payment is confirmed
-            // TODO: Integrate with SeatHoldService to release holds
-        }
-
-        BookingDbModel updatedBooking = bookingUserRepository.save(booking);
-        return bookingUserMapper.toResponse(updatedBooking);
-    }
-
-    @Transactional
-    @Override
-    public BookingResponse confirmPaymentGuest(UUID id) {
-        BookingDbModel booking = bookingUserRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, id));
-
-        // Only allow payment confirmation for AWAIT_PAYMENT status
-        if (BookingStatus.AWAIT_PAYMENT.equals(booking.getBookingStatus())) {
-            booking.setBookingStatus(BookingStatus.AWAIT_GO);
-
-            // Update booking seats status from RESERVED to BOOKED
-            if (booking.getBookingSeats() != null && !booking.getBookingSeats().isEmpty()) {
-                for (BookingSeatDbModel bookingSeat : booking.getBookingSeats()) {
-                    if (SeatStatus.RESERVED.equals(bookingSeat.getStatus())) {
-                        bookingSeat.setStatus(SeatStatus.BOOKED);
-                    }
-                }
-                bookingSeatRepository.saveAll(booking.getBookingSeats());
-            }
-        }
-
         BookingDbModel updatedBooking = bookingUserRepository.save(booking);
         return bookingUserMapper.toResponse(updatedBooking);
     }
@@ -372,7 +346,7 @@ public class BookingUserServiceImpl implements BookingUserService {
                 .orElseThrow(() -> new ResourceNotFoundException(UserDbModel.class, username));
 
         if (user.getCustomer() == null) {
-            throw new IllegalStateException("User is not associated with a customer");
+            throw new IllegalStateException("Người dùng không liên kết với khách hàng");
         }
 
         return user.getCustomer();
