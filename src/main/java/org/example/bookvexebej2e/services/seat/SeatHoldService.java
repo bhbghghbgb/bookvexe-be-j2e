@@ -177,7 +177,7 @@ public class SeatHoldService {
         }
     }
 
-    private void broadcastSeatUpdate(String tripId, String carId, List<String> seatIds, String action, String holdUntil,
+    public void broadcastSeatUpdate(String tripId, String carId, List<String> seatIds, String action, String holdUntil,
             String by) {
         try {
             SeatUpdatePayload payload = new SeatUpdatePayload();

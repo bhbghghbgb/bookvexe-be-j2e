@@ -1,16 +1,27 @@
 package org.example.bookvexebej2e.services.booking;
 
-import jakarta.persistence.criteria.Predicate;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.example.bookvexebej2e.configs.SecurityUtils;
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.BookingUserMapper;
 import org.example.bookvexebej2e.models.constant.BookingStatus;
 import org.example.bookvexebej2e.models.constant.SeatStatus;
-import org.example.bookvexebej2e.models.db.*;
-import org.example.bookvexebej2e.models.dto.booking.*;
+import org.example.bookvexebej2e.models.db.BookingDbModel;
+import org.example.bookvexebej2e.models.db.BookingSeatDbModel;
+import org.example.bookvexebej2e.models.db.CarSeatDbModel;
+import org.example.bookvexebej2e.models.db.CustomerDbModel;
+import org.example.bookvexebej2e.models.db.TripDbModel;
+import org.example.bookvexebej2e.models.db.TripStopDbModel;
+import org.example.bookvexebej2e.models.db.UserDbModel;
+import org.example.bookvexebej2e.models.dto.booking.BookingQuery;
+import org.example.bookvexebej2e.models.dto.booking.BookingResponse;
+import org.example.bookvexebej2e.models.dto.booking.BookingSearchRequest;
+import org.example.bookvexebej2e.models.dto.booking.BookingSeatCreate;
+import org.example.bookvexebej2e.models.dto.booking.BookingUserCreate;
 import org.example.bookvexebej2e.repositories.booking.BookingSeatRepository;
 import org.example.bookvexebej2e.repositories.booking.BookingUserRepository;
 import org.example.bookvexebej2e.repositories.car.CarSeatRepository;
@@ -29,10 +40,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -51,6 +62,7 @@ public class BookingUserServiceImpl implements BookingUserService {
     private final PasswordEncoder passwordEncoder;
     private final SecurityUtils security;
     private final org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
+    private final org.example.bookvexebej2e.services.seat.SeatHoldService seatHoldService;
 
     /**
      * Search booking by code, phone, or name
@@ -227,10 +239,8 @@ public class BookingUserServiceImpl implements BookingUserService {
                     // Use messaging template to broadcast
                     String topic = "/topic/seats/" + payload.getTripId() + "/" + payload.getCarId();
                     messagingTemplate.convertAndSend(topic, payload);
-                    log.info("Broadcasted BOOKED seats for cash payment: {}", seatIds);
                 }
             } catch (Exception e) {
-                log.warn("Failed to broadcast seat booking status: {}", e.getMessage());
             }
         }
 
@@ -239,8 +249,8 @@ public class BookingUserServiceImpl implements BookingUserService {
             // Determine if this is a guest booking (no authenticated user)
             CustomerDbModel customer2 = savedBooking.getCustomer();
             UUID userId = Optional.ofNullable(security.getCurrentUserEntity())
-                .map(UserDbModel::getId)
-                .orElse(null);
+                    .map(UserDbModel::getId)
+                    .orElse(null);
             String customerEmail = customer2.getEmail();
 
             if (userId != null) {
@@ -273,7 +283,8 @@ public class BookingUserServiceImpl implements BookingUserService {
                 );
             }
         } catch (Exception e) {
-            log.error("Failed to send booking creation notification: {}", e.getMessage(), e);
+            log.error("Failed to send booking creation notification: {}", e.getMessage(),
+                    e);
         }
 
         return bookingUserMapper.toResponse(savedBooking);
@@ -354,9 +365,82 @@ public class BookingUserServiceImpl implements BookingUserService {
             throw new IllegalStateException("Không thể hủy đặt chỗ đã hoàn tất hoặc đã hủy");
         }
 
-        booking.setBookingStatus(BookingStatus.CANCELLED);
-        BookingDbModel updatedBooking = bookingUserRepository.save(booking);
-        return bookingUserMapper.toResponse(updatedBooking);
+        return performBookingCancellation(booking);
+    }
+
+    /**
+     * Cancel booking for guest users (no authentication required)
+     */
+    @Transactional
+    public BookingResponse cancelBookingGuest(UUID id) {
+        BookingDbModel booking = bookingUserRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ResourceNotFoundException(BookingDbModel.class, id));
+
+        if (BookingStatus.COMPLETED.equals(booking.getBookingStatus()) ||
+                BookingStatus.CANCELLED.equals(booking.getBookingStatus())) {
+            throw new IllegalStateException("Không thể hủy đặt chỗ đã hoàn tất hoặc đã hủy");
+        }
+
+        return performBookingCancellation(booking);
+    }
+
+    /**
+     * Common logic for booking cancellation with seat hold release and realtime
+     * broadcast
+     */
+    private BookingResponse performBookingCancellation(BookingDbModel booking) {
+        try {
+            // 1. Update booking status
+            booking.setBookingStatus(BookingStatus.CANCELLED);
+            BookingDbModel updatedBooking = bookingUserRepository.save(booking);
+
+            // 2. Release seat holds and broadcast realtime updates
+            if (updatedBooking.getBookingSeats() != null && !updatedBooking.getBookingSeats().isEmpty()) {
+                // Get trip info
+                UUID tripId = booking.getTrip().getId();
+
+                // Extract seat IDs and find car ID from first seat
+                List<String> seatIdStrings = new ArrayList<>();
+                UUID carId = null;
+
+                for (BookingSeatDbModel bookingSeat : updatedBooking.getBookingSeats()) {
+                    if (!bookingSeat.getIsDeleted()) {
+                        seatIdStrings.add(bookingSeat.getSeat().getId().toString());
+                        if (carId == null) {
+                            carId = bookingSeat.getSeat().getCar().getId();
+                        }
+                    }
+                }
+
+                if (!seatIdStrings.isEmpty() && carId != null) {
+                    // Create SeatHoldRequest to use existing release method
+                    org.example.bookvexebej2e.models.dto.seat.SeatHoldRequest releaseRequest = new org.example.bookvexebej2e.models.dto.seat.SeatHoldRequest();
+                    releaseRequest.setTripId(tripId.toString());
+                    releaseRequest.setCarId(carId.toString());
+                    releaseRequest.setSeatIds(seatIdStrings);
+
+                    // Release seat holds using existing method
+                    boolean released = seatHoldService.releaseSeats(releaseRequest, "booking_cancelled", null);
+
+                    // Also broadcast seat update specifically for booking cancellation
+                    seatHoldService.broadcastSeatUpdate(
+                            tripId.toString(),
+                            carId.toString(),
+                            seatIdStrings,
+                            "release",
+                            null,
+                            "booking_cancelled");
+
+                    log.info("Released {} seats for cancelled booking: {} (released: {})",
+                            seatIdStrings.size(), booking.getCode(), released);
+                }
+            }
+
+            return bookingUserMapper.toResponse(updatedBooking);
+        } catch (Exception e) {
+            log.error("Error cancelling booking {}: {}", booking.getId(), e.getMessage(), e);
+            throw new RuntimeException("Có lỗi khi hủy đặt vé: " + e.getMessage());
+        }
     }
 
     // ========================= Helper methods =========================
