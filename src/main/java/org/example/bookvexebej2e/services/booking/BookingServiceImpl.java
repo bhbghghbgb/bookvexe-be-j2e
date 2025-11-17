@@ -7,7 +7,6 @@ import java.util.UUID;
 
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.helpers.api.PaymentClient;
-import org.example.bookvexebej2e.helpers.dto.PaymentDto;
 import org.example.bookvexebej2e.mappers.BookingMapper;
 import org.example.bookvexebej2e.models.constant.BookingStatus;
 import org.example.bookvexebej2e.models.constant.SeatStatus;
@@ -29,6 +28,7 @@ import org.example.bookvexebej2e.repositories.trip.TripRepository;
 import org.example.bookvexebej2e.repositories.trip.TripStopRepository;
 import org.example.bookvexebej2e.repositories.user.UserRepository;
 import org.example.bookvexebej2e.services.notification.NotificationService;
+import org.example.bookvexebej2e.services.seat.SeatHoldService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -58,6 +58,7 @@ public class BookingServiceImpl implements BookingService {
     private final BookingMapper bookingMapper;
     private final PaymentClient paymentClient;
     private final BookingSeatRepository bookingSeatRepository;
+    private final SeatHoldService seatHoldService;
 
     @Override
     public List<BookingResponse> findAll() {
@@ -328,6 +329,50 @@ public class BookingServiceImpl implements BookingService {
         entity.setBookingStatus(BookingStatus.AWAIT_GO);
 
         BookingDbModel savedEntity = bookingRepository.save(entity);
+
+        // Release seat holds after successful confirmation
+        try {
+            if (savedEntity.getBookingSeats() != null && !savedEntity.getBookingSeats().isEmpty()) {
+                UUID tripId = savedEntity.getTrip().getId();
+                List<String> seatIdStrings = new ArrayList<>();
+                UUID carId = null;
+
+                for (BookingSeatDbModel bookingSeat : savedEntity.getBookingSeats()) {
+                    if (!bookingSeat.getIsDeleted()) {
+                        seatIdStrings.add(bookingSeat.getSeat().getId().toString());
+                        if (carId == null) {
+                            carId = bookingSeat.getSeat().getCar().getId();
+                        }
+                    }
+                }
+
+                if (!seatIdStrings.isEmpty() && carId != null) {
+                    // Create SeatHoldRequest to release holds
+                    org.example.bookvexebej2e.models.dto.seat.SeatHoldRequest releaseRequest = new org.example.bookvexebej2e.models.dto.seat.SeatHoldRequest();
+                    releaseRequest.setTripId(tripId.toString());
+                    releaseRequest.setCarId(carId.toString());
+                    releaseRequest.setSeatIds(seatIdStrings);
+
+                    // Release seat holds and broadcast update
+                    boolean released = seatHoldService.releaseSeats(releaseRequest, "booking_confirmed", null);
+
+                    // Also broadcast specific update for booking confirmation
+                    seatHoldService.broadcastSeatUpdate(
+                            tripId.toString(),
+                            carId.toString(),
+                            seatIdStrings,
+                            "booked",
+                            null,
+                            "booking_confirmed");
+
+                    log.info("Released {} seat holds for confirmed booking: {} (released: {})",
+                            seatIdStrings.size(), savedEntity.getCode(), released);
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error releasing seat holds for confirmed booking {}: {}", savedEntity.getId(), e.getMessage());
+            // Don't fail the confirmation if seat hold release fails
+        }
 
         // Send notification for confirmation
         try {
