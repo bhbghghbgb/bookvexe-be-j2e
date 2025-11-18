@@ -79,7 +79,6 @@ logging:
 
 server:
   port: 5181
-
 app:
   email:
     sender: nguyendinhthongdhsg@gmail.com
