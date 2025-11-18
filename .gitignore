@@ -37,3 +37,12 @@ external-tools/*/*/**
 /pgdata/
 
 *secret*
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Environment variables
+.env
+.env.local
+.env.production

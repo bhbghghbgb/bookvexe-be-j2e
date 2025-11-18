@@ -3,15 +3,23 @@ security:
     allow-all: true
 
 spring:
-  application:
-    name: bookvexe-be-j2e
   config:
-    import: optional:classpath:application-oauth.yml
-
+    import: optional:classpath:application-oauth-k8s.yml
+  
+  session:
+    store-type: none
+    
+  servlet:
+    session:
+      cookie:
+        same-site: lax
+        secure: false
+        http-only: true
+        
   datasource:
-    url: jdbc:postgresql://localhost:5441/bookvexedb_j2e
-    username: root
-    password: nopass
+    url: jdbc:postgresql://postgres-service:5441/bookvexedb_j2e
+    username: postgres
+    password: root
   jpa:
     show-sql: true
     hibernate:
@@ -45,22 +53,9 @@ spring:
 
   kafka:
     producer:
-      bootstrap-servers: localhost:9092
+      bootstrap-servers: kafka-service:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-
-      # --- Recommended properties to prevent infinite spam/blocking ---
-      # Max number of times to retry sending a record. Set to 0 to fail fast on network error.
-      retries: 5
-
-      properties:
-        # How long to wait for a broker connection before timing out (ms).
-        # Default is often high (e.g., 30000), making the request block for too long.
-
-        delivery.timeout.ms: 5000
-
-      # How long the producer can block waiting for a send acknowledgement. Should be less than delivery-timeout-ms.
-        request.timeout.ms: 3000
 
 logging:
   level:
@@ -68,17 +63,17 @@ logging:
       hibernate:
         orm:
           jdbc:
-            bind: trace
+            bind: info
       springframework:
-        web: DEBUG
-        web.servlet.DispatcherServlet: DEBUG
-        web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: DEBUG
-        security: DEBUG
-        security.web.FilterChainProxy: DEBUG
-      flywaydb: DEBUG
+        web: INFO
+        security: INFO
+      flywaydb: INFO
 
 server:
   port: 5181
+  servlet:
+    context-path: /api/bookvexe-be-j2e
+
 app:
   email:
     sender: nguyendinhthongdhsg@gmail.com
@@ -89,16 +84,10 @@ app:
     refresh-expiration:
       ms: 604800000 # 7 days
 
-microservices:
-  notification:
-    enabled: true
-  mail:
-    enabled: true
-
 chat:
   service:
-    url: http://localhost:5182
+    url: http://bookvexe-chat-service:5182/api/bookvexe-chat-service
 
 services:
   payment-service:
-    url: http://localhost:8084
+    url: http://bookvexe-payment-service:8084/api/bookvexe-payment-service
