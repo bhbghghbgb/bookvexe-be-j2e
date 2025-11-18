@@ -21,3 +21,13 @@ spec:
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "k8s"
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: oauth-secrets
+                  key: GOOGLE_CLIENT_ID
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oauth-secrets
+                  key: GOOGLE_CLIENT_SECRET
