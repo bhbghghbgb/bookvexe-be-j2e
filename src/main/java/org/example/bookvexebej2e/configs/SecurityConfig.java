@@ -2,7 +2,6 @@ package org.example.bookvexebej2e.configs;
 
 import java.util.Arrays;
 
-import org.example.bookvexebej2e.configs.JwtAuthenticationFilter;
 import org.example.bookvexebej2e.services.auth.AuthUserDetailsService;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -91,7 +90,7 @@ public class SecurityConfig {
 
                                 .requestMatchers("/swagger/**", "/swagger/v1/**", "/", "/hello", "/auth/**",
                                         "/swagger-ui/**", "/v3/api-docs/**", "/error", "/dev/*", "/api/chat/*",
-                                        "/api/v1/routes/**", "/api/v1/trips/**")
+                                        "/api/v1/routes/**", "/api/v1/trips/**", "/user/bookings/cancel-guest/**")
                                 .permitAll()
                                 // Require ADMIN role for /admin/**
                                 .requestMatchers("/admin/**")

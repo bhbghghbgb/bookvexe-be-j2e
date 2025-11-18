@@ -9,6 +9,7 @@ import org.example.bookvexebej2e.models.dto.booking.BookingSearchRequest;
 import org.example.bookvexebej2e.models.dto.booking.BookingUserCreate;
 import org.example.bookvexebej2e.services.booking.BookingService;
 import org.example.bookvexebej2e.services.booking.BookingUserService;
+import org.example.bookvexebej2e.services.booking.BookingUserServiceImpl;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -61,6 +62,12 @@ public class BookingUserController {
     @PostMapping("/cancel/{id}")
     public ResponseEntity<BookingResponse> cancelBooking(@PathVariable UUID id) {
         return ResponseEntity.ok(bookingUserService.cancelBooking(id));
+    }
+
+    // Hủy booking cho guest user (không cần authentication)
+    @PostMapping("/cancel-guest/{id}")
+    public ResponseEntity<BookingResponse> cancelBookingGuest(@PathVariable UUID id) {
+        return ResponseEntity.ok(((BookingUserServiceImpl) bookingUserService).cancelBookingGuest(id));
     }
 
     // Xác nhận booking sau khi thanh toán (guest/user)

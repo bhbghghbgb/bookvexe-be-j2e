@@ -49,6 +49,19 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
+      # --- Recommended properties to prevent infinite spam/blocking ---
+      # Max number of times to retry sending a record. Set to 0 to fail fast on network error.
+      retries: 5
+
+      properties:
+        # How long to wait for a broker connection before timing out (ms).
+        # Default is often high (e.g., 30000), making the request block for too long.
+
+        delivery.timeout.ms: 5000
+
+      # How long the producer can block waiting for a send acknowledgement. Should be less than delivery-timeout-ms.
+        request.timeout.ms: 3000
+
 logging:
   level:
     org:
@@ -76,6 +89,12 @@ app:
       ms: 86400000 # 24 hours
     refresh-expiration:
       ms: 604800000 # 7 days
+
+microservices:
+  notification:
+    enabled: true
+  mail:
+    enabled: true
 
 chat:
   service:

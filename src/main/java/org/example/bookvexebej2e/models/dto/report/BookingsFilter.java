@@ -11,4 +11,5 @@ public class BookingsFilter {
     private String endDate;   // yyyy-MM-dd
     private List<String> statuses; // CONFIRMED, PAID, CANCELLED, COMPLETED, PENDING
     private UUID customerTypeId;
+    private String printedBy;
 }

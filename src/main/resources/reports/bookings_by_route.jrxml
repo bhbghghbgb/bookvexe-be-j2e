@@ -1,15 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
-<jasperReport name="bookings_by_route" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" whenNoDataType="AllSectionsNoDetail">
+<jasperReport name="bookings_by_route" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" whenNoDataType="AllSectionsNoDetail" isSummaryNewPage="true">
+    <property name="net.sf.jasperreports.default.font.name" value="DejaVu Sans"/>
     <property name="net.sf.jasperreports.default.pdf.font.name" value="DejaVu Sans"/>
     <property name="net.sf.jasperreports.default.pdf.encoding" value="Identity-H"/>
     <property name="net.sf.jasperreports.default.pdf.embedded" value="true"/>
+    <style name="BaseStyle" isDefault="true" fontName="DejaVu Sans" pdfFontName="DejaVu Sans" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
     <parameter name="REPORT_TITLE" class="java.lang.String"/>
+    <parameter name="printedDate" class="java.lang.String"/>
+    <parameter name="printedBy" class="java.lang.String"/>
+    <parameter name="fromDate" class="java.lang.String"/>
+    <parameter name="toDate" class="java.lang.String"/>
+    <parameter name="reportCode" class="java.lang.String"/>
+
     <field name="routeName" class="java.lang.String"/>
     <field name="totalBookings" class="java.lang.Long"/>
+    <field name="routeRevenue" class="java.math.BigDecimal"/>
+
+    <variable name="vTotalBookings" class="java.lang.Long" resetType="Report" calculation="Sum">
+        <variableExpression><![CDATA[$F{totalBookings} == null ? 0L : $F{totalBookings}]]></variableExpression>
+    </variable>
+    <variable name="vTopRouteName" class="java.lang.String" resetType="Report" calculation="First">
+        <variableExpression><![CDATA[$F{routeName}]]></variableExpression>
+    </variable>
+    <variable name="vTopRouteBookings" class="java.lang.Long" resetType="Report" calculation="First">
+        <variableExpression><![CDATA[$F{totalBookings} == null ? 0L : $F{totalBookings}]]></variableExpression>
+    </variable>
+    <variable name="vTopRouteRevenue" class="java.math.BigDecimal" resetType="Report" calculation="First">
+        <variableExpression><![CDATA[$F{routeRevenue} == null ? java.math.BigDecimal.ZERO : $F{routeRevenue}]]></variableExpression>
+    </variable>
 
     <title>
-        <band height="40">
+        <band height="80">
             <textField>
                 <reportElement x="0" y="0" width="782" height="30"/>
                 <textElement textAlignment="Center" verticalAlignment="Middle">
@@ -17,37 +39,189 @@
                 </textElement>
                 <textFieldExpression><![CDATA[$P{REPORT_TITLE}]]></textFieldExpression>
             </textField>
+
+            <textField>
+                <reportElement x="0" y="35" width="260" height="15"/>
+                <textElement>
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Ngày xuất báo cáo: " + ($P{printedDate} == null ? "" : $P{printedDate})]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="260" y="35" width="260" height="15"/>
+                <textElement>
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Người thực hiện: " + ($P{printedBy} == null ? "" : $P{printedBy})]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="520" y="35" width="262" height="15"/>
+                <textElement textAlignment="Right">
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Mã báo cáo: " + ($P{reportCode} == null ? "" : $P{reportCode})]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="0" y="55" width="400" height="15"/>
+                <textElement>
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Khoảng thời gian: " + ($P{fromDate} == null ? "" : $P{fromDate}) + " - " + ($P{toDate} == null ? "" : $P{toDate})]]></textFieldExpression>
+            </textField>
         </band>
     </title>
 
     <columnHeader>
         <band height="24">
+            <rectangle>
+                <reportElement x="0" y="0" width="782" height="24"/>
+            </rectangle>
             <staticText>
-                <reportElement x="0" y="0" width="550" height="24"/>
+                <reportElement x="0" y="0" width="430" height="24"/>
                 <textElement textAlignment="Left" verticalAlignment="Middle"><font isBold="true"/></textElement>
                 <text><![CDATA[Tuyến]]></text>
             </staticText>
             <staticText>
-                <reportElement x="550" y="0" width="232" height="24"/>
+                <reportElement x="430" y="0" width="170" height="24"/>
                 <textElement textAlignment="Right" verticalAlignment="Middle"><font isBold="true"/></textElement>
                 <text><![CDATA[Số lượt đặt]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="600" y="0" width="182" height="24"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"><font isBold="true"/></textElement>
+                <text><![CDATA[Tổng doanh thu (VNĐ)]]></text>
             </staticText>
         </band>
     </columnHeader>
 
     <detail>
         <band height="20">
+            <rectangle>
+                <reportElement x="0" y="0" width="782" height="20"/>
+            </rectangle>
             <textField>
-                <reportElement x="0" y="0" width="550" height="20"/>
+                <reportElement x="0" y="0" width="430" height="20"/>
                 <textElement verticalAlignment="Middle"/>
                 <textFieldExpression><![CDATA[$F{routeName}]]></textFieldExpression>
             </textField>
             <textField pattern="#,##0">
-                <reportElement x="550" y="0" width="232" height="20"/>
+                <reportElement x="430" y="0" width="170" height="20"/>
                 <textElement textAlignment="Right" verticalAlignment="Middle"/>
-                <textFieldExpression><![CDATA[$F{totalBookings} == null ? 0 : $F{totalBookings}]]></textFieldExpression>
+                <textFieldExpression><![CDATA[$F{totalBookings} == null ? 0L : $F{totalBookings}]]></textFieldExpression>
+            </textField>
+            <textField pattern="#,##0">
+                <reportElement x="600" y="0" width="182" height="20"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$F{routeRevenue} == null ? java.math.BigDecimal.ZERO : $F{routeRevenue}]]></textFieldExpression>
             </textField>
         </band>
     </detail>
-    
+
+    <pageFooter>
+        <band height="20">
+            <staticText>
+                <reportElement x="0" y="0" width="400" height="20"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="9"/>
+                </textElement>
+                <text><![CDATA[BC-LDV-003 - Booking Rate Report]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="600" y="0" width="182" height="20"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Trang " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+
+    <summary>
+        <band height="210">
+            <frame>
+                <reportElement x="0" y="0" width="782" height="70"/>
+
+                <frame>
+                    <reportElement x="0" y="0" width="390" height="35"/>
+                    <staticText>
+                        <reportElement x="0" y="0" width="390" height="15"/>
+                        <textElement><font isBold="true" size="10"/></textElement>
+                        <text><![CDATA[Tổng lượt đặt vé]]></text>
+                    </staticText>
+                    <textField pattern="#,##0">
+                        <reportElement x="0" y="18" width="390" height="17"/>
+                        <textElement textAlignment="Right"><font size="10"/></textElement>
+                        <textFieldExpression><![CDATA[$V{vTotalBookings} == null ? 0L : $V{vTotalBookings}]]></textFieldExpression>
+                    </textField>
+                </frame>
+
+                <frame>
+                    <reportElement x="392" y="0" width="390" height="35"/>
+                    <staticText>
+                        <reportElement x="0" y="0" width="390" height="15"/>
+                        <textElement><font isBold="true" size="10"/></textElement>
+                        <text><![CDATA[Tuyến có lượt đặt nhiều nhất]]></text>
+                    </staticText>
+                    <textField>
+                        <reportElement x="0" y="18" width="390" height="17"/>
+                        <textElement textAlignment="Right"><font size="10"/></textElement>
+                        <textFieldExpression><![CDATA[$V{vTopRouteName}]]></textFieldExpression>
+                    </textField>
+                </frame>
+
+                <frame>
+                    <reportElement x="0" y="35" width="390" height="35"/>
+                    <staticText>
+                        <reportElement x="0" y="0" width="390" height="15"/>
+                        <textElement><font isBold="true" size="10"/></textElement>
+                        <text><![CDATA[Lượt đặt cao nhất]]></text>
+                    </staticText>
+                    <textField pattern="#,##0">
+                        <reportElement x="0" y="18" width="390" height="17"/>
+                        <textElement textAlignment="Right"><font size="10"/></textElement>
+                        <textFieldExpression><![CDATA[$V{vTopRouteBookings} == null ? 0L : $V{vTopRouteBookings}]]></textFieldExpression>
+                    </textField>
+                </frame>
+
+                <frame>
+                    <reportElement x="392" y="35" width="390" height="35"/>
+                    <staticText>
+                        <reportElement x="0" y="0" width="390" height="15"/>
+                        <textElement><font isBold="true" size="10"/></textElement>
+                        <text><![CDATA[Doanh thu tuyến cao nhất (VNĐ)]]></text>
+                    </staticText>
+                    <textField pattern="#,##0">
+                        <reportElement x="0" y="18" width="390" height="17"/>
+                        <textElement textAlignment="Right"><font size="10"/></textElement>
+                        <textFieldExpression><![CDATA[$V{vTopRouteRevenue} == null ? java.math.BigDecimal.ZERO : $V{vTopRouteRevenue}]]></textFieldExpression>
+                    </textField>
+                </frame>
+            </frame>
+
+            <barChart>
+                <chart>
+                    <reportElement x="0" y="80" width="782" height="120"/>
+                    <chartTitle>
+                        <font size="11" isBold="true"/>
+                        <titleExpression><![CDATA["Top tuyến được đặt nhiều nhất"]]></titleExpression>
+                    </chartTitle>
+                </chart>
+                <categoryDataset>
+                    <dataset/>
+                    <categorySeries>
+                        <seriesExpression><![CDATA["Lượt đặt"]]></seriesExpression>
+                        <categoryExpression><![CDATA[$F{routeName}]]></categoryExpression>
+                        <valueExpression><![CDATA[$F{totalBookings} == null ? 0L : $F{totalBookings}]]></valueExpression>
+                    </categorySeries>
+                </categoryDataset>
+                <barPlot>
+                    <plot/>
+                    <categoryAxisLabelExpression><![CDATA["Tuyến"]]></categoryAxisLabelExpression>
+                    <valueAxisLabelExpression><![CDATA["Lượt đặt"]]></valueAxisLabelExpression>
+                </barPlot>
+            </barChart>
+        </band>
+    </summary>
+
 </jasperReport>

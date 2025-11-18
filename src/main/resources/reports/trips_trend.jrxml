@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
-<jasperReport name="trips_trend" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" whenNoDataType="AllSectionsNoDetail" uuid="f6666666-6666-6666-6666-666666666666">
+<jasperReport name="trips_trend" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" whenNoDataType="AllSectionsNoDetail">
+    <property name="net.sf.jasperreports.default.font.name" value="DejaVu Sans"/>
     <property name="net.sf.jasperreports.default.pdf.font.name" value="DejaVu Sans"/>
     <property name="net.sf.jasperreports.default.pdf.encoding" value="Identity-H"/>
     <property name="net.sf.jasperreports.default.pdf.embedded" value="true"/>
+    <style name="BaseStyle" isDefault="true" fontName="DejaVu Sans" pdfFontName="DejaVu Sans" pdfEncoding="Identity-H" isPdfEmbedded="true"/>
     <parameter name="REPORT_TITLE" class="java.lang.String"/>
     <field name="date" class="java.lang.String"/>
     <field name="cancelledTrips" class="java.lang.Long"/>
@@ -20,17 +22,6 @@
             </textField>
         </band>
     </title>
-    <noData>
-        <band height="40">
-            <staticText>
-                <reportElement x="0" y="0" width="782" height="40"/>
-                <textElement textAlignment="Center" verticalAlignment="Middle">
-                    <font size="12" isItalic="true"/>
-                </textElement>
-                <text><![CDATA[Không có dữ liệu cho kỳ lọc này]]></text>
-            </staticText>
-        </band>
-    </noData>
 
     <columnHeader>
         <band height="24">
@@ -83,4 +74,17 @@
             </textField>
         </band>
     </pageFooter>
+
+    <noData>
+        <band height="40">
+            <staticText>
+                <reportElement x="0" y="0" width="782" height="40"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="12" isItalic="true"/>
+                </textElement>
+                <text><![CDATA[Không có dữ liệu cho kỳ lọc này]]></text>
+            </staticText>
+        </band>
+    </noData>
+
 </jasperReport>

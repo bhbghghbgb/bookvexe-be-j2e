@@ -51,7 +51,60 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public List<RevenuePointResponse> revenueTime(RevenueFilter filter) {
         // Payment has been extracted to a separate service; this monolith no longer aggregates payment revenue.
-        return new ArrayList<>();
+
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Object[]> cq = cb.createQuery(Object[].class);
+        Root<org.example.bookvexebej2e.models.db.BookingDbModel> b = cq.from(org.example.bookvexebej2e.models.db.BookingDbModel.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(cb.or(cb.isFalse(b.get("isDeleted")), cb.isNull(b.get("isDeleted"))));
+
+        if (filter.getStartDate() != null && filter.getEndDate() != null) {
+            predicates.add(cb.between(b.get("createdDate"), startOfDay(filter.getStartDate()), endOfDay(filter.getEndDate())));
+        }
+
+        if (filter.getRouteId() != null) {
+            Join<?, ?> t = b.join("trip");
+            predicates.add(cb.equal(t.get("route").get("id"), filter.getRouteId()));
+        }
+
+        Expression<String> dateExpr = cb.function("TO_CHAR", String.class, b.get("createdDate"), cb.literal("YYYY-MM-DD"));
+        Expression<BigDecimal> totalRevenueExpr = cb.sum(b.<BigDecimal>get("totalPrice"));
+        Expression<Long> txCountExpr = cb.count(b.get("id"));
+        Expression<Long> successExpr = cb.sum(cb.<Long>selectCase().when(cb.notEqual(b.get("bookingStatus"), "cancelled"), 1L).otherwise(0L));
+        Expression<Long> failExpr = cb.sum(cb.<Long>selectCase().when(cb.equal(b.get("bookingStatus"), "cancelled"), 1L).otherwise(0L));
+
+        cq.multiselect(dateExpr, totalRevenueExpr, txCountExpr, successExpr, failExpr)
+          .where(predicates.toArray(new Predicate[0]))
+          .groupBy(dateExpr)
+          .orderBy(cb.asc(dateExpr));
+
+        List<Object[]> rows = em.createQuery(cq).getResultList();
+        List<RevenuePointResponse> result = new ArrayList<>();
+        for (Object[] row : rows) {
+            String date = (String) row[0];
+            BigDecimal totalRevenue = (BigDecimal) row[1];
+            Long txCount = (Long) row[2];
+            Long successCount = (Long) row[3];
+            Long failCount = (Long) row[4];
+            if (totalRevenue == null) {
+                totalRevenue = BigDecimal.ZERO;
+            }
+            if (txCount == null) {
+                txCount = 0L;
+            }
+            if (successCount == null) {
+                successCount = 0L;
+            }
+            if (failCount == null) {
+                failCount = 0L;
+            }
+            double successRate = txCount == 0L ? 0.0 : (successCount.doubleValue() * 100.0) / txCount.doubleValue();
+            String note = null;
+            result.add(new RevenuePointResponse(date, totalRevenue, txCount, successCount, failCount, successRate, note));
+        }
+
+        return result;
     }
 
     @Override
@@ -81,9 +134,10 @@ public class ReportServiceImpl implements ReportService {
             predicates.add(cb.equal(c.get("customerType").get("id"), filter.getCustomerTypeId()));
         }
 
-        Expression<String> routeName = cb.concat(cb.concat(r.get("startLocation"), " \u2192 "), r.get("endLocation"));
+        Expression<String> routeName = cb.concat(cb.concat(r.get("startLocation"), " → "), r.get("endLocation"));
+        Expression<java.math.BigDecimal> routeRevenueExpr = cb.sum(b.<java.math.BigDecimal>get("totalPrice"));
 
-        cq.multiselect(routeName, cb.count(b.get("id")))
+        cq.multiselect(routeName, cb.count(b.get("id")), routeRevenueExpr)
           .where(predicates.toArray(new Predicate[0]))
           .groupBy(r.get("startLocation"), r.get("endLocation"))
           .orderBy(cb.desc(cb.count(b.get("id"))));
@@ -93,7 +147,14 @@ public class ReportServiceImpl implements ReportService {
         for (Object[] rrow : rows) {
             String rn = (String) rrow[0];
             Long total = (Long) rrow[1];
-            result.add(new BookingsByRouteResponse(rn, total == null ? 0L : total));
+            java.math.BigDecimal routeRevenue = (java.math.BigDecimal) rrow[2];
+            if (total == null) {
+                total = 0L;
+            }
+            if (routeRevenue == null) {
+                routeRevenue = java.math.BigDecimal.ZERO;
+            }
+            result.add(new BookingsByRouteResponse(rn, total, routeRevenue));
         }
         return result;
     }

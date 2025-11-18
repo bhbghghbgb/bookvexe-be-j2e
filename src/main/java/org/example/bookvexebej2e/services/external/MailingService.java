@@ -2,12 +2,12 @@ package org.example.bookvexebej2e.services.external;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.bookvexebej2e.configs.MicroserviceProperties;
 import org.example.bookvexebej2e.models.db.UserDbModel;
 import org.example.bookvexebej2e.models.dto.kafka.MailKafkaDTO;
 import org.example.bookvexebej2e.repositories.user.UserRepository;
 import org.example.bookvexebej2e.services.kafka.KafkaProducerService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -23,6 +23,7 @@ public class MailingService {
     private final UserRepository userRepository;
     private final JavaMailSender emailSender;
     private final KafkaProducerService kafkaProducerService;
+    private final MicroserviceProperties microserviceProperties;
 
     @Value("${app.email.sender}")
     private String senderEmail;
@@ -51,6 +52,13 @@ public class MailingService {
      * This is useful for testing or explicit email addresses not linked to a UserDbModel.
      */
     public void sendEmail(String toEmail, String subject, String body) {
+        // *** CONDITIONAL CHECK: If mail service is disabled, we stop here. ***
+        if (!microserviceProperties.getMail().isEnabled()) {
+            log.warn("Mailing Microservice is currently DISABLED. Skipping Kafka request. To: {}, Subject: {}",
+                toEmail, subject);
+            return;
+        }
+
         sendMailRequestToKafka(toEmail, subject, body);
     }
 
@@ -76,11 +84,12 @@ public class MailingService {
      * The email address is resolved from the UserDbModel.
      */
     public void sendEmailToUser(UUID userId, String subject, String body) {
+        // Re-use the main sendEmail method which has the conditional check
         userRepository.findById(userId)
             .ifPresentOrElse(user -> {
                 String email = getUserEmail(user);
                 if (email != null) {
-                    sendMailRequestToKafka(email, subject, body);
+                    sendEmail(email, subject, body);
                 } else {
                     log.warn("User {} has no associated email address (Customer/Employee) for sending.", userId);
                 }

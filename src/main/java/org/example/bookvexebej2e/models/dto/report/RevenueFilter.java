@@ -11,4 +11,5 @@ public class RevenueFilter {
     private UUID routeId;
     private UUID methodId;
     private String status; // PENDING, SUCCESS, FAILED, REFUNDED
+    private String printedBy;
 }
