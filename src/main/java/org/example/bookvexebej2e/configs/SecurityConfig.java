@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -36,6 +37,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationEntryPoint unauthorizedHandler;
     private final AuthenticationSuccessHandler oauth2SuccessHandler;
+    private final AuthenticationFailureHandler oauth2FailureHandler;
     private final PasswordEncoder passwordEncoder;
 
     @Value("${security.admin.allow-all:false}")
@@ -71,7 +73,8 @@ public class SecurityConfig {
                 // CORS and CSRF Configuration
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // Use IF_REQUIRED for OAuth2, but still stateless for JWT
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 // EXPLICITLY SET THE ENTRY POINT TO RETURN 401 ON AUTH FAILURE
                 .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(unauthorizedHandler))
 
@@ -115,7 +118,7 @@ public class SecurityConfig {
         // Only enable oauth2Login if OAuth2 clients are present
         if (clientRegistrations.getIfAvailable() != null) {
             http.oauth2Login(oauth2 -> oauth2.successHandler(oauth2SuccessHandler)
-                    .failureUrl("/auth/oauth2/failure"));
+                    .failureHandler(oauth2FailureHandler));
             log.info("OAuth2 login enabled (client registrations found).");
         } else {
             log.warn("OAuth2 login disabled (no client registrations found).");

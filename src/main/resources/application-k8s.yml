@@ -3,10 +3,23 @@ security:
     allow-all: true
 
 spring:
+  config:
+    import: optional:classpath:application-oauth-k8s.yml
+  
+  session:
+    store-type: none
+    
+  servlet:
+    session:
+      cookie:
+        same-site: lax
+        secure: false
+        http-only: true
+        
   datasource:
     url: jdbc:postgresql://postgres-service:5441/bookvexedb_j2e
-    username: root
-    password: nopass
+    username: postgres
+    password: root
   jpa:
     show-sql: true
     hibernate:
@@ -58,6 +71,8 @@ logging:
 
 server:
   port: 5181
+  servlet:
+    context-path: /api/bookvexe-be-j2e
 
 app:
   email:
@@ -71,8 +86,8 @@ app:
 
 chat:
   service:
-    url: http://bookvexe-chat-service:5182
+    url: http://bookvexe-chat-service:5182/api/bookvexe-chat-service
 
 services:
   payment-service:
-    url: http://bookvexe-payment-service:8084
+    url: http://bookvexe-payment-service:8084/api/bookvexe-payment-service
