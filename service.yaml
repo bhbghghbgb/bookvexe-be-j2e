@@ -9,7 +9,3 @@ spec:
     - protocol: TCP
       port: 5181
       targetPort: 5181
-  sessionAffinity: ClientIP
-  sessionAffinityConfig:
-    clientIP:
-      timeoutSeconds: 10800
