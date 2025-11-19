@@ -1,7 +1,7 @@
 package org.example.bookvexebej2e.services.report;
 
 import java.io.InputStream;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +36,24 @@ public class ReportPrintServiceImpl implements ReportPrintService {
 
     private final ReportService reportService;
 
-    private static final DateTimeFormatter PRINTED_DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter PRINTED_DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+    private InputStream loadLogoStream() {
+        try {
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            InputStream is = null;
+            if (cl != null) {
+                is = cl.getResourceAsStream("reports/logo.png");
+            }
+            if (is == null) {
+                is = getClass().getResourceAsStream("/reports/logo.png");
+            }
+            return is;
+        } catch (Exception e) {
+            log.warn("Unable to load logo image: {}", e.getMessage());
+            return null;
+        }
+    }
 
     private byte[] exportPdf(String template, Map<String, Object> params, List<?> data) {
         try {
@@ -98,11 +115,12 @@ public class ReportPrintServiceImpl implements ReportPrintService {
         List<RevenuePointResponse> rows = reportService.revenueTime(filter);
         Map<String, Object> params = new HashMap<>();
         params.put("REPORT_TITLE", "Hệ thống đặt vé xe — Báo cáo doanh thu theo thời gian");
-        params.put("printedDate", LocalDate.now().format(PRINTED_DATE_FMT));
+        params.put("printedDate", LocalDateTime.now().format(PRINTED_DATE_FMT));
         params.put("printedBy", filter.getPrintedBy());
         params.put("fromDate", filter.getStartDate());
         params.put("toDate", filter.getEndDate());
         params.put("reportCode", "BC-DT-001");
+        params.put("LOGO_STREAM", loadLogoStream());
         return exportPdf("/reports/revenue_time.jrxml", params, rows);
     }
 
@@ -119,11 +137,12 @@ public class ReportPrintServiceImpl implements ReportPrintService {
         List<BookingsByRouteResponse> rows = reportService.bookingsByRoute(filter);
         Map<String, Object> params = new HashMap<>();
         params.put("REPORT_TITLE", "Hệ thống đặt vé xe — Báo cáo lượt đặt vé theo tuyến");
-        params.put("printedDate", LocalDate.now().format(PRINTED_DATE_FMT));
+        params.put("printedDate", LocalDateTime.now().format(PRINTED_DATE_FMT));
         params.put("printedBy", filter.getPrintedBy());
         params.put("fromDate", filter.getStartDate());
         params.put("toDate", filter.getEndDate());
         params.put("reportCode", "BC-LDV-003");
+        params.put("LOGO_STREAM", loadLogoStream());
         return exportPdf("/reports/bookings_by_route.jrxml", params, rows);
     }
 
@@ -140,11 +159,12 @@ public class ReportPrintServiceImpl implements ReportPrintService {
         List<TripsStatusResponse> rows = reportService.tripsStatus(filter);
         Map<String, Object> params = new HashMap<>();
         params.put("REPORT_TITLE", "Hệ thống đặt vé xe — Báo cáo tình trạng chuyến xe — Chạy / Hủy");
-        params.put("printedDate", LocalDate.now().format(PRINTED_DATE_FMT));
+        params.put("printedDate", LocalDateTime.now().format(PRINTED_DATE_FMT));
         params.put("printedBy", filter.getPrintedBy());
         params.put("fromDate", filter.getStartDate());
         params.put("toDate", filter.getEndDate());
         params.put("reportCode", "BC-TC-004");
+        params.put("LOGO_STREAM", loadLogoStream());
         return exportPdf("/reports/trips_status.jrxml", params, rows);
     }
 
