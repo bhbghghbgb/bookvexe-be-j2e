@@ -39,9 +39,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.criteria.Predicate;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -450,7 +450,6 @@ public class BookingUserServiceImpl implements BookingUserService {
                 .orElseGet(() -> createNewCustomerAndUser(createDto));
     }
 
-    @Transactional
     private CustomerDbModel createNewCustomerAndUser(BookingUserCreate createDto) {
         CustomerDbModel customer = new CustomerDbModel();
         customer.setCode(generateCustomerCode());
@@ -461,15 +460,21 @@ public class BookingUserServiceImpl implements BookingUserService {
 
         CustomerDbModel savedCustomer = customerRepository.save(customer);
 
-        UserDbModel user = new UserDbModel();
-        user.setUsername(createDto.getCustomerPhone());
-        user.setPassword(passwordEncoder.encode("123456")); // ✅ Hash password
-        user.setIsGoogle(false);
-        user.setIsAdmin(false);
-        user.setCustomer(savedCustomer);
-        user.setIsDeleted(false);
+        // Check if user with this username already exists
+        if (userRepository.findByUsername(createDto.getCustomerPhone()).isEmpty()) {
+            UserDbModel user = new UserDbModel();
+            user.setUsername(createDto.getCustomerPhone());
+            user.setPassword(passwordEncoder.encode("123456")); // ✅ Hash password
+            user.setIsGoogle(false);
+            user.setIsAdmin(false);
+            user.setCustomer(savedCustomer);
+            user.setIsDeleted(false);
 
-        userRepository.save(user);
+            userRepository.save(user);
+        } else {
+            log.warn("User with username {} already exists, skipping user creation for new customer", createDto.getCustomerPhone());
+        }
+
         return savedCustomer;
     }
 

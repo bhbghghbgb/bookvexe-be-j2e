@@ -31,8 +31,8 @@ spring:
           #   provider: keycloak
 
           google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
+            client-id: 195062958802-evsvuvehds1d90moco9lo4do4dgnnknp.apps.googleusercontent.com
+            client-secret: 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
             scope:
               - email
               - profile
