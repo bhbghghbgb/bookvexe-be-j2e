@@ -15,7 +15,7 @@ spec:
       containers:
         - name: bookvexe-be-j2e
           image: bookvexe-be-j2e:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 5181
           env:

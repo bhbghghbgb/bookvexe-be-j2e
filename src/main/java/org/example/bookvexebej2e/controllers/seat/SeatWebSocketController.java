@@ -3,6 +3,7 @@ package org.example.bookvexebej2e.controllers.seat;
 import java.util.UUID;
 
 import org.example.bookvexebej2e.models.dto.seat.SeatHoldRequest;
+import org.example.bookvexebej2e.services.external.WebSocketService;
 import org.example.bookvexebej2e.services.seat.SeatHoldService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -19,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SeatWebSocketController {
 
     private final SeatHoldService seatHoldService;
+    private final WebSocketService webSocketService;
 
     @MessageMapping("/seat/hold")
     public void holdSeats(@Payload SeatHoldRequest request, SimpMessageHeaderAccessor headerAccessor) {
@@ -33,7 +35,10 @@ public class SeatWebSocketController {
 
             if (!success) {
                 log.warn("Failed to hold seats for request: {}", request);
-                // Could send error message back to specific user if needed
+                // Send error message to the user
+                if (userId != null) {
+                    webSocketService.notifyUser(userId, "SEAT_HOLD_FAILED");
+                }
             }
 
         } catch (Exception e) {

@@ -1,7 +1,6 @@
 package org.example.bookvexebej2e.services.notification;
 
 import jakarta.persistence.criteria.Predicate;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Strings;
@@ -23,6 +22,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -179,7 +180,7 @@ public class NotificationServiceImpl implements NotificationService {
     /**
      * Enhanced high-level service method to send a notification that handles guest users
      */
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public NotificationResponse sendNotification(UUID userId, String typeCode, String title, String message,
         UUID bookingId, UUID tripId, String channel, Boolean sendEmail, Boolean shouldSave) {
 
@@ -190,7 +191,7 @@ public class NotificationServiceImpl implements NotificationService {
     /**
      * Overload method that allows specifying an explicit email address
      */
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public NotificationResponse sendNotification(UUID userId, String toEmail, String typeCode, String title,
         String message, UUID bookingId, UUID tripId, String channel, Boolean sendEmail, Boolean shouldSave) {
 
@@ -201,7 +202,7 @@ public class NotificationServiceImpl implements NotificationService {
     /**
      * NEW: Guest-friendly notification method that doesn't require user ID
      */
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public NotificationResponse sendGuestNotification(String toEmail, String typeCode, String title, String message,
         UUID bookingId, UUID tripId, String channel, Boolean sendEmail, Boolean shouldSave) {
 
@@ -218,18 +219,22 @@ public class NotificationServiceImpl implements NotificationService {
 
         // Handle email if requested
         if (Boolean.TRUE.equals(sendEmail)) {
-            if (toEmail != null && !toEmail.isBlank()) {
-                mailingService.sendEmail(toEmail, title, message);
-                log.info("Email sent to guest: {}", toEmail);
-            } else {
-                // Try to resolve email from booking if available
-                String resolvedEmail = resolveGuestEmail(bookingId);
-                if (resolvedEmail != null) {
-                    mailingService.sendEmail(resolvedEmail, title, message);
-                    log.info("Email sent to guest (resolved from booking): {}", resolvedEmail);
+            try {
+                if (toEmail != null && !toEmail.isBlank()) {
+                    mailingService.sendEmail(toEmail, title, message);
+                    log.info("Email sent to guest: {}", toEmail);
                 } else {
-                    log.warn("Email requested for guest notification but no email available for booking {}", bookingId);
+                    // Try to resolve email from booking if available
+                    String resolvedEmail = resolveGuestEmail(bookingId);
+                    if (resolvedEmail != null) {
+                        mailingService.sendEmail(resolvedEmail, title, message);
+                        log.info("Email sent to guest (resolved from booking): {}", resolvedEmail);
+                    } else {
+                        log.warn("Email requested for guest notification but no email available for booking {}", bookingId);
+                    }
                 }
+            } catch (Exception e) {
+                log.error("Failed to send email for guest notification: {}", e.getMessage(), e);
             }
         }
 
@@ -257,35 +262,47 @@ public class NotificationServiceImpl implements NotificationService {
 
         NotificationDbModel entity;
 
-        if (Boolean.TRUE.equals(shouldSave)) {
-            entity = saveNotification(userId, typeCode, title, message, bookingId, tripId, channel);
-            log.info("Notification saved and sent to user {}. ID: {}", userId, entity.getId());
-        } else {
-            entity = createUnsavedNotification(userId, typeCode, title, message, bookingId, tripId, channel);
-            log.info("DEBUG Notification created (unsaved) and sent to user {}.", userId);
-        }
-
-        // Enhanced email handling for core service
-        if (Boolean.TRUE.equals(sendEmail)) {
-            String finalRecipientEmail = toEmail;
-
-            // If no explicit email provided, try to resolve it from available sources
-            if (finalRecipientEmail == null || finalRecipientEmail.isBlank()) {
-                finalRecipientEmail = resolveRecipientEmail(userId, bookingId);
-            }
-
-            if (finalRecipientEmail != null && !finalRecipientEmail.isBlank()) {
-                mailingService.sendEmail(finalRecipientEmail, title, message);
-                log.info("Email sent to: {}", finalRecipientEmail);
+        try {
+            if (Boolean.TRUE.equals(shouldSave)) {
+                entity = saveNotification(userId, typeCode, title, message, bookingId, tripId, channel);
+                log.info("Notification saved and sent to user {}. ID: {}", userId, entity.getId());
             } else {
-                log.warn("Email requested but no recipient email could be resolved for user {} and booking {}", userId,
-                    bookingId);
+                entity = createUnsavedNotification(userId, typeCode, title, message, bookingId, tripId, channel);
+                log.info("DEBUG Notification created (unsaved) and sent to user {}.", userId);
             }
-        }
 
-        // WebSocket only for authenticated users
-        webSocketService.notifyUser(userId, "NEW_NOTIFICATION");
-        return notificationMapper.toResponse(entity);
+            // Enhanced email handling for core service
+            if (Boolean.TRUE.equals(sendEmail)) {
+                String finalRecipientEmail = toEmail;
+
+                // If no explicit email provided, try to resolve it from available sources
+                if (finalRecipientEmail == null || finalRecipientEmail.isBlank()) {
+                    finalRecipientEmail = resolveRecipientEmail(userId, bookingId);
+                }
+
+                if (finalRecipientEmail != null && !finalRecipientEmail.isBlank()) {
+                    mailingService.sendEmail(finalRecipientEmail, title, message);
+                    log.info("Email sent to: {}", finalRecipientEmail);
+                } else {
+                    log.warn("Email requested but no recipient email could be resolved for user {} and booking {}", userId,
+                        bookingId);
+                }
+            }
+
+            // WebSocket only for authenticated users
+            webSocketService.notifyUser(userId, "NEW_NOTIFICATION");
+            return notificationMapper.toResponse(entity);
+        } catch (Exception e) {
+            log.error("Failed to send notification: {}", e.getMessage(), e);
+            // Return a dummy response to avoid throwing exception
+            NotificationDbModel dummy = new NotificationDbModel();
+            dummy.setId(UUID.randomUUID());
+            dummy.setTitle(title);
+            dummy.setMessage(message);
+            dummy.setChannel(channel);
+            dummy.setIsSent(false);
+            return notificationMapper.toResponse(dummy);
+        }
     }
 
     /**

@@ -42,6 +42,10 @@ public class PaymentProxyController {
                                                         @RequestBody(required = false) byte[] body) {
         try {
             String requestUri = request.getRequestURI(); // e.g. /admin/payments/pagination
+            String contextPath = request.getContextPath();
+            if (requestUri.startsWith(contextPath)) {
+                requestUri = requestUri.substring(contextPath.length());
+            }
             String query = request.getQueryString();
             String targetUrl = paymentServiceBaseUrl + requestUri + (query != null ? ("?" + query) : "");
 

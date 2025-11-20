@@ -38,7 +38,11 @@ public class PaymentUserProxyController {
     public ResponseEntity<byte[]> proxyToPaymentService(HttpServletRequest request,
                                                         @RequestBody(required = false) byte[] body) {
         try {
-            String requestUri = request.getRequestURI(); // e.g. /user/payments
+            String requestUri = request.getRequestURI();  
+            String contextPath = request.getContextPath();
+            if (requestUri.startsWith(contextPath)) {
+                requestUri = requestUri.substring(contextPath.length());
+            }
             String query = request.getQueryString();
             String targetUrl = paymentServiceBaseUrl + requestUri + (query != null ? ("?" + query) : "");
 
