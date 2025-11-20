@@ -1,26 +1,15 @@
 package org.example.bookvexebej2e.services.booking;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.helpers.api.PaymentClient;
 import org.example.bookvexebej2e.mappers.BookingMapper;
 import org.example.bookvexebej2e.models.constant.BookingStatus;
 import org.example.bookvexebej2e.models.constant.SeatStatus;
-import org.example.bookvexebej2e.models.db.BookingDbModel;
-import org.example.bookvexebej2e.models.db.BookingSeatDbModel;
-import org.example.bookvexebej2e.models.db.CustomerDbModel;
-import org.example.bookvexebej2e.models.db.TripDbModel;
-import org.example.bookvexebej2e.models.db.TripStopDbModel;
-import org.example.bookvexebej2e.models.dto.booking.BookingCreate;
-import org.example.bookvexebej2e.models.dto.booking.BookingQuery;
-import org.example.bookvexebej2e.models.dto.booking.BookingResponse;
-import org.example.bookvexebej2e.models.dto.booking.BookingSeatCreate;
-import org.example.bookvexebej2e.models.dto.booking.BookingSelectResponse;
-import org.example.bookvexebej2e.models.dto.booking.BookingUpdate;
+import org.example.bookvexebej2e.models.db.*;
+import org.example.bookvexebej2e.models.dto.booking.*;
 import org.example.bookvexebej2e.repositories.booking.BookingRepository;
 import org.example.bookvexebej2e.repositories.booking.BookingSeatRepository;
 import org.example.bookvexebej2e.repositories.customer.CustomerRepository;
@@ -36,9 +25,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Booking Service Implementation
@@ -158,17 +150,18 @@ public class BookingServiceImpl implements BookingService {
             String message = String.format("Đặt chỗ %s đã được tạo thành công. Trạng thái: %s",
                     savedEntity.getCode(), savedEntity.getBookingStatus());
 
-            notificationService.sendNotification(
-                    userId,
-                    "TYPE_BOOKING_CREATED",
-                    "Đặt chỗ mới",
-                    message,
-                    savedEntity.getId(),
-                    savedEntity.getTrip().getId(),
-                    "CHANNEL_BOOKING",
-                    true, // sendEmail
-                    true // shouldSave
-            );
+//            sendNotificationIfNotExists(
+//                userId,
+//                "TYPE_BOOKING_CREATED",
+//                "Đặt chỗ mới",
+//                message,
+//                savedEntity.getId(),
+//                savedEntity.getTrip().getId(),
+//                "CHANNEL_BOOKING",
+//                true, // sendEmail
+//                true // shouldSave
+//            );
+
         } catch (Exception e) {
             log.warn("Failed to send notification for booking creation: {}", e.getMessage());
         }
@@ -382,16 +375,16 @@ public class BookingServiceImpl implements BookingService {
             String message = String.format("Đặt chỗ %s đã được xác nhận. Trạng thái: chờ khởi hành",
                     savedEntity.getCode());
 
-            notificationService.sendNotification(
-                    userId,
-                    "TYPE_BOOKING_CONFIRMED",
-                    "Xác nhận đặt chỗ",
-                    message,
-                    savedEntity.getId(),
-                    savedEntity.getTrip().getId(),
-                    "CHANNEL_BOOKING",
-                    true,
-                    true);
+            sendNotificationIfNotExists(
+                userId,
+                "TYPE_BOOKING_CONFIRMED",
+                "Xác nhận đặt chỗ",
+                message,
+                savedEntity.getId(),
+                savedEntity.getTrip().getId(),
+                "CHANNEL_BOOKING",
+                true,
+                true);
         } catch (Exception e) {
             log.warn("Failed to send notification for booking confirmation: {}", e.getMessage());
         }
@@ -479,16 +472,16 @@ public class BookingServiceImpl implements BookingService {
             String message = String.format("Chuyến đi cho đặt chỗ %s đã hoàn thành. Cảm ơn bạn đã sử dụng dịch vụ!",
                     savedEntity.getCode());
 
-            notificationService.sendNotification(
-                    userId,
-                    "TYPE_TRIP_COMPLETED",
-                    "Chuyến đi hoàn thành",
-                    message,
-                    savedEntity.getId(),
-                    savedEntity.getTrip().getId(),
-                    "CHANNEL_BOOKING",
-                    true,
-                    true);
+//            sendNotificationIfNotExists(
+//                userId,
+//                "TYPE_TRIP_COMPLETED",
+//                "Chuyến đi hoàn thành",
+//                message,
+//                savedEntity.getId(),
+//                savedEntity.getTrip().getId(),
+//                "CHANNEL_BOOKING",
+//                true,
+//                true);
         } catch (Exception e) {
             log.warn("Failed to send notification for trip completion: {}", e.getMessage());
         }
@@ -511,16 +504,16 @@ public class BookingServiceImpl implements BookingService {
                     .orElseThrow().getId();
             String message = String.format("Đặt chỗ %s đã được hủy.", savedEntity.getCode());
 
-            notificationService.sendNotification(
-                    userId,
-                    "TYPE_BOOKING_CANCELLED",
-                    "Hủy đặt chỗ",
-                    message,
-                    savedEntity.getId(),
-                    savedEntity.getTrip().getId(),
-                    "CHANNEL_BOOKING",
-                    true,
-                    true);
+//            sendNotificationIfNotExists(
+//                userId,
+//                "TYPE_BOOKING_CANCELLED",
+//                "Hủy đặt chỗ",
+//                message,
+//                savedEntity.getId(),
+//                savedEntity.getTrip().getId(),
+//                "CHANNEL_BOOKING",
+//                true,
+//                true);
         } catch (Exception e) {
             log.warn("Failed to send notification for booking cancellation: {}", e.getMessage());
         }
@@ -555,5 +548,57 @@ public class BookingServiceImpl implements BookingService {
 
         BookingDbModel savedEntity = bookingRepository.save(entity);
         return bookingMapper.toResponse(savedEntity);
+    }
+
+    private final Map<String, Object> lockMap = new ConcurrentHashMap<>();
+
+    private void sendNotificationIfNotExists(UUID userId,
+        String typeCode,
+        String title,
+        String message,
+        UUID bookingId,
+        UUID tripId,
+        String channel,
+        boolean sendEmail,
+        boolean shouldSave) {
+        if (!shouldSave) {
+            notificationService.sendNotification(
+                userId, typeCode, title, message, bookingId, tripId, channel, sendEmail, shouldSave);
+            return;
+        }
+
+        // Create a unique lock key for this combination
+        String lockKey = String.format("%s-%s-%s-%s", userId, bookingId, tripId, typeCode);
+
+        // Use computeIfAbsent to get or create a lock object for this key
+        Object lock = lockMap.computeIfAbsent(lockKey, k -> new Object());
+
+        synchronized (lock) {
+            try {
+                // Check if notification exists
+                boolean notificationExists = notificationService.existsByUserAndBookingAndTripAndType(
+                    userId, bookingId, tripId, typeCode);
+
+                if (!notificationExists) {
+                    notificationService.sendNotification(
+                        userId, typeCode, title, message, bookingId, tripId, channel, sendEmail, shouldSave);
+                } else {
+                    log.debug("Notification already exists for userId: {}, bookingId: {}, tripId: {}, typeCode: {}",
+                        userId, bookingId, tripId, typeCode);
+                }
+            } catch (Exception e) {
+                log.warn("Failed to send notification: {}", e.getMessage());
+                // Fallback
+                try {
+                    notificationService.sendNotification(
+                        userId, typeCode, title, message, bookingId, tripId, channel, sendEmail, shouldSave);
+                } catch (Exception ex) {
+                    log.warn("Fallback notification also failed: {}", ex.getMessage());
+                }
+            } finally {
+                // Clean up the lock to prevent memory leaks
+                lockMap.remove(lockKey, lock);
+            }
+        }
     }
 }

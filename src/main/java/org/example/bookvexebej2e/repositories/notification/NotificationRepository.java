@@ -25,4 +25,15 @@ public interface NotificationRepository extends BaseRepository<NotificationDbMod
         @Param("tripId") UUID tripId,
         @Param("typeCode") String typeCode
     );
+
+    @Query("SELECT COUNT(n) > 0 FROM NotificationDbModel n " +
+        "WHERE n.user.id = :userId " +
+        "AND n.booking.id = :bookingId " +
+        "AND n.trip.id = :tripId " +
+        "AND n.type.code = :typeCode")
+    boolean existsByUserIdAndBookingIdAndTripIdAndTypeCode(
+        @Param("userId") UUID userId,
+        @Param("bookingId") UUID bookingId,
+        @Param("tripId") UUID tripId,
+        @Param("typeCode") String typeCode);
 }

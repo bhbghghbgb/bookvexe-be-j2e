@@ -176,6 +176,12 @@ public class NotificationServiceImpl implements NotificationService {
         return entities.map(notificationMapper::toSelectResponse);
     }
 
+    @Override
+    public boolean existsByUserAndBookingAndTripAndType(UUID userId, UUID bookingId, UUID tripId, String typeCode) {
+        return notificationRepository.existsByUserIdAndBookingIdAndTripIdAndTypeCode(
+            userId, bookingId, tripId, typeCode);
+    }
+
     /**
      * Enhanced high-level service method to send a notification that handles guest users
      */

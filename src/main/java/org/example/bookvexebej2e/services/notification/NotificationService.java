@@ -45,4 +45,6 @@ public interface NotificationService {
     void deleteNotification(UUID notificationId, UUID userId);
 
     int countUnreadNotifications(UUID userId);
+
+    boolean existsByUserAndBookingAndTripAndType(UUID userId, UUID bookingId, UUID tripId, String typeCode);
 }
