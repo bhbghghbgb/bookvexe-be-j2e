@@ -233,6 +233,10 @@ public class BookingUserServiceImpl implements BookingUserService {
             }
         }
 
+        if (!"CASH".equalsIgnoreCase(createDto.getType())) {
+            return bookingUserMapper.toResponse(savedBooking);
+        }
+
         // ADD NOTIFICATION: Booking Created
         try {
             // Determine if this is a guest booking (no authenticated user)
@@ -242,7 +246,7 @@ public class BookingUserServiceImpl implements BookingUserService {
                     .orElse(null);
             String customerEmail = customer2.getEmail();
 
-            if (userId != null && "CASH".equalsIgnoreCase(createDto.getType())) {
+            if (userId != null) {
                 // Registered user - can save notification and send WebSocket
                 notificationService.sendNotification(
                         userId,
