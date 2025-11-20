@@ -1,27 +1,15 @@
 package org.example.bookvexebej2e.services.booking;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.bookvexebej2e.configs.SecurityUtils;
 import org.example.bookvexebej2e.exceptions.ResourceNotFoundException;
 import org.example.bookvexebej2e.mappers.BookingUserMapper;
 import org.example.bookvexebej2e.models.constant.BookingStatus;
 import org.example.bookvexebej2e.models.constant.SeatStatus;
-import org.example.bookvexebej2e.models.db.BookingDbModel;
-import org.example.bookvexebej2e.models.db.BookingSeatDbModel;
-import org.example.bookvexebej2e.models.db.CarSeatDbModel;
-import org.example.bookvexebej2e.models.db.CustomerDbModel;
-import org.example.bookvexebej2e.models.db.TripDbModel;
-import org.example.bookvexebej2e.models.db.TripStopDbModel;
-import org.example.bookvexebej2e.models.db.UserDbModel;
-import org.example.bookvexebej2e.models.dto.booking.BookingQuery;
-import org.example.bookvexebej2e.models.dto.booking.BookingResponse;
-import org.example.bookvexebej2e.models.dto.booking.BookingSearchRequest;
-import org.example.bookvexebej2e.models.dto.booking.BookingSeatCreate;
-import org.example.bookvexebej2e.models.dto.booking.BookingUserCreate;
+import org.example.bookvexebej2e.models.db.*;
+import org.example.bookvexebej2e.models.dto.booking.*;
 import org.example.bookvexebej2e.repositories.booking.BookingSeatRepository;
 import org.example.bookvexebej2e.repositories.booking.BookingUserRepository;
 import org.example.bookvexebej2e.repositories.car.CarSeatRepository;
@@ -41,9 +29,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor

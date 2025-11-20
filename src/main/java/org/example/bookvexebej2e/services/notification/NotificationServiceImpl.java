@@ -22,7 +22,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -180,7 +179,7 @@ public class NotificationServiceImpl implements NotificationService {
     /**
      * Enhanced high-level service method to send a notification that handles guest users
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public NotificationResponse sendNotification(UUID userId, String typeCode, String title, String message,
         UUID bookingId, UUID tripId, String channel, Boolean sendEmail, Boolean shouldSave) {
 
@@ -191,7 +190,7 @@ public class NotificationServiceImpl implements NotificationService {
     /**
      * Overload method that allows specifying an explicit email address
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public NotificationResponse sendNotification(UUID userId, String toEmail, String typeCode, String title,
         String message, UUID bookingId, UUID tripId, String channel, Boolean sendEmail, Boolean shouldSave) {
 
@@ -202,7 +201,6 @@ public class NotificationServiceImpl implements NotificationService {
     /**
      * NEW: Guest-friendly notification method that doesn't require user ID
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public NotificationResponse sendGuestNotification(String toEmail, String typeCode, String title, String message,
         UUID bookingId, UUID tripId, String channel, Boolean sendEmail, Boolean shouldSave) {
 
@@ -230,7 +228,8 @@ public class NotificationServiceImpl implements NotificationService {
                         mailingService.sendEmail(resolvedEmail, title, message);
                         log.info("Email sent to guest (resolved from booking): {}", resolvedEmail);
                     } else {
-                        log.warn("Email requested for guest notification but no email available for booking {}", bookingId);
+                        log.warn("Email requested for guest notification but no email available for booking {}",
+                            bookingId);
                     }
                 }
             } catch (Exception e) {
@@ -263,14 +262,6 @@ public class NotificationServiceImpl implements NotificationService {
         NotificationDbModel entity;
 
         try {
-            if (Boolean.TRUE.equals(shouldSave)) {
-                entity = saveNotification(userId, typeCode, title, message, bookingId, tripId, channel);
-                log.info("Notification saved and sent to user {}. ID: {}", userId, entity.getId());
-            } else {
-                entity = createUnsavedNotification(userId, typeCode, title, message, bookingId, tripId, channel);
-                log.info("DEBUG Notification created (unsaved) and sent to user {}.", userId);
-            }
-
             // Enhanced email handling for core service
             if (Boolean.TRUE.equals(sendEmail)) {
                 String finalRecipientEmail = toEmail;
@@ -284,9 +275,17 @@ public class NotificationServiceImpl implements NotificationService {
                     mailingService.sendEmail(finalRecipientEmail, title, message);
                     log.info("Email sent to: {}", finalRecipientEmail);
                 } else {
-                    log.warn("Email requested but no recipient email could be resolved for user {} and booking {}", userId,
-                        bookingId);
+                    log.warn("Email requested but no recipient email could be resolved for user {} and booking {}",
+                        userId, bookingId);
                 }
+            }
+
+            if (Boolean.TRUE.equals(shouldSave)) {
+                entity = saveNotification(userId, typeCode, title, message, bookingId, tripId, channel);
+                log.info("Notification saved and sent to user {}. ID: {}", userId, entity.getId());
+            } else {
+                entity = createUnsavedNotification(userId, typeCode, title, message, bookingId, tripId, channel);
+                log.info("DEBUG Notification created (unsaved) and sent to user {}.", userId);
             }
 
             // WebSocket only for authenticated users
