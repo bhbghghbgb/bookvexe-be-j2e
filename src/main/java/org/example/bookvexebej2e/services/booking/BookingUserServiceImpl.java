@@ -242,7 +242,7 @@ public class BookingUserServiceImpl implements BookingUserService {
                     .orElse(null);
             String customerEmail = customer2.getEmail();
 
-            if (userId != null) {
+            if (userId != null && "CASH".equalsIgnoreCase(createDto.getType())) {
                 // Registered user - can save notification and send WebSocket
                 notificationService.sendNotification(
                         userId,
