@@ -396,6 +396,60 @@ public class BookingServiceImpl implements BookingService {
             log.warn("Failed to send notification for booking confirmation: {}", e.getMessage());
         }
 
+        // Broadcast booking status update via WebSocket
+        try {
+            if (savedEntity.getBookingSeats() != null && !savedEntity.getBookingSeats().isEmpty()) {
+                UUID tripId = savedEntity.getTrip().getId();
+                UUID carId = null;
+
+                for (BookingSeatDbModel bookingSeat : savedEntity.getBookingSeats()) {
+                    if (!bookingSeat.getIsDeleted()) {
+                        carId = bookingSeat.getSeat().getCar().getId();
+                        break;
+                    }
+                }
+
+                if (carId != null) {
+                    // Get seat IDs for broadcasting
+                    List<String> bookedSeatIds = new ArrayList<>();
+                    for (BookingSeatDbModel bookingSeat : savedEntity.getBookingSeats()) {
+                        if (!bookingSeat.getIsDeleted()) {
+                            bookedSeatIds.add(bookingSeat.getSeat().getId().toString());
+                        }
+                    }
+
+                    // Broadcast to specific trip/car with booked action
+                    seatHoldService.broadcastSeatUpdate(
+                            tripId.toString(),
+                            carId.toString(),
+                            bookedSeatIds,
+                            "booked",
+                            null,
+                            "booking_confirmed");
+
+                    // Also broadcast refresh action to update overall state
+                    seatHoldService.broadcastSeatUpdate(
+                            tripId.toString(),
+                            carId.toString(),
+                            bookedSeatIds,
+                            "refresh",
+                            null,
+                            "booking_confirmed");
+
+                    // Broadcast to global booking channel for booking history updates
+                    seatHoldService.broadcastSeatUpdate(
+                            "global",
+                            "bookings",
+                            bookedSeatIds,
+                            "refresh",
+                            null,
+                            "booking_confirmed");
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error broadcasting booking status update: {}", e.getMessage());
+        }
+
         return bookingMapper.toResponse(savedEntity);
     }
 
