@@ -249,7 +249,7 @@ public class BookingUserServiceImpl implements BookingUserService {
                         "TYPE_BOOKING_CREATED",
                         "Đặt vé thành công",
                         "Bạn đã đặt vé thành công. Mã đặt vé: " + savedBooking.getCode() +
-                                ". Vui lòng thanh toán để hoàn tất.",
+                                ". Vui lòng thanh toán tiền mặt để hoàn tất.",
                         savedBooking.getId(),
                         savedBooking.getTrip().getId(),
                         "APP",
@@ -263,7 +263,7 @@ public class BookingUserServiceImpl implements BookingUserService {
                         "TYPE_BOOKING_CREATED",
                         "Đặt vé thành công",
                         "Bạn đã đặt vé thành công. Mã đặt vé: " + savedBooking.getCode() +
-                                ". Vui lòng thanh toán để hoàn tất.",
+                                ". Vui lòng thanh toán tiền mặt để hoàn tất.",
                         savedBooking.getId(),
                         savedBooking.getTrip().getId(),
                         "EMAIL",
