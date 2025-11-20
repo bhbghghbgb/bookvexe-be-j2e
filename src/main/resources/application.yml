@@ -9,9 +9,9 @@ spring:
     import: optional:classpath:application-oauth.yml
 
   datasource:
-    url: jdbc:postgresql://localhost:5441/bookvexedb_j2e
-    username: root
-    password: nopass
+    url: jdbc:postgresql://localhost:5432/bookvexedb_j2e
+    username: postgres
+    password: root
   jpa:
     show-sql: true
     hibernate:
