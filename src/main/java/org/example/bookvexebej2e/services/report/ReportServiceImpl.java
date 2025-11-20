@@ -110,7 +110,45 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public List<RevenueByMethodResponse> revenueByMethod(RevenueFilter filter) {
         // Payment has been extracted to a separate service; this monolith no longer aggregates payment revenue by method.
-        return new ArrayList<>();
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Object[]> cq = cb.createQuery(Object[].class);
+        Root<org.example.bookvexebej2e.models.db.BookingDbModel> b = cq
+                .from(org.example.bookvexebej2e.models.db.BookingDbModel.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+        predicates.add(cb.or(cb.isFalse(b.get("isDeleted")), cb.isNull(b.get("isDeleted"))));
+
+        if (filter.getStartDate() != null && filter.getEndDate() != null) {
+            predicates.add(cb.between(b.get("createdDate"),
+                    startOfDay(filter.getStartDate()),
+                    endOfDay(filter.getEndDate())));
+        }
+
+        if (filter.getRouteId() != null) {
+            Join<?, ?> t = b.join("trip");
+            predicates.add(cb.equal(t.get("route").get("id"), filter.getRouteId()));
+        }
+
+        Expression<String> methodExpr = cb.coalesce(b.get("type"), "UNKNOWN");
+        Expression<BigDecimal> totalExpr = cb.sum(b.<BigDecimal>get("totalPrice"));
+
+        cq.multiselect(methodExpr, totalExpr)
+                .where(predicates.toArray(new Predicate[0]))
+                .groupBy(methodExpr)
+                .orderBy(cb.desc(totalExpr));
+
+        List<Object[]> rows = em.createQuery(cq).getResultList();
+        List<RevenueByMethodResponse> result = new ArrayList<>();
+        for (Object[] row : rows) {
+            String method = (String) row[0];
+            BigDecimal total = (BigDecimal) row[1];
+            if (total == null) {
+                total = BigDecimal.ZERO;
+            }
+            result.add(new RevenueByMethodResponse(method, total));
+        }
+
+        return result;
     }
 
     @Override

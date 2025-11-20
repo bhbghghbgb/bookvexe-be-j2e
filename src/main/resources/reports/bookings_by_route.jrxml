@@ -12,6 +12,7 @@
     <parameter name="fromDate" class="java.lang.String"/>
     <parameter name="toDate" class="java.lang.String"/>
     <parameter name="reportCode" class="java.lang.String"/>
+    <parameter name="LOGO_STREAM" class="java.io.InputStream"/>
 
     <field name="routeName" class="java.lang.String"/>
     <field name="totalBookings" class="java.lang.Long"/>
@@ -29,11 +30,18 @@
     <variable name="vTopRouteRevenue" class="java.math.BigDecimal" resetType="Report" calculation="First">
         <variableExpression><![CDATA[$F{routeRevenue} == null ? java.math.BigDecimal.ZERO : $F{routeRevenue}]]></variableExpression>
     </variable>
+    <variable name="vTotalRevenue" class="java.math.BigDecimal" resetType="Report" calculation="Sum">
+        <variableExpression><![CDATA[$F{routeRevenue} == null ? java.math.BigDecimal.ZERO : $F{routeRevenue}]]></variableExpression>
+    </variable>
 
     <title>
         <band height="80">
+            <image scaleImage="RetainShape">
+                <reportElement x="0" y="0" width="80" height="30"/>
+                <imageExpression><![CDATA[$P{LOGO_STREAM}]]></imageExpression>
+            </image>
             <textField>
-                <reportElement x="0" y="0" width="782" height="30"/>
+                <reportElement x="90" y="0" width="692" height="30"/>
                 <textElement textAlignment="Center" verticalAlignment="Middle">
                     <font size="16" isBold="true"/>
                 </textElement>
@@ -75,7 +83,7 @@
     <columnHeader>
         <band height="24">
             <rectangle>
-                <reportElement x="0" y="0" width="782" height="24"/>
+                <reportElement x="0" y="0" width="782" height="24" backcolor="#F5F7FA" mode="Opaque"/>
             </rectangle>
             <staticText>
                 <reportElement x="0" y="0" width="430" height="24"/>
@@ -118,27 +126,73 @@
         </band>
     </detail>
 
-    <pageFooter>
+    <columnFooter>
         <band height="20">
+            <rectangle>
+                <reportElement x="0" y="0" width="782" height="20" backcolor="#E9F2FF" mode="Opaque"/>
+            </rectangle>
             <staticText>
-                <reportElement x="0" y="0" width="400" height="20"/>
+                <reportElement x="0" y="0" width="430" height="20"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Tổng]]></text>
+            </staticText>
+            <textField pattern="#,##0">
+                <reportElement x="430" y="0" width="170" height="20"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$V{vTotalBookings} == null ? 0L : $V{vTotalBookings}]]></textFieldExpression>
+            </textField>
+            <textField pattern="#,##0">
+                <reportElement x="600" y="0" width="182" height="20"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle"/>
+                <textFieldExpression><![CDATA[$V{vTotalRevenue} == null ? java.math.BigDecimal.ZERO : $V{vTotalRevenue}]]></textFieldExpression>
+            </textField>
+        </band>
+    </columnFooter>
+
+    <pageFooter>
+        <band height="40">
+            <textField>
+                <reportElement x="0" y="0" width="120" height="14"/>
                 <textElement verticalAlignment="Middle">
                     <font size="9"/>
                 </textElement>
-                <text><![CDATA[BC-LDV-003 - Booking Rate Report]]></text>
-            </staticText>
+                <textFieldExpression><![CDATA["Trang " + $V{PAGE_NUMBER} + " /"]]></textFieldExpression>
+            </textField>
+            <textField evaluationTime="Report">
+                <reportElement x="120" y="0" width="30" height="14"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
             <textField>
-                <reportElement x="600" y="0" width="182" height="20"/>
+                <reportElement x="350" y="0" width="432" height="14"/>
                 <textElement textAlignment="Right" verticalAlignment="Middle">
                     <font size="9"/>
                 </textElement>
-                <textFieldExpression><![CDATA["Trang " + $V{PAGE_NUMBER}]]></textFieldExpression>
+                <textFieldExpression><![CDATA["Xuất ngày: " + ($P{printedDate} == null ? "" : $P{printedDate})]]></textFieldExpression>
             </textField>
+            <staticText>
+                <reportElement x="0" y="16" width="400" height="12"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="9"/>
+                </textElement>
+                <text><![CDATA[Báo cáo lượt đặt vé BC-LDV-003 – Version 1.0]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="0" y="28" width="400" height="12"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="9"/>
+                </textElement>
+                <text><![CDATA[© 2025 – Hệ thống đặt vé xe]]></text>
+            </staticText>
         </band>
     </pageFooter>
 
     <summary>
-        <band height="210">
+        <band height="555">
             <frame>
                 <reportElement x="0" y="0" width="782" height="70"/>
 
@@ -201,7 +255,7 @@
 
             <barChart>
                 <chart>
-                    <reportElement x="0" y="80" width="782" height="120"/>
+                    <reportElement x="0" y="80" width="782" height="260"/>
                     <chartTitle>
                         <font size="11" isBold="true"/>
                         <titleExpression><![CDATA["Top tuyến được đặt nhiều nhất"]]></titleExpression>
@@ -221,6 +275,46 @@
                     <valueAxisLabelExpression><![CDATA["Lượt đặt"]]></valueAxisLabelExpression>
                 </barPlot>
             </barChart>
+
+            <!-- Manual footer for summary page (since pageFooter is not rendered on summary new page in this Jasper version) -->
+            <frame>
+                <reportElement x="0" y="515" width="782" height="40"/>
+                <textField>
+                    <reportElement x="0" y="0" width="120" height="14"/>
+                    <textElement verticalAlignment="Middle">
+                        <font size="9"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA["Trang " + $V{PAGE_NUMBER} + " /"]]></textFieldExpression>
+                </textField>
+                <textField evaluationTime="Report">
+                    <reportElement x="120" y="0" width="30" height="14"/>
+                    <textElement verticalAlignment="Middle">
+                        <font size="9"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+                </textField>
+                <textField>
+                    <reportElement x="350" y="0" width="432" height="14"/>
+                    <textElement textAlignment="Right" verticalAlignment="Middle">
+                        <font size="9"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA["Xuất ngày: " + ($P{printedDate} == null ? "" : $P{printedDate})]]></textFieldExpression>
+                </textField>
+                <staticText>
+                    <reportElement x="0" y="16" width="400" height="12"/>
+                    <textElement verticalAlignment="Middle">
+                        <font size="9"/>
+                    </textElement>
+                    <text><![CDATA[Báo cáo lượt đặt vé BC-LDV-003 – Version 1.0]]></text>
+                </staticText>
+                <staticText>
+                    <reportElement x="0" y="28" width="400" height="12"/>
+                    <textElement verticalAlignment="Middle">
+                        <font size="9"/>
+                    </textElement>
+                    <text><![CDATA[© 2025 – Hệ thống đặt vé xe]]></text>
+                </staticText>
+            </frame>
         </band>
     </summary>
 

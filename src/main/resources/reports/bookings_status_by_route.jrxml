@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
-<jasperReport name="bookings_status_by_route" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="c3333333-3333-3333-3333-333333333333">
+<jasperReport name="bookings_status_by_route" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20">
     <property name="net.sf.jasperreports.default.font.name" value="DejaVu Sans"/>
     <property name="net.sf.jasperreports.default.pdf.font.name" value="DejaVu Sans"/>
     <property name="net.sf.jasperreports.default.pdf.encoding" value="Identity-H"/>

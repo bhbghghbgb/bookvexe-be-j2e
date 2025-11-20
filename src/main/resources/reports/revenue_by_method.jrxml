@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE jasperReport PUBLIC "-//JasperReports//DTD Report Design//EN" "http://jasperreports.sourceforge.net/dtds/jasperreport.dtd">
-<jasperReport name="revenue_by_method" pageWidth="595" pageHeight="842" orientation="Portrait" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="e5555555-5555-5555-5555-555555555555">
+<jasperReport name="revenue_by_method" pageWidth="595" pageHeight="842" orientation="Portrait" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20">
     <property name="net.sf.jasperreports.default.font.name" value="DejaVu Sans"/>
     <property name="net.sf.jasperreports.default.pdf.font.name" value="DejaVu Sans"/>
     <property name="net.sf.jasperreports.default.pdf.encoding" value="Identity-H"/>
