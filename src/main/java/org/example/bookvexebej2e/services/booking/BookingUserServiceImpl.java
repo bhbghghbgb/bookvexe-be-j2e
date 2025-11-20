@@ -31,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -231,53 +230,6 @@ public class BookingUserServiceImpl implements BookingUserService {
                 }
             } catch (Exception e) {
             }
-        }
-
-        if (!"CASH".equalsIgnoreCase(createDto.getType())) {
-            return bookingUserMapper.toResponse(savedBooking);
-        }
-
-        // ADD NOTIFICATION: Booking Created
-        try {
-            // Determine if this is a guest booking (no authenticated user)
-            CustomerDbModel customer2 = savedBooking.getCustomer();
-            UUID userId = Optional.ofNullable(security.getCurrentUserEntity())
-                    .map(UserDbModel::getId)
-                    .orElse(null);
-            String customerEmail = customer2.getEmail();
-
-            if (userId != null) {
-                // Registered user - can save notification and send WebSocket
-                notificationService.sendNotification(
-                        userId,
-                        "TYPE_BOOKING_CREATED",
-                        "Đặt vé thành công",
-                        "Bạn đã đặt vé thành công. Mã đặt vé: " + savedBooking.getCode() +
-                                ". Vui lòng thanh toán tiền mặt để hoàn tất.",
-                        savedBooking.getId(),
-                        savedBooking.getTrip().getId(),
-                        "APP",
-                        true, // sendEmail
-                        true // shouldSave
-                );
-            } else {
-                // Guest user - can only send email
-                notificationService.sendGuestNotification(
-                        customerEmail,
-                        "TYPE_BOOKING_CREATED",
-                        "Đặt vé thành công",
-                        "Bạn đã đặt vé thành công. Mã đặt vé: " + savedBooking.getCode() +
-                                ". Vui lòng thanh toán tiền mặt để hoàn tất.",
-                        savedBooking.getId(),
-                        savedBooking.getTrip().getId(),
-                        "EMAIL",
-                        true, // sendEmail
-                        false // shouldSave - cannot save without user
-                );
-            }
-        } catch (Exception e) {
-            log.error("Failed to send booking creation notification: {}", e.getMessage(),
-                    e);
         }
 
         return bookingUserMapper.toResponse(savedBooking);
