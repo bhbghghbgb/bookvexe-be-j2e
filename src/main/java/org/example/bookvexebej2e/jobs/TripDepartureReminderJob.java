@@ -2,6 +2,7 @@ package org.example.bookvexebej2e.jobs;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.bookvexebej2e.models.constant.BookingStatus;
 import org.example.bookvexebej2e.models.db.BookingDbModel;
 import org.example.bookvexebej2e.models.db.UserDbModel;
 import org.example.bookvexebej2e.repositories.booking.BookingRepository;
@@ -32,7 +33,7 @@ public class TripDepartureReminderJob {
         LocalDateTime reminderWindow = now.plusHours(1);
 
         List<BookingDbModel> unnotifiedBookings = bookingRepository.findBookingsAwaitingReminder(now, reminderWindow,
-            REMINDER_TYPE_CODE);
+            REMINDER_TYPE_CODE, BookingStatus.AWAIT_GO);
 
         if (unnotifiedBookings.isEmpty()) {
             log.info("No unnotified bookings found.");
